@@ -1,13 +1,18 @@
 # Shared environment and rollout framework
 
 Use `owb.make_env("teyvat")` for the Genshin-inspired environment and
-`owb.make_env("wildlands")` for the Zelda-inspired environment. Both expose the
+`owb.make_env("wildlands")` or `owb.make_env("skylands")` for the Zelda-inspired
+environments. All expose the
 same Gymnasium spaces, control conventions, capability masks, and episode
 summaries. Adapters preserve the separate simulators and their native APIs.
 
-Skylands is a planned registry entry, not a runnable environment. Constructing it
-raises `NotImplementedError`; `owb.available_environments()` lists implemented
-backends only.
+`owb.make_env("skylands")` runs the three-layer construction course; see the
+[Skylands guide](skylands.md). `owb.available_environments()` lists all three.
+The common interface is now **schema version 2**: construction commands, `part`,
+`build_move`, `construction`, and `build_state` have been added. Use
+`neutral_action()` to initialize every field. Version 1 action dictionaries and
+recordings need the new action fields filled with zero; native Wildlands and
+Teyvat APIs retain their existing schemas.
 
 ## One pipeline
 
@@ -31,7 +36,7 @@ the native physics timestep. Death can end a decision early. Native movement
 speeds, camera rates, and gameplay remain different.
 
 Advanced settings use `native_config=open_world_bench.EnvConfig(...)` for Teyvat
-or `native_config=owb.EnvConfig(...)` for Wildlands. The factory copies it; common
+or `native_config=owb.EnvConfig(...)` for Wildlands/Skylands. The factory copies it; common
 seed, resolution, horizon, timing, and required interface modes take precedence.
 The variant selects defaults only without a native configuration. `env.native`
 exposes the simulator for debugging.
@@ -52,10 +57,11 @@ than a production game engine with authored animation and materials.
 | `move` | float32 `[forward, right]` in `[-1, 1]`, relative to horizontal view direction. |
 | `look` | float32 `[turn right, look up]` in `[-1, 1]`. |
 | `buttons` | Six bits: jump, sprint, climb, glide, dive, crouch. |
-| `command` | Index in `COMMANDS`: none, interact, attack, skill, burst, eat, cook, equip, stow. |
+| `command` | Index in `COMMANDS`: none, interact, attack, skill, burst, eat, cook, equip, stow, grab, place, rotate, ascend. |
 | `swap` | 0 keeps the character; 1–4 selects a party slot. |
 | `slot` | Inventory slot 0–31. |
 | `ingredients` | Five entries: 0 unused, 1–32 selects inventory slot 0–31. |
+| `part`, `build_move` | Part ID 0–8 and three floats for grid manipulation in Skylands; see its guide. |
 
 `command_mask`, `button_mask`, and `swap_mask` describe backend support, not
 current cooldown/proximity readiness. Unsupported but well-formed requests consume
@@ -77,7 +83,8 @@ simultaneous-button combinations.
 | `survival` | `(8,)` Wildlands weather/time state; names in `owb.env.SURVIVAL_NAMES`. |
 | `minimap` | `(32, 32)` Wildlands visited-cell map. |
 | `goal` | `(15,)` Teyvat native objective vector; disabled by default. |
-| `modality_mask` | Five bits: party, inventory, survival, minimap, goal. Unsupported modalities are zero-filled. |
+| `construction`, `build_state` | `(8,9)` locally observable parts and `(6,)` held cursor/layer state in Skylands. |
+| `modality_mask` | Seven bits: party, inventory, survival, minimap, goal, construction, build_state. Unsupported modalities are zero-filled. |
 | Capability masks | Commands, buttons, and party slots supported by the backend. |
 
 Constants `PROPRIO_NAMES`, `MODALITIES`, `BUTTONS`, and `COMMANDS` are exported by
@@ -119,6 +126,8 @@ a coincident time limit, so terminal flags are not both true.
 
 Teyvat success means questline completion, and its default respawn is preserved.
 Wildlands has no victory predicate, so success and task progress are `None`.
+Skylands succeeds after building the crossing, reaching the far island, and
+interacting with the beacon; its progress is 0, 0.5 (bridge), or 1 (success).
 A time limit is truncation, not success. Metrics preserve quest counts versus
 visited cells/landmarks. Rewards stay native; do not average them across backends
 as if they represented equal task difficulty.
@@ -130,8 +139,9 @@ metric and a failed task. They are also included in episode summaries.
 
 Policies are callables receiving observations and may implement `reset(seed)` to
 clear episode-local memory. The caller owns/closes the environment. `RandomPolicy`
-is seeded and capability-aware. `DemoPolicy` demonstrates party skills or
-gathering/cooking and traversal; it is not a task-solving baseline.
+is seeded and capability-aware. `DemoPolicy` demonstrates party skills,
+gathering/cooking and traversal, or the fixed Skylands bridge course; it is not
+a general task-solving baseline.
 
 ## Recorded demos
 
@@ -166,8 +176,8 @@ the video extra for longer recordings.
 Implement a native factory `(BenchmarkConfig, native_config)` and a `NativeAdapter`
 subclass supplying control translation, physical state, observation projections,
 capabilities, elapsed time, events, and task metrics. Register an `EnvironmentSpec`
-using `register_environment()`. The planned Skylands entry can be implemented this
-way without changing policies or recording code. Implemented names cannot be
+using `register_environment()`. New backends can be implemented this
+way without changing the recorder. Implemented names cannot be
 silently replaced. New mechanics may require a new schema version rather than
 reusing an existing action with different semantics.
 

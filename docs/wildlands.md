@@ -124,10 +124,22 @@ cross-session checkpoints. Enabling hunger/respawn raises an explicit error.
 ## Visual style
 
 `RenderConfig(style="landscape")` is the default. It renders a continuous natural
-surface, rounded tree canopies and trunks, wind-bent grass, modeled camp props,
-and a traveler with a cloth tunic, scarf, satchel, and glider. Cel shading uses
-warm terrain colors, cooler shadows, distance haze, cloud shapes, and turquoise
-water. The human-facing HUD uses hearts and a stamina ring.
+surface, branching trees with layered crowns and individual folded leaves,
+wind-bent grass, modeled camp props, and an articulated traveler with cloth,
+boots, hair, scarf, satchel, sword and glider. World-space material variation adds
+soil patches, moss colors and weathered rock. Sunlight uses terrain and mesh
+shadows, with local ambient occlusion at contact points. Water has animated
+ripples, sun highlights and depth-dependent color. The HUD uses hearts and a
+stamina ring.
+
+`RenderConfig(quality="balanced")` is the default presentation tier. `"fast"`
+reduces foliage and omits material detail, mesh shadows and contact shading;
+`"high"` adds more leaves and grass plus a finer shadow map. Foliage detail also
+scales with camera distance and output resolution. These tiers affect rendered
+vegetation geometry, so visual depth/semantic images can differ between tiers.
+They do not alter collision geometry, actions, or the simulation random stream.
+Toggle `shadows` or `ambient_occlusion` independently; those only affect RGB.
+`supersample=2` smooths fine foliage edges at additional CPU and memory cost.
 
 The terminal demo defaults to a 320 x 180 third-person view. Agent observation
 dimensions and the default first-person agent camera retain their existing
@@ -136,10 +148,15 @@ for the demo; configure `RenderConfig` directly for policies.
 
 ```bash
 python -B -m owb.scripts.wildlands --interactive --steps 3000
+python -B -m owb.scripts.wildlands --interactive --quality high --supersample 2 --width 640 --height 360
 python -B -m owb.scripts.screenshots --environment wildlands --compare-wildlands
+python -B -m owb.scripts.screenshots --environment wildlands --wildlands-view woodland --quality high --size 640 360
 ```
 
 The two screenshot backends use identical seed, camera, time of day, and HUD.
+Screenshot captures default to high quality and 2x supersampling. `--wildlands-view`
+selects the survey-tower overlook, starter camp, or a ground-level woodland view;
+these are fixed viewpoints in the generated seed-7 world.
 These images are actual engine output. No generated artwork is composited over
 observations. Both backends return RGB, ray-distance depth, and semantic buffers.
 Landscape supersampling averages RGB subpixels; depth/semantics use the same centre subpixel.
@@ -151,6 +168,9 @@ Buildings retain their block geometry. Caves and terrain edits are rendered from
 current occupancy rather than a top-down heightmap, and caches refresh on world
 edits and resets. `style="voxel"` remains available for exact terrain debugging.
 
-This is an initial procedural art pass. CPU mesh rendering costs more than the
-voxel backend, particularly for high-resolution captures; it is not a real-time
-graphics engine. Use small agent frames or disable RGB for faster rollouts.
+The assets are still procedural. This pass improves the native renderer's
+materials, vegetation, lighting and silhouettes; it does not provide the detailed
+authored characters and environment assets of a finished game. CPU rendering is
+not real-time at presentation resolutions. Use `quality="fast"`, small agent
+frames, or disable RGB for faster rollouts. The optional
+[Blender presentation pipeline](rendering.md) is separate from live observations.

@@ -279,9 +279,10 @@ class SoftRenderer(Renderer):
         return color * (1.0 - f[:, None]) + fog_col[None, :] * f[:, None]
 
     # --------------------------------------------------------------- meshes
-    def _build_meshes(self, world, char: CharacterState, eye: np.ndarray, fwd: np.ndarray) -> MeshBatch:
+    def _build_meshes(self, world, char: CharacterState, eye: np.ndarray, fwd: np.ndarray,
+                      *, batch: MeshBatch | None = None, full_detail: bool = False) -> MeshBatch:
         s = self.settings
-        batch = MeshBatch()
+        batch = MeshBatch() if batch is None else batch
         if s.draw_props and s.ground_cover:
             self._ground_cover(batch, world, char.pos)
         if s.draw_props and len(world.props) > 0:
@@ -312,8 +313,12 @@ class SoftRenderer(Renderer):
                     add_prop(batch, PROP_NAMES[int(props.kind[i])], props.pos[i],
                              float(props.yaw[i]), float(props.scale[i]), obj_id=10)
                 for i in far:
-                    _add_prop_lod(batch, PROP_NAMES[int(props.kind[i])], props.pos[i],
-                                  float(props.scale[i]), obj_id=10)
+                    if full_detail:
+                        add_prop(batch, PROP_NAMES[int(props.kind[i])], props.pos[i],
+                                 float(props.yaw[i]), float(props.scale[i]), obj_id=10)
+                    else:
+                        _add_prop_lod(batch, PROP_NAMES[int(props.kind[i])], props.pos[i],
+                                      float(props.scale[i]), obj_id=10)
         if s.draw_entities:
             from ..world import ENTITY_NAMES
             from ..elements import Element, ELEMENT_COLORS

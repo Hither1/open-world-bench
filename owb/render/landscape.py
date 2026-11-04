@@ -17,6 +17,7 @@ from ..world.voxel import VoxelWorld
 from . import models, palette as P
 from .camera import Camera, ray_dirs
 from .raycast import Renderer as VoxelRenderer
+from .shadows import MeshShadowMap, contact_occlusion
 
 _NATURAL = np.zeros(B.NUM_BLOCKS, bool)
 _NATURAL[[B.STONE, B.DIRT, B.GRASS, B.SAND, B.SNOW, B.ICE, B.MUD, B.GRAVEL,
@@ -31,12 +32,17 @@ _MODELED[[B.LOG, B.LEAVES, B.TALL_GRASS, B.FLOWER, B.BUSH, B.COOKPOT,
 class LandscapeRenderer(VoxelRenderer):
     def __init__(self, cfg=None):
         super().__init__(cfg)
+        if self.cfg.quality not in ("fast", "balanced", "high"):
+            raise ValueError("render_cfg.quality must be 'fast', 'balanced' or 'high'")
+        self._quality = ("fast", "balanced", "high").index(self.cfg.quality)
         self._world, self._revision = None, -1
+        self._mesh_shadow = None
 
     def _prepare(self, world):
         if world is self._world and world.rev == self._revision:
             return
         self._world, self._revision = world, world.rev
+        self._tree_meshes = {}
         natural = _NATURAL[world.vox]
         density = natural.astype(np.float32)
         # A narrow filter rounds terrace corners without flattening caves.
@@ -70,6 +76,8 @@ class LandscapeRenderer(VoxelRenderer):
                 self._detail.vox[x, y, z] = B.LOG
                 continue
             kind = BIOMES[int(world.biome[x, z])].tree_kind
+            if world.meta.get("theme") == "skylands" and y > world.meta["layer_heights"][1] + 6:
+                kind = "golden"
             leaves = world.vox[max(0, x - 3):x + 4, max(y, top - 4):top + 4,
                                max(0, z - 3):z + 4] == B.LEAVES
             if not leaves.any():
@@ -79,12 +87,30 @@ class LandscapeRenderer(VoxelRenderer):
         self._props = np.argwhere(np.isin(world.vox, [B.BUSH, B.COOKPOT, B.CAMPFIRE, B.CAMPFIRE_LIT,
                                                      B.FIRE, B.TORCH_WALL, B.CRYSTAL, B.VINE, B.GLASS]))
         self._grass = np.argwhere(np.isin(world.vox, [B.TALL_GRASS, B.FLOWER]))
-        # Add sparse fine blades on existing grass, without new collision objects.
+        # Stable, sub-voxel ground cover; density depends on the presentation tier.
         xx, zz = np.indices(self._height.shape)
         yy = np.maximum(self._height.astype(int) - 1, 0)
-        cover = (world.vox[xx, yy, zz] == B.GRASS) & (N.hash_unit(xx, zz, 731) > 0.72)
+        cover = (world.vox[xx, yy, zz] == B.GRASS) & (N.hash_unit(xx, zz, 731) > 0.12)
         gx, gz = np.nonzero(cover)
         self._grass = np.concatenate((self._grass, np.stack((gx, yy[gx, gz] + 1, gz), axis=1)))
+        self._grass_points = self._grass.astype(np.float32) + (0.5, 0, 0.5)
+        repeats = (1, 2, 4)[self._quality]
+        self._grass_points = np.repeat(self._grass_points, repeats, axis=0)
+        self._grass_flowers = np.repeat(world.vox[tuple(self._grass.T)] == B.FLOWER, repeats)
+        i = np.arange(len(self._grass_points))
+        self._grass_variation = N.hash_unit(i, i, 12)
+        self._grass_points[:, 0] += (N.hash_unit(i, i, 84) - 0.5) * 0.8
+        self._grass_points[:, 2] += (N.hash_unit(i, i, 32) - 0.5) * 0.8
+        # Set roots on the actual rendered isosurface, including rounded edges.
+        lo, hi = self._grass_points.copy(), self._grass_points.copy()
+        lo[:, 1] -= 1.2
+        hi[:, 1] += 0.6
+        supported = self._sample(lo) > 0.5
+        for _ in range(7):
+            mid = (lo + hi) * 0.5
+            under = self._sample(mid) > 0.5
+            lo[under], hi[~under] = mid[under], mid[~under]
+        self._grass_points[supported, 1] = ((lo + hi) * 0.5)[supported, 1] - 0.03
 
     def _sample(self, points):
         p = points + 0.5  # voxel centres, including the one-cell padding
@@ -162,10 +188,11 @@ class LandscapeRenderer(VoxelRenderer):
         sun = sky["sun"]
         dot = np.sum(normal * sun["dir"], axis=-1)
         # Soft-edged bands instead of per-block face shading and texture noise.
-        band = 0.38 + 0.30 * N.smoothstep(-0.12, 0.16, dot) + 0.30 * N.smoothstep(0.48, 0.66, dot)
+        band = 0.14 + 0.46 * N.smoothstep(-0.15, 0.45, dot) + 0.40 * N.smoothstep(0.40, 0.90, dot)
         shade = np.asarray(shadow)
-        direct = band[..., None] * sun["color"] * sun["intensity"] * shade[..., None] * 0.78
-        ambient = np.array((0.49, 0.61, 0.66)) * sun["ambient"] * 0.85
+        direct = band[..., None] * sun["color"] * sun["intensity"] * shade[..., None] * 0.80
+        hemi = 0.66 + 0.34 * np.clip(normal[..., 1], 0, 1)
+        ambient = np.array((0.50, 0.64, 0.74)) * sun["ambient"] * hemi[..., None]
         return base * (direct + ambient)
 
     def _sky(self, dirs, sky, weather, time):
@@ -194,8 +221,8 @@ class LandscapeRenderer(VoxelRenderer):
         origins = points + normals * 0.85
         for distance in np.geomspace(1, 36, min(self.cfg.shadow_steps, 12)):
             p = origins + sun * distance
-            occluded |= self._sample(p) > 0.52
-        return np.where(occluded, 0.68, 1).astype(np.float32)
+            occluded |= (self._sample(p) > 0.52) | self._detail.solid_at(p)
+        return np.where(occluded, 0.30, 1).astype(np.float32)
 
     def _water_surface(self, world, eye, dirs):
         distance = np.full(len(dirs), self.cfg.max_dist, np.float32)
@@ -228,12 +255,19 @@ class LandscapeRenderer(VoxelRenderer):
                 x = np.clip(q[:, 0].astype(int), 0, world.size_x - 1)
                 z = np.clip(q[:, 2].astype(int), 0, world.size_z - 1)
                 bio = world.biome[x, z]
-                meadow = np.tile((0.46, 0.59, 0.24), (len(q), 1))
+                meadow = np.tile((0.38, 0.52, 0.23), (len(q), 1))
                 meadow[bio == 1] = (0.35, 0.48, 0.23)
                 meadow[bio == 6] = (0.63, 0.62, 0.30)
                 rock = np.tile((0.47, 0.46, 0.39), (len(q), 1))
                 rock[bio == 10] = (0.28, 0.31, 0.32)
                 rock[bio == 11] = (0.65, 0.43, 0.29)
+                if world.meta.get("theme") == "skylands":
+                    high = q[:, 1] > world.meta["layer_heights"][1] + 6
+                    meadow[high] = (0.63, 0.66, 0.34)
+                    rock[high] = (0.61, 0.59, 0.48)
+                    low = q[:, 1] < world.meta["layer_heights"][1] - 2
+                    rock[low] = (0.22, 0.29, 0.30)
+                    meadow[low] = (0.22, 0.29, 0.30)
                 grass_weight = N.smoothstep(0.72, 0.94, nn[:, 1])
                 grass_weight *= np.clip((q[:, 1] - self._height[x, z] + 2) / 2, 0, 1)
                 grass_weight[np.isin(bio, [3, 4, 5, 8, 9, 10, 11])] = 0
@@ -242,14 +276,30 @@ class LandscapeRenderer(VoxelRenderer):
                 snow = np.isin(block[natural], [B.SNOW, B.SNOW_PACK, B.ICE])
                 surface[sand] = (0.77, 0.70, 0.49)
                 surface[snow] = (0.84, 0.89, 0.88)
-                variation = N.perlin2(q[:, 0] * 0.09, q[:, 2] * 0.09, 65)
-                surface *= (1 + variation[:, None] * 0.12)
-                # Broad horizontal stone strata, independent of the voxel grid.
-                surface *= (1 + 0.025 * np.sin(q[:, 1] * 1.4 + variation * 3))[:, None]
+                variation = N.perlin2(q[:, 0] * 0.19, q[:, 2] * 0.19, 65)
+                if self._quality:
+                    # Continuous world-space materials: irregular moss, soil and
+                    # weathered stone. High frequencies fade before aliasing.
+                    uv = np.stack((q[:, 0] + q[:, 1] * 0.63,
+                                   q[:, 2] + q[:, 1] * 0.47), axis=1)
+                    fleck = N.perlin2(uv[:, 0] * 3.2, uv[:, 1] * 3.2, 184)
+                    fine = N.perlin2(uv[:, 0] * 14, uv[:, 1] * 14, 936)
+                    near = np.clip(1 - g["t"][idx[natural]] / 55, 0, 1)
+                    soil = N.smoothstep(0.02, 0.32, variation + fleck * 0.24) * grass_weight * 0.65
+                    soil[sand | snow] = 0
+                    surface = surface * (1 - soil[:, None]) + np.array((0.32, 0.29, 0.18)) * soil[:, None]
+                    cracks = 1 - N.smoothstep(0.012, 0.07, np.abs(N.perlin2(uv[:, 0] * 0.7, uv[:, 1] * 0.7, 442)))
+                    surface *= (1 + fleck[:, None] * near[:, None] * 0.34
+                                + fine[:, None] * near[:, None] * 0.22
+                                - cracks[:, None] * (1 - grass_weight[:, None]) * 0.13)
+                surface *= (1 + variation[:, None] * 0.34)
+                surface *= (1 + 0.035 * np.sin(q[:, 1] * 2.4 + variation * 5))[:, None]
                 base[natural] = surface
             shadow = np.ones(len(p), np.float32)
             if self.cfg.shadows:
                 shadow = self._terrain_shadow(p, n, sky["sun"]["dir"])
+                if self._mesh_shadow is not None:
+                    shadow *= self._mesh_shadow.sample(p + n * 0.08)
             lit = self._lighting(base, n, sky, shadow)
             emission = np.clip(B.EMISSIVE[block], 0, 1)
             lit = lit * (1 - emission[:, None]) + base * emission[:, None]
@@ -270,24 +320,37 @@ class LandscapeRenderer(VoxelRenderer):
             delta = np.asarray(p) - eye
             return np.linalg.norm(delta) < limit + radius and np.dot(delta, forward) > -radius
 
-        for p, height, kind in self._trees:
-            if visible(np.asarray(p) + (0, height / 2, 0), height):
+        for tree_index, (p, height, kind) in enumerate(self._trees):
+            distance = np.linalg.norm(np.asarray(p) - eye)
+            if distance < 48 or visible(np.asarray(p) + (0, height / 2, 0), height):
                 v = float(N.hash_unit(np.array([int(p[0])]), np.array([int(p[2])]), 83)[0])
-                models.tree(batch, p, height, kind, v)
+                pixels = height * self.cfg.width / max(distance, 1)
+                detail = min(self._quality, 2 if distance < 22 and pixels > 65
+                             else 1 if distance < 55 and pixels > 24 else 0)
+                key = (tree_index, detail)
+                if key not in self._tree_meshes:
+                    mesh = models.ModelBatch()
+                    models.tree(mesh, p, height, kind, v, detail)
+                    self._tree_meshes[key] = mesh
+                batch.extend(self._tree_meshes[key])
         for x, y, z in self._props:
             p = (x + 0.5, y, z + 0.5)
             if visible(p):
                 models.prop(batch, world.get(x, y, z), p, frame * 0.1)
-        if len(self._grass):
-            points = self._grass.astype(np.float32) + (0.5, 0, 0.5)
+        if len(self._grass_points):
+            points = self._grass_points
             distance = np.linalg.norm(points - eye, axis=1)
-            indices = np.flatnonzero((distance < 22) & ((points - eye) @ forward > -1))
-            indices = indices[np.argsort(distance[indices])[:350]]
+            reach = (15, 25, 34)[self._quality]
+            facing = (points - eye) @ forward
+            indices = np.flatnonzero((distance < reach) & (facing > distance * 0.45 - 1))
+            budget = min((180, 800, 1800)[self._quality],
+                         max(50, self.cfg.width * self.cfg.height // 300))
+            indices = indices[np.argsort(distance[indices])[:budget]]
             for index in indices:
                 p = points[index]
-                variation = float(N.hash_unit(np.array([int(p[0])]), np.array([int(p[2])]), 12)[0])
+                variation = float(self._grass_variation[index])
                 models.grass(batch, p, variation, frame * 0.1,
-                             world.get(*self._grass[index]) == B.FLOWER)
+                             self._grass_flowers[index], self._quality)
         if self.cfg.entity_impostors:
             for e in entities or ():
                 if visible(e["pos"], e.get("height", 2)):
@@ -303,7 +366,7 @@ class LandscapeRenderer(VoxelRenderer):
         cam = Camera(np.asarray(pos, np.float32), yaw, pitch, cfg.fov)
         forward, right, up = cam.basis()
         dirs = ray_dirs(cam, width, height)
-        g = self._march(self._detail, cam.pos, dirs, cfg.max_dist, cfg.max_steps)
+        g = self._march(self._detail, cam.pos, dirs, cfg.max_dist, cfg.max_steps, exact=True)
         water_distance, water_depth = self._water_surface(world, cam.pos, dirs)
         distance, found, normal = self._surface(world, cam.pos, dirs, np.minimum(g["t"], water_distance))
         points = cam.pos + dirs[found] * distance[found, None]
@@ -315,6 +378,21 @@ class LandscapeRenderer(VoxelRenderer):
         if weather in ("clear", "cloud") and sky["sun"]["elevation"] > 0.15:
             sky["zenith"] = np.array((0.28, 0.60, 0.76), np.float32)
             sky["horizon"] = np.array((0.76, 0.83, 0.78), np.float32)
+        if world.meta.get("theme") == "skylands" and cam.pos[1] < world.meta["layer_heights"][1] - 2:
+            sky["zenith"] = np.array((0.025, 0.045, 0.065), np.float32)
+            sky["horizon"] = np.array((0.05, 0.11, 0.12), np.float32)
+            sky["sun"] = dict(sky["sun"], intensity=0.18, ambient=0.45,
+                               color=np.array((0.40, 0.74, 0.80), np.float32))
+        batch = self._meshes(world, cam.pos, forward, entities, frame)
+        verts, colors, emission, mesh_ids = batch.finish()
+        self._mesh_shadow = None
+        if cfg.shadows and self._quality and len(verts):
+            # Ground-cover shadows are covered by AO. Keep larger foliage and
+            # characters, including trees behind the camera that cast into view.
+            caster = (mesh_ids != B.SEM_PLANT) & (emission < 0.5)
+            self._mesh_shadow = MeshShadowMap(verts[caster], sky["sun"]["dir"],
+                                              cam.pos + forward * 14, extent=48,
+                                              resolution=384 if self._quality == 1 else 768)
         color = self._shade_landscape(world, cam.pos, dirs, g, sky, weather, lights, time_of_day)
         semantic = B.SEMANTIC[g["blk"]].copy()
         wet = water_distance < g["t"]
@@ -328,7 +406,15 @@ class LandscapeRenderer(VoxelRenderer):
             water = water * (1 - fresnel[:, None]) + sky["horizon"] * fresnel[:, None]
             waves = np.sin(p[:, 0] * 2.3 + p[:, 2] * 1.6 + frame * 0.08)
             foam = (thickness < 0.25) * (0.08 + 0.08 * np.maximum(waves, 0))
-            water += (np.maximum(waves - 0.94, 0) * 0.8 + foam)[:, None]
+            ripple = np.stack((np.cos(p[:, 0] * 1.7 + frame * 0.1) * 0.09,
+                               np.ones(len(p)), np.sin(p[:, 2] * 2.1 + frame * 0.07) * 0.09), axis=1)
+            ripple /= np.linalg.norm(ripple, axis=1, keepdims=True)
+            half = sky["sun"]["dir"] - dirs[wet]
+            half /= np.maximum(np.linalg.norm(half, axis=1, keepdims=True), 1e-6)
+            glint = np.maximum(np.sum(ripple * half, axis=1), 0) ** 120
+            water += (np.maximum(waves - 0.97, 0) * 0.5 + foam + glint * 0.55)[:, None]
+            if self._mesh_shadow is not None:
+                water *= (0.7 + 0.3 * self._mesh_shadow.sample(p))[:, None]
             water *= 0.35 + 0.65 * min(sky["sun"]["intensity"], 1)
             color[wet] = self._fog(water, wt, sky, weather)
             g["t"][wet], semantic[wet] = wt, B.SEM_WATER
@@ -344,15 +430,28 @@ class LandscapeRenderer(VoxelRenderer):
         tan = np.tan(np.deg2rad(cfg.fov) / 2)
         proj = np.zeros((4, 4), np.float32)
         proj[0, 0], proj[1, 1], proj[2, 2], proj[2, 3], proj[3, 2] = 1 / tan, width / height / tan, -1, -0.1, -1
-        batch = self._meshes(world, cam.pos, forward, entities, frame)
-        verts, colors, emission, mesh_ids = batch.finish()
         if len(verts):
             screen, wdepth, keep = raster.project(verts, view, proj, width, height)
+            # Offscreen casters are needed in the shadow map, but should not
+            # pay for per-vertex lighting, fog and terrain shadow tracing.
+            verts, colors, emission, mesh_ids = verts[keep], colors[keep], emission[keep], mesh_ids[keep]
+            smooth = np.concatenate(batch.smooth_normals)[keep]
+            screen, wdepth = screen[keep], wdepth[keep]
+            keep = np.ones(len(verts), bool)
             normals = raster.face_normals(verts, cam.pos)
-            smooth = np.concatenate(batch.smooth_normals)
             smooth = np.where(np.linalg.norm(smooth, axis=-1, keepdims=True) > 0,
                               smooth, normals[:, None, :])
-            shaded = self._lighting(colors[:, None, :], smooth, sky)
+            mesh_shadow = np.ones(verts.shape[:2], np.float32)
+            if self._mesh_shadow is not None:
+                mesh_shadow = self._mesh_shadow.sample(verts + smooth * 0.10, bias=0.16)
+            if cfg.shadows and self._quality:
+                terrain_shadow = self._terrain_shadow(verts.mean(axis=1), normals, sky["sun"]["dir"])
+                mesh_shadow *= terrain_shadow[:, None]
+            shaded = self._lighting(colors[:, None, :], smooth, sky, mesh_shadow)
+            # Gentle transmission keeps thin foliage luminous against the sun.
+            leaves = np.isin(mesh_ids, (B.SEM_TREE, B.SEM_PLANT))
+            transmission = np.maximum(np.sum(-smooth * sky["sun"]["dir"], axis=-1), 0) * 0.14
+            shaded += colors[:, None, :] * (leaves[:, None] * transmission * sky["sun"]["intensity"])[..., None]
             shaded = shaded * (1 - emission[:, None, None]) + colors[:, None, :] * emission[:, None, None]
             shaded = self._fog(shaded, np.linalg.norm(verts.mean(axis=1) - cam.pos, axis=1)[:, None], sky, weather)
             big, tiny = raster.split_by_screen_size(screen, keep, threshold=1.2)
@@ -361,6 +460,9 @@ class LandscapeRenderer(VoxelRenderer):
             raster.draw_point_sprites(screen, wdepth, tiny, shaded.mean(axis=1), normals, mesh_ids,
                                       color, depth, normal_buf, ids)
         depth = np.clip(depth / cosine.reshape(height, width), 0, cfg.max_dist)
+        if cfg.ambient_occlusion and self._quality:
+            solid = (ids != B.SEM_SKY) & (ids != B.SEM_WATER)
+            color = contact_occlusion(color, depth, dirs, normal_buf, solid, width / (2 * tan))
         if world.get_f(*cam.pos) == B.WATER:
             murk = 1 - np.exp(-depth * 0.10)
             color = color * (1 - 0.75 * murk[..., None]) + np.array((0.10, 0.31, 0.36)) * (0.75 * murk[..., None])

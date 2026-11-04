@@ -23,7 +23,7 @@ def native_config(name):
     return owb.EnvConfig(
         world_cfg=owb.WorldConfig(preset="arena", size_x=32, size_z=32, size_y=40, animal_density=0),
         sim_cfg=owb.SimConfig(weather_enabled=False, wind_enabled=False),
-        render_cfg=owb.RenderConfig(max_dist=40, shadows=False, max_steps=64),
+        render_cfg=owb.RenderConfig(max_dist=40, shadows=False, max_steps=64, quality="fast"),
     )
 
 
@@ -63,20 +63,19 @@ def flatten(env):
 
 
 def test_registration_lists_only_runnable_backends():
-    assert available_environments() == ("teyvat", "wildlands")
-    assert not next(s for s in environment_specs() if s.name == "skylands").implemented
-    with pytest.raises(NotImplementedError, match="planned"):
-        make_env("skylands")
+    assert available_environments() == ("teyvat", "wildlands", "skylands")
+    assert next(s for s in environment_specs() if s.name == "skylands").implemented
     with pytest.raises(ValueError, match="unknown"):
         make_env("not-an-environment")
     assert "OpenWorldBench/Genshin-v0" in gym.envs.registry
     assert "OpenWorldBench/Wildlands-v0" in gym.envs.registry
+    assert "OpenWorldBench/Skylands-v0" in gym.envs.registry
 
 
 def test_common_spaces_are_identical():
-    with build("teyvat") as a, build("wildlands") as b:
-        assert a.action_space == b.action_space
-        assert a.observation_space == b.observation_space
+    with build("teyvat") as a, build("wildlands") as b, build("skylands") as c:
+        assert a.action_space == b.action_space == c.action_space
+        assert a.observation_space == b.observation_space == c.observation_space
 
 
 def test_gym_contract_and_seeded_replay(env):
@@ -278,8 +277,10 @@ def test_demo_policy_uses_only_supported_commands(env):
     assert "action_unavailable" not in summary["event_counts"]
     if env.name == "wildlands":
         assert summary["event_counts"].get("cook", 0) + summary["event_counts"].get("cooked", 0) > 0
-    else:
+    elif env.name == "teyvat":
         assert summary["event_counts"]["skill"] > 0
+    else:
+        assert summary["event_counts"]["part_placed"] > 0
 
 
 def test_gif_recording_works_through_common_runner(tmp_path):

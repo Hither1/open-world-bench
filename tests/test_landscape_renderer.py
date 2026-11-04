@@ -102,3 +102,51 @@ def test_voxel_style_remains_available_and_style_is_validated():
     assert isinstance(make_renderer(RenderConfig()), LandscapeRenderer)
     with pytest.raises(ValueError, match="style"):
         make_renderer(RenderConfig(style="unknown"))
+    with pytest.raises(ValueError, match="quality"):
+        make_renderer(RenderConfig(quality="unknown"))
+
+
+def test_mesh_shadow_direction_filter_and_map_boundaries():
+    from owb.render.shadows import MeshShadowMap
+    roof = np.array([[[-1, 2, -1], [1, 2, -1], [1, 2, 1]],
+                     [[-1, 2, -1], [1, 2, 1], [-1, 2, 1]]], np.float32)
+    shadow = MeshShadowMap(roof, (0, 1, 0), (0, 0, 0), extent=4, resolution=64)
+    points = np.array([[0, 0, 0], [0, 3, 0], [3, 0, 0], [-5, 0, 0]], np.float32)
+    visibility = shadow.sample(points)
+    assert visibility[0] < 0.3  # underneath the roof
+    np.testing.assert_allclose(visibility[1:], 1)  # above, beside, outside the map
+    assert np.all((shadow.sample(roof) >= 0) & (shadow.sample(roof) <= 1))
+
+
+@pytest.mark.parametrize("quality", ["fast", "balanced", "high"])
+def test_lighting_options_preserve_sensor_geometry(quality):
+    w = world()
+    w.fill_box((13, 4, 11), (13, 8, 11), B.LOG)
+    w.fill_box((12, 8, 10), (14, 9, 12), B.LEAVES)
+    cfg = RenderConfig(width=33, height=25, max_dist=32, quality=quality)
+    r = LandscapeRenderer(cfg)
+    snapshot = w.vox.copy()
+    lit = r.render(w, (8.5, 6.5, 12.5), 0, -0.25)
+    again = r.render(w, (8.5, 6.5, 12.5), 0, -0.25)
+    np.testing.assert_array_equal(lit["rgb"], again["rgb"])
+    cfg.shadows = cfg.ambient_occlusion = False
+    unshadowed = r.render(w, (8.5, 6.5, 12.5), 0, -0.25)
+    for key in ("depth", "semantic"):
+        np.testing.assert_array_equal(lit[key], unshadowed[key])
+    np.testing.assert_array_equal(w.vox, snapshot)
+    assert np.isfinite(lit["depth"]).all()
+
+
+@pytest.mark.parametrize("style", ["landscape", "voxel"])
+def test_distant_floating_architecture_does_not_fill_space_below(style):
+    w = VoxelWorld(64, 32, 24)
+    w.meta["layered"] = True
+    w.fill_box((42, 20, 10), (48, 21, 14), B.BRICK)
+    r = make_renderer(RenderConfig(width=33, height=25, max_dist=60,
+                                  exact_dist=8, max_steps=16, shadows=False, style=style))
+    below = r.render(w, (8.5, 6.5, 12.5), 0, 0)
+    assert center(below, "semantic") == B.SEM_SKY
+    assert center(below, "depth") == 60
+    roof = r.render(w, (8.5, 6.5, 12.5), 0, np.arctan2(14, 36))
+    assert center(roof, "semantic") == B.SEM_STRUCTURE
+    assert 34 < center(roof, "depth") < 43

@@ -10,6 +10,7 @@ import numpy as np
 
 from .framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, SCHEMA_VERSION, jsonable, neutral_action
 from ..env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
+from ..sim.construction import PART_COLUMNS, BUILD_STATE_NAMES
 
 
 class RandomPolicy:
@@ -32,7 +33,8 @@ class DemoPolicy:
     """A capability-aware demonstration, not a task-solving baseline.
 
     Reads only policy observations. Uses party skills when available, otherwise
-    gathers/cooks/eats from the starter camp, then explores in either backend.
+    demonstrates the fixed Skylands bridge course or gathers/cooks/eats at the
+    Wildlands starter camp. The bridge sequence is a showcase, not a general solver.
     """
     def reset(self, seed):
         self.step = 0
@@ -41,6 +43,20 @@ class DemoPolicy:
         action = neutral_action()
         step, self.step = self.step, self.step + 1
         supported = observation["command_mask"]
+        if supported[COMMANDS.index("grab")]:
+            # Fixed-course showcase. No simulator state or privileged info is read.
+            if step in (0, 6):
+                action.update(command=COMMANDS.index("grab"), part=1 if step == 0 else 2)
+            elif 1 <= step <= 4 or 7 <= step <= 13:
+                index = step - (1 if step <= 4 else 7)
+                action["build_move"][:] = (1, -1 if index == 0 else 0,
+                                            (1 if step <= 4 else -1) if index < 3 else 0)
+            elif step in (5, 14):
+                action["command"] = COMMANDS.index("place")
+            else:
+                action["move"][0] = 1
+                action["command"] = COMMANDS.index("interact")
+            return action
         if supported[COMMANDS.index("skill")]:
             if step % 12 == 0:
                 action["command"] = COMMANDS.index("skill")
@@ -86,6 +102,7 @@ class EpisodeRecorder:
                                   proprio=PROPRIO_NAMES, inventory=INVENTORY_COLUMNS,
                                   item_ids=ITEM_IDS, survival=SURVIVAL_NAMES),
                       video=video, decision_seconds=env.config.decision_seconds)
+        config["schema"].update(construction=PART_COLUMNS, build_state=BUILD_STATE_NAMES)
         try:
             self._write_json("config.json", config)
             self.log = (self.directory / "trajectory.jsonl").open("w")

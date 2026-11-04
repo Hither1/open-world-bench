@@ -43,6 +43,8 @@ class WildlandsEnv(gym.Env):
     landmark; dense additionally pays exploration_bonus per new map cell.
     """
     metadata = {"render_modes": ["rgb_array"], "render_fps": 5}
+    commands = COMMANDS
+    discrete_actions = DISCRETE_ACTIONS
 
     def __init__(self, cfg: EnvConfig | None = None, render_mode="rgb_array", **overrides):
         super().__init__()
@@ -73,13 +75,13 @@ class WildlandsEnv(gym.Env):
         self.world, self._frame = None, None
         self._ended, self._seed = False, c.seed
         if c.action_space == "discrete":
-            self.action_space = spaces.Discrete(len(DISCRETE_ACTIONS))
+            self.action_space = spaces.Discrete(len(self.discrete_actions))
         else:
             self.action_space = spaces.Dict({
                 "move": spaces.Box(-1, 1, (2,), np.float32),  # forward, strafe
                 "look": spaces.Box(-1, 1, (2,), np.float32),  # yaw, pitch rate
                 "buttons": spaces.MultiBinary(len(BUTTONS)),
-                "command": spaces.Discrete(len(COMMANDS)),
+                "command": spaces.Discrete(len(self.commands)),
                 "slot": spaces.Discrete(32),
                 "ingredients": spaces.MultiDiscrete([33] * 5),  # 0 empty, 1..32 slots
             })
@@ -105,7 +107,7 @@ class WildlandsEnv(gym.Env):
             raise ValueError("reset options are not supported")
         self._seed = self._seed if seed is None else int(seed)
         super().reset(seed=self._seed)
-        result = generate(replace(self.cfg.world_cfg, seed=self._seed))
+        result = self._generate_world()
         self.world = result.world
         if self.cfg.starter_camp:
             self._starter_camp(result)
@@ -132,8 +134,28 @@ class WildlandsEnv(gym.Env):
                                     (self.world.size_z + scale - 1) // scale), np.uint8)
         self.steps, self.ticks, self.elapsed, self.selected_slot = 0, 0, 0.0, 0
         self._ended, self._frame = False, None
+        self._reset_mechanics()
         self._explore()
         return self._observation(), self._info([])
+
+    def _generate_world(self):
+        return generate(replace(self.cfg.world_cfg, seed=self._seed))
+
+    def _reset_mechanics(self):
+        """Extension point for worlds with additional mechanics."""
+
+    def _dispatch(self, command, ingredients, action):
+        return self.gameplay.dispatch(command, self.selected_slot, ingredients,
+                                      self.cfg.sim_cfg.durability_enabled)
+
+    def _task_outcome(self, events):
+        return False, 0.0
+
+    def _extra_entities(self):
+        return []
+
+    def _extra_lights(self):
+        return []
 
     def _starter_camp(self, result):
         """Give every seed a safe clearing and an immediately usable cooking loop."""
@@ -167,11 +189,11 @@ class WildlandsEnv(gym.Env):
             for name, pressed in zip(BUTTONS, action["buttons"]):
                 setattr(intent, name, bool(pressed))
             look = np.asarray(action["look"])
-            command = COMMANDS[int(action["command"])]
+            command = self.commands[int(action["command"])]
             self.selected_slot = int(action["slot"])
             ingredients = [int(i) - 1 for i in action["ingredients"] if i]
         else:
-            name = DISCRETE_ACTIONS[int(action)]
+            name = self.discrete_actions[int(action)]
             if name in ("forward", "back", "jump", "sprint", "climb", "glide"):
                 intent.forward = -1.0 if name == "back" else 1.0
             if name in ("left", "right"):
@@ -183,7 +205,7 @@ class WildlandsEnv(gym.Env):
                 look[0] = -1 if name == "turn_left" else 1
             if name in ("look_up", "look_down"):
                 look[1] = 1 if name == "look_up" else -1
-            if name in COMMANDS:
+            if name in self.commands:
                 command = name
             if name in ("next_slot", "prev_slot"):
                 self.selected_slot = (self.selected_slot + (1 if name == "next_slot" else -1)) % 32
@@ -195,8 +217,7 @@ class WildlandsEnv(gym.Env):
             raise gym.error.ResetNeeded("call reset() before starting or after an episode ends")
         intent, look, command, ingredients = self._decode(action)
         c, a, elements = self.cfg, self.agent, self.elements
-        events = self.gameplay.dispatch(command, self.selected_slot, ingredients,
-                                        c.sim_cfg.durability_enabled)
+        events = self._dispatch(command, ingredients, action)
         for tick in range(c.frame_skip):
             dt = c.sim_cfg.dt
             a.tick_effects(dt)
@@ -231,18 +252,19 @@ class WildlandsEnv(gym.Env):
         self.steps += 1
         new_cells, discoveries = self._explore()
         events.extend(discoveries)
-        terminated = not a.alive
+        success, task_reward = self._task_outcome(events)
+        terminated = not a.alive or success
         truncated = self.steps >= c.max_steps and not terminated
-        if terminated:
+        if not a.alive:
             a.deaths += 1
             if not any(e["type"] == "death" for e in events):
                 events.append(dict(type="death"))
-        reward = -c.time_penalty
+        reward = -c.time_penalty + task_reward
         if c.reward_mode != "sparse":
             reward += len(discoveries)
         if c.reward_mode == "dense":
             reward += new_cells * c.exploration_bonus
-        if terminated:
+        if not a.alive:
             reward -= c.death_penalty
         self._ended, self._frame = terminated or truncated, None
         return self._observation(), float(reward), bool(terminated), bool(truncated), self._info(events)
@@ -327,6 +349,7 @@ class WildlandsEnv(gym.Env):
                 cam = resolve_third_person(self.world, eye, yaw, pitch, c.cam_distance, c.cam_pitch_offset)
                 eye, yaw, pitch = cam.pos, cam.yaw, cam.pitch
             entities = self.npcs.render_list(a.pos) + self.bodies.render_list() + self.gameplay.render_list()
+            entities += self._extra_entities()
             if c.third_person:
                 entities.append(dict(pos=tuple(a.pos + (0, 0.9, 0)), radius=0.35, height=1.75,
                                      color=(59, 128, 147), semantic=B.SEM_SELF,
@@ -334,7 +357,7 @@ class WildlandsEnv(gym.Env):
                                      phase=a.distance_travelled * 2.5))
             self._frame = self.renderer.render(
                 self.world, eye, yaw, pitch, time_of_day=cl.time, weather=cl.weather,
-                lights=self.elements.light_sources(self.world, a.pos), entities=entities,
+                lights=self.elements.light_sources(self.world, a.pos) + self._extra_lights(), entities=entities,
                 flash=cl.flash, rain_intensity=float(cl.raining), frame=self.ticks)
             if c.hud:
                 from ..render.hud import draw_hud

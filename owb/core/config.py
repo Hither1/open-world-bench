@@ -139,6 +139,8 @@ class RenderConfig:
     hud: bool = False              # burn health/stamina bars into the RGB frame
     supersample: int = 1
     style: str = "landscape"       # "landscape" (cel shaded) | "voxel" (debug)
+    quality: str = "balanced"      # "fast" | "balanced" | "high"; mesh/material detail
+    ambient_occlusion: bool = True # local contact shading; RGB only
 
 
 @dataclass

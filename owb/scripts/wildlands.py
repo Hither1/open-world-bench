@@ -25,6 +25,9 @@ def main():
     parser.add_argument("--interactive", action="store_true", help="enter named actions at a terminal")
     parser.add_argument("--gif", type=Path, help="optional recording; requires the video extra")
     parser.add_argument("--renderer", choices=("landscape", "voxel"), default="landscape")
+    parser.add_argument("--quality", choices=("fast", "balanced", "high"), default="balanced")
+    parser.add_argument("--supersample", type=int, choices=(1, 2, 3), default=1,
+                        help="samples per image axis; 2 gives smoother foliage at extra CPU cost")
     parser.add_argument("--width", type=int, default=320)
     parser.add_argument("--height", type=int, default=180)
     parser.add_argument("--first-person", action="store_true", help="use the agent's eye camera")
@@ -39,7 +42,8 @@ def main():
         import imageio.v2 as imageio
 
     env = make_small(action_space="discrete", obs_rgb=False, max_steps=args.steps,
-                     render_cfg=RenderConfig(style=args.renderer, width=args.width, height=args.height,
+                     render_cfg=RenderConfig(style=args.renderer, quality=args.quality, supersample=args.supersample,
+                                             width=args.width, height=args.height,
                                              max_dist=100, third_person=not args.first_person,
                                              cam_distance=5.5, cam_pitch_offset=-0.22, hud=True))
     frames, totals = [], {}

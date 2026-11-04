@@ -34,12 +34,33 @@ default agent observations.
 | --- | --- |
 | ![Wildlands: cel-shaded traveler, rounded foliage, cliffs and water viewed from a survey tower](assets/screenshots/wildlands.png) | ![Teyvat: third-person character, coastal forest, and glowing waypoint near Windrest](assets/screenshots/teyvat.png) |
 
+Skylands now has a runnable three-layer world with floating meadows, golden
+trees, ruined arches, surface woodland, and a luminous cavern. Its first course
+lets an agent move and place beams, cross a gap, and activate a beacon.
+
+![Skylands: Aster Reach, golden foliage and a turquoise relic across a broken crossing](assets/screenshots/skylands.png)
+
+See [the Skylands guide](docs/skylands.md) for construction controls, ascent,
+layer-specific map memory, and current limits.
+
 Wildlands now defaults to a painterly landscape renderer with rounded terrain,
-modeled foliage, and a third-person demo camera. The original
+layered foliage, fine ground cover, textured terrain, tree/character shadows,
+contact shading, and a third-person demo camera. The original
 [voxel renderer comparison](assets/screenshots/wildlands-voxel.png) uses the same
 seed, viewpoint, time, and HUD; select `RenderConfig(style="voxel")` for debugging.
 
-To regenerate both PNGs from the repository root:
+The latest native-renderer quality pass, at the same seed-7 starter-camp camera
+(640 × 360; the new capture uses high detail and 2x supersampling):
+
+| Previous landscape renderer | Updated landscape renderer |
+| --- | --- |
+| ![Starter camp before the quality pass](assets/screenshots/wildlands-camp-before.png) | ![Starter camp with denser grass, ground materials, and cast shadows](assets/screenshots/wildlands-camp.png) |
+
+Use `--quality fast`, `balanced`, or `high` in the Wildlands demo. High quality
+is intended for presentation captures; this CPU renderer is not a real-time
+game engine. See [visual settings and capture commands](docs/wildlands.md#visual-style).
+
+To regenerate the main screenshots from the repository root:
 
 ```bash
 pip install -e ".[video]"
@@ -58,6 +79,43 @@ and traversal in Wildlands.
 [Open the recording](assets/demos/shared-framework.gif) ·
 [Static preview](assets/demos/shared-framework-preview.png)
 
+### Skylands construction demo
+
+The agent grabs two beams, places them across the gap, walks over the completed
+bridge, and activates the beacon. This seed-7 run uses the shared agent interface
+and recorder: 30 decisions at 0.2 simulated seconds each, shown in a third-person
+384 × 216 view. The policy is a scripted showcase of the introductory course.
+
+![Skylands agent building a bridge and crossing to the beacon](assets/demos/skylands.gif)
+
+[Open the Skylands recording](assets/demos/skylands.gif) ·
+[Static preview](assets/demos/skylands-preview.png) ·
+[Controls and environment guide](docs/skylands.md)
+
+<details>
+<summary>Reproduce the Skylands recording</summary>
+
+After installing the `video` extra, run this from the repository root. Choose a
+new output directory for each recording.
+
+```python
+from owb import make_env
+from owb.bench import DemoPolicy, run_episode
+from owb.env.skylands import default_config
+
+cfg = default_config(small=True)
+cfg.render_cfg.third_person = True
+cfg.render_cfg.cam_distance = 5
+cfg.render_cfg.cam_pitch_offset = -0.14
+cfg.render_cfg.hud = True
+cfg.sim_cfg.start_time = 0.38
+with make_env("skylands", native_config=cfg, image_size=(384, 216), max_steps=45) as env:
+    run_episode(env, DemoPolicy(), seed=7,
+                output_dir="/tmp/owb-skylands-readme-demo", video="gif")
+```
+
+</details>
+
 ### Teyvat rendering update
 
 Before (left) and after (right), using the same seed and camera. The updated
@@ -65,6 +123,29 @@ renderer adds softer lighting, rounded foliage, a more detailed adventurer, and
 camera cutaways for obstructing trees.
 
 ![Teyvat before and after the renderer update, with matching seed and camera](assets/demos/teyvat-style-comparison.png)
+
+### Blender renders and Godot export
+
+Both Teyvat and Wildlands can now export their current scene to Blender for
+offline Cycles rendering, with indirect lighting, cast shadows, reflective water,
+and smoother geometry. These stills use seed 7 and the showcase viewpoints;
+the recorded gameplay above continues to use the CPU renderers.
+
+| Teyvat — Blender Cycles | Wildlands — Blender Cycles |
+| --- | --- |
+| ![Teyvat scene rendered in Blender](assets/screenshots/teyvat-blender.png) | ![Wildlands scene rendered in Blender](assets/screenshots/wildlands-blender.png) |
+
+```bash
+python -B -m owb.scripts.render_blender \
+  --env teyvat wildlands --seed 7 --view showcase \
+  --size 960 540 --samples 48 --blender /path/to/blender \
+  --output /tmp/owb-blender-demo
+```
+
+Each export produces a PNG, an editable `.blend`, and a `.glb` for importing into
+Godot. The shared Python simulation and agent interface remain in place. A live
+Godot backend and detailed authored character assets are future work. See the
+[rendering guide](docs/rendering.md) for setup, state capture, and current limits.
 
 ## Why memory
 
@@ -88,6 +169,7 @@ and detours that are only solvable with the right recollection), not on reward a
 Early and under active construction. Wildlands (`owb/`) now connects voxel terrain,
 rendering, traversal, weather, gathering, cooking, and survival in a runnable
 Gymnasium environment. The anime-styled world lives in `open_world_bench/`.
+Skylands adds a runnable layered construction course on the Wildlands simulator.
 Task suites and baseline agents are still being filled in. APIs will change
 without notice until a tagged release.
 
@@ -95,7 +177,13 @@ without notice until a tagged release.
 
 Use `owb.make_env("teyvat")` or `owb.make_env("wildlands")` for a shared agent
 interface, mixed-environment batching, and recording. See the
-[shared framework guide](docs/framework.md). Skylands is planned, not yet runnable.
+[shared framework guide](docs/framework.md). `owb.make_env("skylands")` runs the
+new construction course through the same interface (now schema version 2).
+
+```bash
+python -B -m owb.scripts.benchmark --env skylands --seed 7 --steps 45 \
+  --size 384 216 --policy demo --video gif --output /tmp/owb-skylands-demo
+```
 
 Record both with the same policy and recorder, using the presentation preset:
 

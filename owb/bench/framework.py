@@ -16,11 +16,12 @@ from gymnasium import spaces
 import numpy as np
 
 from ..env import INVENTORY_COLUMNS, SURVIVAL_NAMES
+from ..sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 BUTTONS = ("jump", "sprint", "climb", "glide", "dive", "crouch")
-COMMANDS = ("none", "interact", "attack", "skill", "burst", "eat", "cook", "equip", "stow")
-MODALITIES = ("party", "inventory", "survival", "minimap", "goal")
+COMMANDS = ("none", "interact", "attack", "skill", "burst", "eat", "cook", "equip", "stow") + BUILD_COMMANDS
+MODALITIES = ("party", "inventory", "survival", "minimap", "goal", "construction", "build_state")
 PROPRIO_NAMES = (
     "velocity_forward", "velocity_right", "velocity_up", "health_fraction", "stamina_fraction",
     "grounded", "airborne", "swimming", "climbing", "gliding", "day_sin", "day_cos",
@@ -65,7 +66,7 @@ def neutral_action() -> dict:
     """A new, valid no-op action in the common schema."""
     return dict(move=np.zeros(2, np.float32), look=np.zeros(2, np.float32),
                 buttons=np.zeros(len(BUTTONS), np.int8), command=0, swap=0, slot=0,
-                ingredients=np.zeros(5, np.int64))
+                ingredients=np.zeros(5, np.int64), part=0, build_move=np.zeros(3, np.float32))
 
 
 def _repeat(seconds, dt):
@@ -210,6 +211,30 @@ class WildlandsAdapter(NativeAdapter):
         return self.native.elapsed
 
 
+class SkylandsAdapter(WildlandsAdapter):
+    commands = WildlandsAdapter.commands + BUILD_COMMANDS
+    modalities = WildlandsAdapter.modalities + ("construction", "build_state")
+
+    def translate(self, action):
+        from ..env.skylands import COMMANDS as NATIVE_COMMANDS
+
+        # Translate the common movement fields using the existing survival adapter.
+        base = dict(action, command=0)
+        out = super().translate(base)
+        out.update(command=NATIVE_COMMANDS.index(COMMANDS[int(action["command"])]),
+                   part=int(action["part"]), build_move=np.asarray(action["build_move"]).copy())
+        return out
+
+    def project(self, observation):
+        out = super().project(observation)
+        out.update(construction=observation["construction"], build_state=observation["build_state"])
+        return out
+
+    def metrics(self, info):
+        return info["success"], info["task_progress"], {key: info[key] for key in (
+            "visited_cells", "discovered_landmarks", "layer", "bridge_complete", "visited_cells_by_layer")}
+
+
 def _teyvat(config, native_config):
     from open_world_bench import EnvConfig, OpenWorldEnv, TerrainConfig, WorldConfig, RenderSettings
 
@@ -251,6 +276,26 @@ def _wildlands(config, native_config):
     return WildlandsEnv(cfg)
 
 
+def _skylands(config, native_config):
+    from ..core.config import EnvConfig
+    from ..env.skylands import SkylandsEnv, default_config
+
+    if native_config is not None and not isinstance(native_config, EnvConfig):
+        raise TypeError("skylands native_config must be owb.EnvConfig")
+    cfg = deepcopy(native_config) if native_config is not None else default_config(config.variant == "small")
+    cfg.render_cfg = replace(cfg.render_cfg, width=config.image_size[0], height=config.image_size[1],
+                             quality="high" if config.render_quality == "presentation" else "fast")
+    if config.render_quality == "presentation":
+        cfg.render_cfg = replace(cfg.render_cfg, supersample=2, shadows=True)
+    cfg.seed, cfg.max_steps = config.seed, config.max_steps
+    cfg.frame_skip = _repeat(config.decision_seconds, cfg.sim_cfg.dt)
+    cfg.action_space = "multi"
+    cfg.obs_rgb = cfg.obs_inventory = cfg.obs_minimap = cfg.obs_text = True
+    cfg.obs_depth = cfg.obs_semantic = False
+    cfg.minimap_size = 32
+    return SkylandsEnv(cfg)
+
+
 @dataclass(frozen=True)
 class EnvironmentSpec:
     name: str
@@ -266,7 +311,7 @@ class EnvironmentSpec:
 _REGISTRY = {
     "teyvat": EnvironmentSpec("teyvat", _teyvat, TeyvatAdapter, "Party combat, traversal, and island quests"),
     "wildlands": EnvironmentSpec("wildlands", _wildlands, WildlandsAdapter, "Voxel exploration, weather, and survival"),
-    "skylands": EnvironmentSpec("skylands", None, None, "Planned: vertical worlds and construction"),
+    "skylands": EnvironmentSpec("skylands", _skylands, SkylandsAdapter, "Layered islands, construction, and ascent"),
 }
 
 
@@ -320,6 +365,8 @@ class BenchmarkEnv(gym.Env):
             "command": spaces.Discrete(len(COMMANDS)),
             "swap": spaces.Discrete(5), "slot": spaces.Discrete(32),
             "ingredients": spaces.MultiDiscrete([33] * 5),
+            "part": spaces.Discrete(MAX_PARTS + 1),
+            "build_move": spaces.Box(-1, 1, (3,), np.float32),
         })
         width, height = config.image_size
         self.observation_space = spaces.Dict({
@@ -331,6 +378,8 @@ class BenchmarkEnv(gym.Env):
             "survival": spaces.Box(-np.inf, np.inf, (len(SURVIVAL_NAMES),), np.float32),
             "minimap": spaces.Box(0, 255, (32, 32), np.uint8),
             "goal": spaces.Box(-np.inf, np.inf, (15,), np.float32),
+            "construction": spaces.Box(-np.inf, np.inf, (MAX_PARTS, len(PART_COLUMNS)), np.float32),
+            "build_state": spaces.Box(-np.inf, np.inf, (len(BUILD_STATE_NAMES),), np.float32),
             "modality_mask": spaces.MultiBinary(len(MODALITIES)),
             "command_mask": spaces.MultiBinary(len(COMMANDS)),
             "button_mask": spaces.MultiBinary(len(BUTTONS)),
@@ -370,6 +419,9 @@ class BenchmarkEnv(gym.Env):
         if not self.adapter.swap_mask()[int(action["swap"])]:
             unavailable.append(dict(type="action_unavailable", swap=int(action["swap"])))
             action["swap"] = 0
+        if np.any(action["build_move"]) and "construction" not in self.adapter.modalities:
+            unavailable.append(dict(type="action_unavailable", control="build_move"))
+            action["build_move"][:] = 0
         observation, reward, terminated, truncated, info = self.native.step(self.adapter.translate(action))
         self.steps += 1
         self.episode_return += float(reward)

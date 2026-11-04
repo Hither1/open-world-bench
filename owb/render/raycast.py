@@ -88,7 +88,7 @@ class Renderer:
     # the march: exact voxel DDA near, heightfield march far
     # ------------------------------------------------------------------
     def _march(self, world, o: np.ndarray, dirs: np.ndarray, max_dist: float,
-               max_steps: int) -> dict:
+               max_steps: int, *, exact=False) -> dict:
         n = dirs.shape[0]
         g = dict(
             blk=np.zeros(n, dtype=np.uint8),
@@ -101,7 +101,12 @@ class Renderer:
             water_t=np.full(n, np.float32(-1.0), dtype=np.float32),
             lava_len=np.zeros(n, dtype=np.float32),
         )
-        near = min(float(self.cfg.exact_dist), float(max_dist))
+        # Heightfields fill the space underneath floating geometry. Layered
+        # worlds and the landscape's sparse architecture need full voxel DDA.
+        exact = exact or world.meta.get("layered", False)
+        near = float(max_dist) if exact else min(float(self.cfg.exact_dist), float(max_dist))
+        if exact:
+            max_steps = max(max_steps, int(np.ceil(max_dist * np.sqrt(3))) + 3)
         alive, t_alive = self._march_near(world, o, dirs, near, max_steps, g)
         if alive.size and max_dist > near + 0.5:
             self._march_far(world, o, dirs, alive, t_alive, float(max_dist), g)
