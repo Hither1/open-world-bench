@@ -24,62 +24,32 @@ game assets or code are redistributed.
 | `skylands` | The Legend of Zelda: Tears of the Kingdom | Vertical, three-layer worlds plus construction: combining parts into contraptions, reusing recipes discovered much earlier, sky/surface/depths cross-referencing. |
 | `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. |
 
-### Screenshots
+## Latest demos
 
-Current in-engine renders from seed 7, captured headlessly with the CPU renderers
-at 960 × 540. These fixed showcase viewpoints use a higher resolution than the
-default agent observations.
+### Teyvat and Wildlands — Blender renders
 
-| Wildlands — survey-tower overlook | Teyvat — Windrest coast |
+The latest Teyvat and Wildlands showcase renders use seed 7 and Blender Cycles
+for offline rendering, with indirect lighting, cast shadows, reflective water,
+and smoother geometry. Agent observations and gameplay recordings use the CPU
+renderers.
+
+| Teyvat — Blender Cycles | Wildlands — Blender Cycles |
 | --- | --- |
-| ![Wildlands: cel-shaded traveler, rounded foliage, cliffs and water viewed from a survey tower](assets/screenshots/wildlands.png) | ![Teyvat: third-person character, coastal forest, and glowing waypoint near Windrest](assets/screenshots/teyvat.png) |
-
-Skylands now has a runnable three-layer world with floating meadows, golden
-trees, ruined arches, surface woodland, and a luminous cavern. Its first course
-lets an agent move and place beams, cross a gap, and activate a beacon.
-
-![Skylands: Aster Reach, golden foliage and a turquoise relic across a broken crossing](assets/screenshots/skylands.png)
-
-See [the Skylands guide](docs/skylands.md) for construction controls, ascent,
-layer-specific map memory, and current limits.
-
-Wildlands now defaults to a painterly landscape renderer with rounded terrain,
-layered foliage, fine ground cover, textured terrain, tree/character shadows,
-contact shading, and a third-person demo camera. The original
-[voxel renderer comparison](assets/screenshots/wildlands-voxel.png) uses the same
-seed, viewpoint, time, and HUD; select `RenderConfig(style="voxel")` for debugging.
-
-The latest native-renderer quality pass, at the same seed-7 starter-camp camera
-(640 × 360; the new capture uses high detail and 2x supersampling):
-
-| Previous landscape renderer | Updated landscape renderer |
-| --- | --- |
-| ![Starter camp before the quality pass](assets/screenshots/wildlands-camp-before.png) | ![Starter camp with denser grass, ground materials, and cast shadows](assets/screenshots/wildlands-camp.png) |
-
-Use `--quality fast`, `balanced`, or `high` in the Wildlands demo. High quality
-is intended for presentation captures; this CPU renderer is not a real-time
-game engine. See [visual settings and capture commands](docs/wildlands.md#visual-style).
-
-To regenerate the main screenshots from the repository root:
+| ![Teyvat scene rendered in Blender](assets/screenshots/teyvat-blender.png) | ![Wildlands scene rendered in Blender](assets/screenshots/wildlands-blender.png) |
 
 ```bash
-pip install -e ".[video]"
-python -m owb.scripts.screenshots
+python -B -m owb.scripts.render_blender \
+  --env teyvat wildlands --seed 7 --view showcase \
+  --size 960 540 --samples 48 --blender /path/to/blender \
+  --output /tmp/owb-blender-demo
 ```
 
-### Recorded demo
+Each export produces a PNG, an editable `.blend`, and a `.glb` for importing into
+Godot. A live Godot backend and detailed authored character assets are future
+work. See the [rendering guide](docs/rendering.md) for setup, state capture,
+and current limits.
 
-Teyvat (left) and Wildlands (right), driven through the shared agent interface and
-recorder. Both runs use seed 7 and 40 decisions at 0.2 simulated seconds per
-decision. The policy demonstrates party skills in Teyvat and gathering, cooking,
-and traversal in Wildlands.
-
-![Recorded Teyvat and Wildlands demo running through the shared framework](assets/demos/shared-framework.gif)
-
-[Open the recording](assets/demos/shared-framework.gif) ·
-[Static preview](assets/demos/shared-framework-preview.png)
-
-### Skylands construction demo
+### Skylands — construction demo
 
 The agent grabs two beams, places them across the gap, walks over the completed
 bridge, and activates the beacon. This seed-7 run uses the shared agent interface
@@ -115,37 +85,6 @@ with make_env("skylands", native_config=cfg, image_size=(384, 216), max_steps=45
 ```
 
 </details>
-
-### Teyvat rendering update
-
-Before (left) and after (right), using the same seed and camera. The updated
-renderer adds softer lighting, rounded foliage, a more detailed adventurer, and
-camera cutaways for obstructing trees.
-
-![Teyvat before and after the renderer update, with matching seed and camera](assets/demos/teyvat-style-comparison.png)
-
-### Blender renders and Godot export
-
-Both Teyvat and Wildlands can now export their current scene to Blender for
-offline Cycles rendering, with indirect lighting, cast shadows, reflective water,
-and smoother geometry. These stills use seed 7 and the showcase viewpoints;
-the recorded gameplay above continues to use the CPU renderers.
-
-| Teyvat — Blender Cycles | Wildlands — Blender Cycles |
-| --- | --- |
-| ![Teyvat scene rendered in Blender](assets/screenshots/teyvat-blender.png) | ![Wildlands scene rendered in Blender](assets/screenshots/wildlands-blender.png) |
-
-```bash
-python -B -m owb.scripts.render_blender \
-  --env teyvat wildlands --seed 7 --view showcase \
-  --size 960 540 --samples 48 --blender /path/to/blender \
-  --output /tmp/owb-blender-demo
-```
-
-Each export produces a PNG, an editable `.blend`, and a `.glb` for importing into
-Godot. The shared Python simulation and agent interface remain in place. A live
-Godot backend and detailed authored character assets are future work. See the
-[rendering guide](docs/rendering.md) for setup, state capture, and current limits.
 
 ## Why memory
 

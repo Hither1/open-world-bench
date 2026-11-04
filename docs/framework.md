@@ -146,7 +146,7 @@ a general task-solving baseline.
 ## Recorded demos
 
 Example artifacts: [shared pipeline recording](../assets/demos/shared-framework.gif)
-and [Teyvat renderer comparison](../assets/demos/teyvat-style-comparison.png).
+and [Teyvat renderer update](../assets/demos/teyvat-style.png).
 
 ```bash
 pip install -e ".[dev,video]"
