@@ -142,7 +142,7 @@ class CharacterController:
 
         # Desired horizontal direction, rotated out of camera space into world.
         cy, sy = np.cos(cam_yaw), np.sin(cam_yaw)
-        wish = np.array([move[0] * cy - move[1] * sy, 0.0, -(move[0] * sy + move[1] * cy)], dtype=np.float32)
+        wish = np.array([move[0] * cy + move[1] * sy, 0.0, move[0] * sy - move[1] * cy], dtype=np.float32)
         wish_dir = wish / max(np.linalg.norm(wish), 1e-6) if mag > 1e-3 else np.zeros(3, dtype=np.float32)
 
         jump_pressed = bool(cmd.jump) and not st._jump_was_down

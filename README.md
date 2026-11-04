@@ -24,6 +24,23 @@ game assets or code are redistributed.
 | `skylands` | The Legend of Zelda: Tears of the Kingdom | Vertical, three-layer worlds plus construction: combining parts into contraptions, reusing recipes discovered much earlier, sky/surface/depths cross-referencing. |
 | `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. |
 
+### Screenshots
+
+Current in-engine renders from seed 7, captured headlessly with the CPU renderers
+at 960 × 540. These fixed showcase viewpoints use a higher resolution than the
+default agent observations.
+
+| Wildlands — survey-tower overlook | Teyvat — Windrest coast |
+| --- | --- |
+| ![Wildlands: voxel cliffs and water viewed from a survey tower](assets/screenshots/wildlands.png) | ![Teyvat: third-person character, coastal forest, and glowing waypoint near Windrest](assets/screenshots/teyvat.png) |
+
+To regenerate both PNGs from the repository root:
+
+```bash
+pip install -e ".[video]"
+python -m owb.scripts.screenshots
+```
+
 ## Why memory
 
 Each environment contributes tasks along the same axes, so results are comparable
