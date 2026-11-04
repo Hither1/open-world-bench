@@ -119,11 +119,14 @@ class EpisodeRecorder:
     def _write_json(self, name, value):
         (self.directory / name).write_text(json.dumps(jsonable(value), indent=2, allow_nan=False) + "\n")
 
-    def record(self, kind, observation, info, *, action=None, reward=None):
+    def record(self, kind, observation, info, *, action=None, reward=None, policy_decision=None):
         row = dict(type=kind, info=info, proprio=observation["proprio"], instruction=observation["instruction"])
         if action is not None:
             row.update(action=action, reward=reward)
+        if policy_decision is not None:
+            row["policy_decision"] = policy_decision
         self.log.write(json.dumps(jsonable(row), allow_nan=False) + "\n")
+        self.log.flush()
         if self.video is not None:
             self.video.append_data(observation["rgb"])
 
@@ -156,19 +159,33 @@ def run_episode(env, policy=None, *, seed=None, output_dir=None, video=None) -> 
     counts = Counter()
     try:
         if recorder:
+            if hasattr(policy, "metadata"):
+                recorder._write_json("policy.json", policy.metadata())
             recorder.record("reset", observation, info)
         while True:
             action = policy(observation)
             observation, reward, terminated, truncated, info = env.step(action)
             counts.update(event["type"] for event in info["events"])
             if recorder:
-                recorder.record("step", observation, info, action=action, reward=reward)
+                recorder.record("step", observation, info, action=action, reward=reward,
+                                policy_decision=getattr(policy, "last_decision", None))
             if terminated or truncated:
                 summary = dict(info["episode"], schema_version=SCHEMA_VERSION,
                                metrics=info["metrics"], event_counts=dict(counts))
+                if hasattr(policy, "metadata"):
+                    summary["policy"] = policy.metadata()
                 if recorder:
                     recorder.finish(summary)
                 return summary
+    except Exception as exc:
+        if recorder:
+            # Do not persist raw API exception text (may include request headers or images).
+            error = dict(error_type=type(exc).__name__, steps=env.steps, status="error")
+            if hasattr(policy, "metadata"):
+                error["policy"] = policy.metadata()
+                error["last_decision"] = getattr(policy, "last_decision", None)
+            recorder._write_json("error.json", error)
+        raise
     finally:
         if recorder:
             recorder.close()

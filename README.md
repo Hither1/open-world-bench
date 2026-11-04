@@ -114,6 +114,28 @@ without notice until a tagged release.
 
 ## Run the environments
 
+### Try a GPT-6-Astra agent
+
+The shared runner supports a vision policy that reads RGB observations and sensors,
+keeps bounded episode-local memory, and chooses actions through the Responses API.
+Set `OPENAI_API_KEY` in your environment, then run:
+
+```bash
+pip install -e ".[agent,video]"
+python -B -m owb.scripts.benchmark --env skylands teyvat wildlands \
+  --seed 7 --steps 12 --size 320 240 --policy openai --model gpt-6-astra \
+  --max-model-calls 12 --video gif --output runs/astra-trial
+```
+
+This makes up to 12 paid model requests per environment and saves video, actions,
+memory notes, latency, and token usage. It checks the observation/action loop;
+longer runs are needed to evaluate task performance. See the
+[embodied agent guide](docs/embodied-agent.md) for limits and evaluation details.
+The guide also covers `--policy codex --codex-account-home /path/to/account` for
+using a saved Codex login, including the local `roboharness04` account.
+
+### Shared and native interfaces
+
 Use `owb.make_env("teyvat")` or `owb.make_env("wildlands")` for a shared agent
 interface, mixed-environment batching, and recording. See the
 [shared framework guide](docs/framework.md). `owb.make_env("skylands")` runs the
@@ -252,7 +274,7 @@ If you use Open-World Bench in your research, please cite:
 ```bibtex
 @misc{openworldbench2026,
   title        = {Open-World Bench: Benchmarking Memory in Long-Horizon Embodied Agents},
-  author       = {Su, Chloe},
+  author       = {Su, Chloe and Du, Yilun},
   year         = {2026},
   howpublished = {\url{https://github.com/Hither1/open-world-bench}}
 }

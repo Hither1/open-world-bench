@@ -143,6 +143,11 @@ is seeded and capability-aware. `DemoPolicy` demonstrates party skills,
 gathering/cooking and traversal, or the fixed Skylands bridge course; it is not
 a general task-solving baseline.
 
+`OpenAIPolicy` in `owb.bench.baselines` uses RGB and named sensor observations to
+choose structured actions with GPT-6-Astra. Run it with `--policy openai`; see the
+[embodied agent guide](embodied-agent.md) for setup, request limits, and memory.
+Policies may expose `metadata()` and `last_decision` for recorder diagnostics.
+
 ## Recorded demos
 
 Example artifacts: [shared pipeline recording](../assets/demos/shared-framework.gif)
