@@ -115,7 +115,7 @@ class SimConfig:
 
 @dataclass
 class RenderConfig:
-    """Raycast renderer settings."""
+    """Visual renderer settings; voxel collisions are independent of style."""
 
     width: int = 128
     height: int = 128
@@ -138,6 +138,7 @@ class RenderConfig:
     entity_impostors: bool = True
     hud: bool = False              # burn health/stamina bars into the RGB frame
     supersample: int = 1
+    style: str = "landscape"       # "landscape" (cel shaded) | "voxel" (debug)
 
 
 @dataclass

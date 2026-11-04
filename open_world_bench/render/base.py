@@ -18,6 +18,7 @@ class RenderSettings:
     max_view_distance: float = 620.0
     shadow_steps: int = 10          # 0 disables sun shadows
     draw_props: bool = True
+    ground_cover: bool = True      # decorative grass and meadow flowers
     prop_draw_distance: float = 240.0
     draw_entities: bool = True
     draw_character: bool = True

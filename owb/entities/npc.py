@@ -392,6 +392,7 @@ class NpcSystem:
                 pos=(float(n.pos[0]), float(n.pos[1] + spec.height * 0.5),
                      float(n.pos[2])),
                 radius=spec.radius, height=spec.height, color=col,
+                kind=n.kind, yaw=n.yaw,
                 semantic=spec.semantic,
                 emissive=spec.element == "fire" or n.burning > 0))
         return out

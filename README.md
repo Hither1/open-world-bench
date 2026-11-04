@@ -32,7 +32,12 @@ default agent observations.
 
 | Wildlands — survey-tower overlook | Teyvat — Windrest coast |
 | --- | --- |
-| ![Wildlands: voxel cliffs and water viewed from a survey tower](assets/screenshots/wildlands.png) | ![Teyvat: third-person character, coastal forest, and glowing waypoint near Windrest](assets/screenshots/teyvat.png) |
+| ![Wildlands: cel-shaded traveler, rounded foliage, cliffs and water viewed from a survey tower](assets/screenshots/wildlands.png) | ![Teyvat: third-person character, coastal forest, and glowing waypoint near Windrest](assets/screenshots/teyvat.png) |
+
+Wildlands now defaults to a painterly landscape renderer with rounded terrain,
+modeled foliage, and a third-person demo camera. The original
+[voxel renderer comparison](assets/screenshots/wildlands-voxel.png) uses the same
+seed, viewpoint, time, and HUD; select `RenderConfig(style="voxel")` for debugging.
 
 To regenerate both PNGs from the repository root:
 
@@ -40,6 +45,26 @@ To regenerate both PNGs from the repository root:
 pip install -e ".[video]"
 python -m owb.scripts.screenshots
 ```
+
+### Recorded demo
+
+Teyvat (left) and Wildlands (right), driven through the shared agent interface and
+recorder. Both runs use seed 7 and 40 decisions at 0.2 simulated seconds per
+decision. The policy demonstrates party skills in Teyvat and gathering, cooking,
+and traversal in Wildlands.
+
+![Recorded Teyvat and Wildlands demo running through the shared framework](assets/demos/shared-framework.gif)
+
+[Open the recording](assets/demos/shared-framework.gif) ·
+[Static preview](assets/demos/shared-framework-preview.png)
+
+### Teyvat rendering update
+
+Before (left) and after (right), using the same seed and camera. The updated
+renderer adds softer lighting, rounded foliage, a more detailed adventurer, and
+camera cutaways for obstructing trees.
+
+![Teyvat before and after the renderer update, with matching seed and camera](assets/demos/teyvat-style-comparison.png)
 
 ## Why memory
 
@@ -66,7 +91,27 @@ Gymnasium environment. The anime-styled world lives in `open_world_bench/`.
 Task suites and baseline agents are still being filled in. APIs will change
 without notice until a tagged release.
 
-## Try Wildlands
+## Run the environments
+
+Use `owb.make_env("teyvat")` or `owb.make_env("wildlands")` for a shared agent
+interface, mixed-environment batching, and recording. See the
+[shared framework guide](docs/framework.md). Skylands is planned, not yet runnable.
+
+Record both with the same policy and recorder, using the presentation preset:
+
+```bash
+pip install -e ".[video]"
+PYTHONDONTWRITEBYTECODE=1 python -m owb.scripts.benchmark \
+  --env teyvat wildlands --seed 7 --steps 40 --size 384 216 \
+  --policy demo --quality presentation --video gif \
+  --output /tmp/owb-readme-demo
+```
+
+Each environment gets its own GIF, configuration, event log, and episode summary.
+Choose a new output directory for another run; existing recordings are preserved.
+Use `--quality fast` for lower-cost rendering.
+
+The native Wildlands demo is also available:
 
 ```bash
 python -m owb.scripts.wildlands --seed 7 --steps 100 --output /tmp/wildlands.ppm

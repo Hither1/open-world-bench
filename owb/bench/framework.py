@@ -35,10 +35,13 @@ class BenchmarkConfig:
     max_steps: int = 3000
     decision_seconds: float = 0.2
     include_goal_hint: bool = False
+    render_quality: str = "fast"
 
     def __post_init__(self):
         if self.variant not in ("small", "full"):
             raise ValueError("variant must be 'small' or 'full'")
+        if self.render_quality not in ("fast", "presentation"):
+            raise ValueError("render_quality must be 'fast' or 'presentation'")
         if (len(self.image_size) != 2 or any(not isinstance(n, int) or n <= 0 for n in self.image_size)
                 or not isinstance(self.max_steps, int) or self.max_steps <= 0
                 or not math.isfinite(self.decision_seconds) or self.decision_seconds <= 0):
@@ -217,6 +220,9 @@ def _teyvat(config, native_config):
         cfg.world = WorldConfig(terrain=TerrainConfig(size=512, resolution=257, max_height=150), prop_density=1.6)
         cfg.render = RenderSettings(march_steps=56, shadow_steps=0, prop_draw_distance=140)
     cfg.render = replace(cfg.render, width=config.image_size[0], height=config.image_size[1])
+    if config.render_quality == "presentation":
+        cfg.render = replace(cfg.render, march_steps=144, refine_steps=8, shadow_steps=6,
+                             supersample=2, prop_draw_distance=280)
     cfg.seed, cfg.max_episode_steps = config.seed, config.max_steps
     cfg.action_repeat = _repeat(config.decision_seconds, cfg.dt)
     cfg.flat_actions, cfg.text_obs, cfg.randomize_world_per_episode = False, True, False
@@ -234,6 +240,8 @@ def _wildlands(config, native_config):
         cfg.world_cfg = WorldConfig(size_x=96, size_z=96, size_y=64, relief=16, mountain_relief=18)
         cfg.render_cfg = RenderConfig(max_dist=72)
     cfg.render_cfg = replace(cfg.render_cfg, width=config.image_size[0], height=config.image_size[1])
+    if config.render_quality == "presentation":
+        cfg.render_cfg = replace(cfg.render_cfg, supersample=2, shadows=True)
     cfg.seed, cfg.max_steps = config.seed, config.max_steps
     cfg.frame_skip = _repeat(config.decision_seconds, cfg.sim_cfg.dt)
     cfg.action_space = "multi"
@@ -399,12 +407,14 @@ class BenchmarkEnv(gym.Env):
                     steps=self.steps, simulated_seconds=float(self.adapter.elapsed()),
                     decision_seconds=self.config.decision_seconds, episode_return=self.episode_return,
                     health=float(hp), stamina=float(stamina), success=success, task_progress=progress,
+                    success_defined=success is not None, task_progress_defined=progress is not None,
                     terminated=terminated, truncated=truncated, termination_reason=reason,
                     events=jsonable(events), metrics=jsonable(metrics), native=jsonable(native_info))
         if terminated or truncated:
             info["episode"] = {key: info[key] for key in (
                 "environment", "seed", "steps", "simulated_seconds", "episode_return", "success",
-                "task_progress", "terminated", "truncated", "termination_reason")}
+                "task_progress", "success_defined", "task_progress_defined",
+                "terminated", "truncated", "termination_reason")}
         return info
 
     def render(self):

@@ -17,7 +17,7 @@ from ..physics.bodies import BodySystem
 from ..physics.character import CharacterController, MoveIntent
 from ..physics.elements import ElementSystem, WEATHERS
 from ..render.camera import resolve_third_person
-from ..render.raycast import Renderer
+from ..render import make_renderer
 from ..sim.inventory import EQUIP_SLOTS
 from ..sim.survival import SurvivalInteractions
 from ..world.worldgen import Landmark, generate
@@ -69,7 +69,7 @@ class WildlandsEnv(gym.Env):
             raise ValueError("world dimensions must be at least 16")
         self.render_mode = render_mode
         self.metadata = dict(self.metadata, render_fps=max(1, round(1 / (s.dt * c.frame_skip))))
-        self.renderer, self.controller = Renderer(r), CharacterController(s)
+        self.renderer, self.controller = make_renderer(r), CharacterController(s)
         self.world, self._frame = None, None
         self._ended, self._seed = False, c.seed
         if c.action_space == "discrete":
@@ -329,18 +329,16 @@ class WildlandsEnv(gym.Env):
             entities = self.npcs.render_list(a.pos) + self.bodies.render_list() + self.gameplay.render_list()
             if c.third_person:
                 entities.append(dict(pos=tuple(a.pos + (0, 0.9, 0)), radius=0.35, height=1.75,
-                                     color=(90, 155, 125), semantic=B.SEM_SELF))
+                                     color=(59, 128, 147), semantic=B.SEM_SELF,
+                                     yaw=a.yaw, gliding=a.gliding,
+                                     phase=a.distance_travelled * 2.5))
             self._frame = self.renderer.render(
                 self.world, eye, yaw, pitch, time_of_day=cl.time, weather=cl.weather,
                 lights=self.elements.light_sources(self.world, a.pos), entities=entities,
                 flash=cl.flash, rain_intensity=float(cl.raining), frame=self.ticks)
             if c.hud:
-                rgb = self._frame["rgb"]
-                width = max(1, min(c.width - 4, 48))
-                for y, value, cap, color in ((2, a.health, a.max_health, (220, 65, 65)),
-                                            (7, a.stamina, a.stamina_cap, (80, 210, 110))):
-                    rgb[y:y + 3, 2:2 + width] = (40, 45, 50)
-                    rgb[y:y + 3, 2:2 + int(width * value / cap)] = color
+                from ..render.hud import draw_hud
+                draw_hud(self._frame["rgb"], a)
         return self._frame
 
     def render(self):

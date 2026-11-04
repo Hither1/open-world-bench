@@ -4,6 +4,9 @@ Wildlands connects the voxel world, character controller, climate, creatures,
 inventory, cooking, and NumPy renderer into a Gymnasium environment. All content
 is original. It runs without a GPU or display server.
 
+For the shared Genshin/Zelda agent interface and recorder, use `owb.make_env()`;
+see [the common framework guide](framework.md). The APIs below are native Wildlands.
+
 ## Run
 
 From the repository root, after `pip install -e ".[dev]"`:
@@ -118,5 +121,36 @@ defense reduces physical hits, while thermal resistance handles cold and heat.
 This iteration does not implement quest/puzzle completion, crafting actions, rune
 controls, ranged combat, NPC trading/dialogue, hunger, automatic respawn, or saved
 cross-session checkpoints. Enabling hunger/respawn raises an explicit error.
-The renderer uses voxel terrain and simple entity impostors; this is a gameplay
-and agent-interface milestone, not a finished art pass.
+## Visual style
+
+`RenderConfig(style="landscape")` is the default. It renders a continuous natural
+surface, rounded tree canopies and trunks, wind-bent grass, modeled camp props,
+and a traveler with a cloth tunic, scarf, satchel, and glider. Cel shading uses
+warm terrain colors, cooler shadows, distance haze, cloud shapes, and turquoise
+water. The human-facing HUD uses hearts and a stamina ring.
+
+The terminal demo defaults to a 320 x 180 third-person view. Agent observation
+dimensions and the default first-person agent camera retain their existing
+settings. Choose `--first-person`, `--width`, `--height`, or `--renderer voxel`
+for the demo; configure `RenderConfig` directly for policies.
+
+```bash
+python -B -m owb.scripts.wildlands --interactive --steps 3000
+python -B -m owb.scripts.screenshots --environment wildlands --compare-wildlands
+```
+
+The two screenshot backends use identical seed, camera, time of day, and HUD.
+These images are actual engine output. No generated artwork is composited over
+observations. Both backends return RGB, ray-distance depth, and semantic buffers.
+Landscape supersampling averages RGB subpixels; depth/semantics use the same centre subpixel.
+Rendering does not consume the simulation RNG.
+
+Physics still uses the existing voxel grid. Natural surfaces are rounded within
+roughly one voxel of that grid; foliage silhouettes are approximate meshes.
+Buildings retain their block geometry. Caves and terrain edits are rendered from
+current occupancy rather than a top-down heightmap, and caches refresh on world
+edits and resets. `style="voxel"` remains available for exact terrain debugging.
+
+This is an initial procedural art pass. CPU mesh rendering costs more than the
+voxel backend, particularly for high-resolution captures; it is not a real-time
+graphics engine. Use small agent frames or disable RGB for faster rollouts.

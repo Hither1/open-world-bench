@@ -187,6 +187,7 @@ class SurvivalInteractions:
                 if obj.get("used"):
                     continue
                 out.append(dict(pos=tuple(np.asarray(obj["pos"]) + (0, 0.45, 0)),
+                                kind=kind,
                                 radius=0.3 if kind == "plant" else 0.5,
                                 height=0.7, semantic=B.SEM_ITEM,
                                 color=(225, 125, 65) if kind == "plant" else (165, 115, 65)))

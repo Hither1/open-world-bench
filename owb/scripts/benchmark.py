@@ -14,6 +14,7 @@ def main():
     parser.add_argument("--steps", type=int, default=100)
     parser.add_argument("--size", type=int, nargs=2, metavar=("WIDTH", "HEIGHT"), default=(160, 120))
     parser.add_argument("--variant", choices=("small", "full"), default="small")
+    parser.add_argument("--quality", choices=("fast", "presentation"), default="fast")
     parser.add_argument("--policy", choices=("random", "demo"), default="demo")
     parser.add_argument("--video", choices=("gif", "mp4"))
     parser.add_argument("--output", type=Path, required=True)
@@ -27,7 +28,7 @@ def main():
             parser.error(f"recording already exists: {args.output / f'{name}-{args.seed}'}")
     for name in args.env:
         with make_env(name, seed=args.seed, max_steps=args.steps, variant=args.variant,
-                      image_size=tuple(args.size)) as env:
+                      image_size=tuple(args.size), render_quality=args.quality) as env:
             policy = DemoPolicy() if args.policy == "demo" else RandomPolicy()
             summary = run_episode(env, policy, seed=args.seed,
                                   output_dir=args.output / f"{name}-{args.seed}", video=args.video)

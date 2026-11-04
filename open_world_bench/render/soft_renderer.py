@@ -22,7 +22,7 @@ from .style import BIOME_ALBEDO, BIOME_SHADOW, ToonStyle, grade, sky_keys_at, to
 
 _SUN_COLOR_WARM = np.array([1.0, 0.94, 0.84], dtype=np.float32)
 # Props that are drawn as geometry; ground cover is folded into terrain colour.
-_MESH_PROPS = tuple(i for i, n in enumerate(PROP_NAMES) if i not in (GRASS, BUSH))
+_MESH_PROPS = tuple(i for i, n in enumerate(PROP_NAMES) if i != GRASS)
 
 
 class SoftRenderer(Renderer):
@@ -138,7 +138,7 @@ class SoftRenderer(Renderer):
         albedo *= (1.0 + 0.09 * np.clip(lip, 0.0, 1.0) * (slope > np.radians(26.0)))[:, None]
 
         ndl = np.sum(nrm * sun[None, :], axis=1)
-        ramp = toon_ramp(ndl, style)
+        ramp = 0.55 * toon_ramp(ndl, style) + 0.45 * (0.5 + 0.5 * np.clip(ndl, 0, 1))
         shade = self._sun_shadow(terrain, pos, sun) if self.settings.shadow_steps else np.ones(len(pos), np.float32)
         ramp = ramp * (0.62 + 0.38 * shade)
 
@@ -146,7 +146,9 @@ class SoftRenderer(Renderer):
         ambient = np.asarray(keys.zenith, dtype=np.float32) * (keys.ambient + 0.25)
         sky_bounce = style.sky_bounce * np.clip(nrm[:, 1], 0.0, 1.0)[:, None] * np.asarray(keys.zenith, np.float32)
 
-        lit = albedo * (sun_col[None, :] * ramp[:, None]) + shadow_tone * ambient[None, :] * 0.8 + albedo * sky_bounce
+        indirect = 0.27 + keys.ambient * 0.35
+        lit = albedo * (sun_col[None, :] * ramp[:, None] * 0.72 + indirect)
+        lit += shadow_tone * ambient[None, :] * 0.18 + albedo * sky_bounce * 0.45
         # Anime rim light along silhouette edges facing away from the camera.
         view_dir = -dirs
         rim = np.clip(1.0 - np.sum(nrm * view_dir, axis=1), 0.0, 1.0) ** style.rim_power
@@ -198,7 +200,7 @@ class SoftRenderer(Renderer):
                 tt = np.minimum(1100.0 / np.maximum(d[:, 1], 0.04), 9000.0)
                 cx = (d[:, 0] * tt) / 1700.0 + world.elapsed * 0.0015
                 cz = (d[:, 2] * tt) / 1700.0
-                n = nz.fbm(cx, cz, world.cfg.seed + 909, octaves=4) * 0.5 + 0.5
+                n = nz.fbm(cx, cz, world.cfg.seed + 909, octaves=4) * 1.8 + 0.55
                 cover = 1.0 - style.cloud_cover
                 alpha = np.clip((n - cover) * style.cloud_sharpness * 3.0, 0.0, 1.0)
                 alpha *= mth.smoothstep(0.04, 0.30, d[:, 1])
@@ -280,17 +282,32 @@ class SoftRenderer(Renderer):
     def _build_meshes(self, world, char: CharacterState, eye: np.ndarray, fwd: np.ndarray) -> MeshBatch:
         s = self.settings
         batch = MeshBatch()
+        if s.draw_props and s.ground_cover:
+            self._ground_cover(batch, world, char.pos)
         if s.draw_props and len(world.props) > 0:
             props = world.props
             vis = props.visible_subset(eye, fwd, s.prop_draw_distance, fov_cos=-0.25)
+            if len(vis):
+                # Third-person foliage cutaway: do not put a trunk between the
+                # camera and the avatar. Collision geometry remains unchanged.
+                horizontal = fwd[[0, 2]] / max(np.linalg.norm(fwd[[0, 2]]), 1e-6)
+                delta = props.pos[vis][:, [0, 2]] - eye[[0, 2]]
+                along = delta @ horizontal
+                across = np.abs(delta[:, 0] * horizontal[1] - delta[:, 1] * horizontal[0])
+                boom = np.linalg.norm((char.pos - eye)[[0, 2]])
+                occluding = (along > -1.0) & (along < boom - 0.3) & (across < props.radius[vis] + 0.65)
+                vis = vis[~occluding]
+                grass = vis[(props.kind[vis] == GRASS) & (np.linalg.norm(props.pos[vis] - char.pos, axis=1) < 18.0)][:48]
+                for i in grass:
+                    add_prop(batch, "grass", props.pos[i], float(props.yaw[i]), float(props.scale[i]), obj_id=10)
             if len(vis):
                 vis = vis[np.isin(props.kind[vis], _MESH_PROPS)]
             if len(vis):
                 d = np.linalg.norm(props.pos[vis][:, [0, 2]] - eye[[0, 2]][None, :], axis=1)
                 order = np.argsort(d)
                 vis, d = vis[order], d[order]
-                near = vis[d <= 55.0][:80]
-                far = vis[(d > 55.0)][:200]
+                near = vis[d <= 45.0][:52]
+                far = vis[(d > 45.0)][:160]
                 for i in near:
                     add_prop(batch, PROP_NAMES[int(props.kind[i])], props.pos[i],
                              float(props.yaw[i]), float(props.scale[i]), obj_id=10)
@@ -330,6 +347,32 @@ class SoftRenderer(Renderer):
         return batch
 
     @staticmethod
+    def _ground_cover(batch, world, center):
+        """World-anchored decorative patches; never consume simulation RNG."""
+        from .style import PROP_ALBEDO
+
+        cx, cz = np.floor(center[[0, 2]] / 2.5).astype(int)
+        ix, iz = np.meshgrid(np.arange(cx - 6, cx + 7), np.arange(cz - 6, cz + 7))
+        phase = ix.ravel() * 127.1 + iz.ravel() * 311.7 + world.cfg.seed * 0.13
+        noise = np.mod(np.sin(phase) * 43758.5453, 1.0)
+        x = (ix.ravel() + noise) * 2.5
+        z = (iz.ravel() + np.mod(noise * 7.3, 1.0)) * 2.5
+        y = world.terrain.height_at(x, z)
+        good = ((noise > 0.45) & (y > world.terrain.cfg.sea_level + 2)
+                & (y < world.terrain.cfg.tree_line) & (world.terrain.slope_at(x, z) < 0.50))
+        for i in np.flatnonzero(good):
+            p = np.array([x[i], y[i] + 0.025, z[i]], np.float32)
+            add_prop(batch, "grass", p, float(phase[i]), 0.7 + noise[i] * 0.4, obj_id=10)
+            if noise[i] > 0.80:
+                color = (0.98, 0.90, 0.57) if noise[i] > 0.93 else (0.86, 0.84, 0.98)
+                for dx, dz in ((0, 0), (0.2, 0.1), (-0.1, 0.2)):
+                    base = p + np.array([dx, 0, dz])
+                    batch.quad(base + (-0.012, 0, 0), base + (0.012, 0, 0),
+                               base + (0.012, 0.32, 0), base + (-0.012, 0.32, 0),
+                               PROP_ALBEDO["grass"], 10)
+                    batch.cone(base + (0, 0.32, 0), 0.09, 0.045, color, 5, 10, emissive=0.1)
+
+    @staticmethod
     def _element_ring(batch, pos, radius, element, obj_id):
         from ..elements import ELEMENT_COLORS
 
@@ -353,17 +396,21 @@ class SoftRenderer(Renderer):
         if not keep.any():
             return
         nrm = raster.face_normals(verts, eye)
-        ndl = np.sum(nrm * sun[None, :], axis=1)
+        vertex_normals = np.concatenate(batch.normals)
+        smooth = np.linalg.norm(vertex_normals, axis=-1).max(axis=1) > 0.5
+        vertex_normals[~smooth] = nrm[~smooth, None, :]
+        ndl = np.sum(vertex_normals * sun[None, None, :], axis=-1)
         ramp = toon_ramp(ndl, style)
         sun_col = np.asarray(keys.sun, dtype=np.float32) * keys.sun_strength
         amb = np.asarray(keys.zenith, dtype=np.float32) * (keys.ambient + 0.3)
-        shaded = colors * (sun_col[None, :] * ramp[:, None] + amb[None, :] * 0.9)
+        shaded = colors[:, None, :] * (sun_col[None, None, :] * ramp[..., None] * 0.68
+                                       + amb[None, None, :] * 0.60 + 0.22)
         # Emissive surfaces ignore the light and glow on their own.
-        shaded = shaded * (1.0 - emissive[:, None]) + colors * (1.25 * emissive[:, None])
+        shaded = shaded * (1.0 - emissive[:, None, None]) + colors[:, None, :] * (1.25 * emissive[:, None, None])
         centroid_depth = wdepth.mean(axis=1)
         fog = (mth.smoothstep(style.fog_start, style.fog_end, centroid_depth)
                * getattr(style, "fog_max", 1.0))[:, None]
-        shaded = shaded * (1.0 - fog) + np.asarray(keys.fog, dtype=np.float32)[None, :] * fog
+        shaded = shaded * (1.0 - fog[:, :, None]) + np.asarray(keys.fog, dtype=np.float32)[None, None, :] * fog[:, :, None]
 
         big, tiny = raster.split_by_screen_size(screen, keep, threshold=2.5)
         raster.draw_triangles(screen, wdepth, big, shaded, nrm, ids,
@@ -394,7 +441,7 @@ class SoftRenderer(Renderer):
         ny[1:-1, :] = 1.0 - np.sum(n[2:, :] * n[:-2, :], axis=-1)
         normal_edge = mth.smoothstep(style.outline_normal_threshold,
                                      style.outline_normal_threshold + 0.35, np.maximum(nx, ny))
-        edge = np.maximum(depth_edge, normal_edge * 0.85)
+        edge = np.maximum(depth_edge, normal_edge * 0.2)
 
         if frame.ids is not None:
             ids = frame.ids
@@ -402,11 +449,13 @@ class SoftRenderer(Renderer):
             id_edge[:, 1:-1] = (ids[:, 2:] != ids[:, :-2]).astype(np.float32)
             id_edge[1:-1, :] = np.maximum(id_edge[1:-1, :], (ids[2:, :] != ids[:-2, :]).astype(np.float32))
             edge = np.maximum(edge, id_edge)
+            # Paint terrain with tonal changes, reserving fine ink for meshes.
+            edge *= np.where(ids == 0, 0.06, 1.0)
 
         # Lines fade with distance so the horizon does not turn into mush.
         edge = edge * (1.0 - mth.smoothstep(style.fog_start * 1.6, style.fog_end, d))
         ink = edge[..., None] * style.outline_strength
-        return frame.color * (1.0 - ink) + (frame.color * 0.18) * ink
+        return frame.color * (1.0 - ink) + (frame.color * 0.48) * ink
 
     # ---------------------------------------------------------------- render
     def render_frame(self, world, char: CharacterState, cam, fov_y: float = 58.0) -> Frame:
@@ -433,6 +482,11 @@ class SoftRenderer(Renderer):
             idx = np.nonzero(got)[0]
             pos = eye[None, :] + dirs[idx] * t_hit[idx][:, None]
             lit, nrm = self._shade_terrain(world, pos, dirs[idx], eye, sun, keys, style)
+            # Soft grounding beneath the avatar; does not modify physics.
+            horizontal = pos[:, [0, 2]] - char.pos[[0, 2]]
+            altitude = max(0.0, float(char.pos[1] - world.terrain.height_at(char.pos[0], char.pos[2])))
+            contact = np.exp(-np.sum(horizontal ** 2, axis=1) / (0.38 + altitude * 0.3))
+            lit *= (1.0 - contact * 0.24 * np.exp(-altitude * 0.3))[:, None]
             lit = self._apply_fog(lit, t_hit[idx], keys, style)
             color[idx] = lit
             normal[idx] = nrm
@@ -447,6 +501,10 @@ class SoftRenderer(Renderer):
                 color[widx] = self._apply_fog(color[widx], depth_w[widx], keys, style)
                 depth = depth_w
 
+        # Rasterized mesh depths are camera-axis distances, whereas the terrain
+        # march produces ray distances. Compare them in the same depth space.
+        forward_depth = dirs @ (-view[2, :3])
+        depth *= forward_depth
         frame = Frame(
             color=color.reshape(H, W, 3),
             depth=depth.reshape(H, W),
@@ -457,6 +515,7 @@ class SoftRenderer(Renderer):
         batch = self._build_meshes(world, char, eye, fwd)
         self._draw_meshes(batch, view, proj, eye, sun, keys, style,
                           (frame.color, frame.depth, frame.normal, frame.ids))
+        frame.depth /= forward_depth.reshape(H, W)
 
         if s.outlines:
             frame.color = self._outline(frame, style)
@@ -491,7 +550,11 @@ def _add_prop_lod(batch: MeshBatch, kind_name: str, pos: np.ndarray, scale: floa
     """A 5-6 triangle stand-in used beyond the near LOD radius."""
     from .style import PROP_ALBEDO
     s = float(scale)
-    if kind_name in ("pine", "broadleaf", "sakura", "bamboo"):
+    if kind_name in ("broadleaf", "sakura"):
+        batch.cone(pos, 0.22 * s, 3.4 * s, PROP_ALBEDO["trunk"], 4, obj_id, taper=0.5)
+        batch.ellipsoid(pos + np.array([0.0, 4.4 * s, 0.0]), (2.5 * s, 1.9 * s, 2.2 * s),
+                        PROP_ALBEDO[kind_name], obj_id=obj_id, sides=6, rings=3)
+    elif kind_name in ("pine", "bamboo"):
         h = {"pine": 9.0, "broadleaf": 7.5, "sakura": 6.5, "bamboo": 5.5}[kind_name]
         col = PROP_ALBEDO[kind_name]
         batch.cone(pos, 1.5 * s, h * s, col, 4, obj_id, taper=0.15 if kind_name == "bamboo" else 0.0)
@@ -500,3 +563,6 @@ def _add_prop_lod(batch: MeshBatch, kind_name: str, pos: np.ndarray, scale: floa
         batch.cone(pos, r, r * 1.4, PROP_ALBEDO[kind_name], 4, obj_id, taper=0.4)
     elif kind_name == "crystal":
         batch.cone(pos, 0.45 * s, 2.2 * s, PROP_ALBEDO["crystal"], 4, obj_id, emissive=0.45)
+    elif kind_name == "bush":
+        batch.ellipsoid(pos + np.array([0.0, 0.4 * s, 0.0]), (0.8 * s, 0.6 * s, 0.7 * s),
+                        PROP_ALBEDO["bush"], obj_id=obj_id, sides=5, rings=3)

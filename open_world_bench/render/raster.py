@@ -99,7 +99,12 @@ def draw_triangles(
         if not hit.any():
             continue
         sub_depth[hit] = depth[hit]
-        color_buf[y0:y1, x0:x1][hit] = shaded[t]
+        if shaded.ndim == 3:
+            weights = np.stack([l0 / w[t, 0], l1 / w[t, 1], l2 / w[t, 2]], axis=-1)[hit]
+            weights /= np.maximum(iw[hit, None], 1e-9)
+            color_buf[y0:y1, x0:x1][hit] = weights @ shaded[t]
+        else:
+            color_buf[y0:y1, x0:x1][hit] = shaded[t]
         normal_buf[y0:y1, x0:x1][hit] = normals[t]
         id_buf[y0:y1, x0:x1][hit] = ids[t]
         written += int(hit.sum())
@@ -145,7 +150,7 @@ def draw_point_sprites(
     tmp_normal = np.zeros((H, W, 3), dtype=np.float32)
     tmp_id = np.zeros((H, W), dtype=np.int32)
     tmp_depth[py, px] = depth
-    tmp_color[py, px] = shaded[idx]
+    tmp_color[py, px] = shaded[idx].mean(axis=1) if shaded.ndim == 3 else shaded[idx]
     tmp_normal[py, px] = normals[idx]
     tmp_id[py, px] = ids[idx]
     hit = tmp_depth < depth_buf

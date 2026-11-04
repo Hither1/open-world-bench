@@ -16,8 +16,8 @@ from ..terrain import BEACH, CLIFF, FOREST, HIGHLAND, MEADOW, OCEAN, SNOW
 BIOME_ALBEDO = np.zeros((7, 3), dtype=np.float32)
 BIOME_ALBEDO[OCEAN] = (0.17, 0.42, 0.56)
 BIOME_ALBEDO[BEACH] = (0.90, 0.84, 0.66)
-BIOME_ALBEDO[MEADOW] = (0.44, 0.72, 0.33)
-BIOME_ALBEDO[FOREST] = (0.25, 0.55, 0.28)
+BIOME_ALBEDO[MEADOW] = (0.52, 0.72, 0.32)
+BIOME_ALBEDO[FOREST] = (0.34, 0.61, 0.34)
 BIOME_ALBEDO[HIGHLAND] = (0.56, 0.60, 0.47)
 BIOME_ALBEDO[CLIFF] = (0.52, 0.49, 0.53)
 BIOME_ALBEDO[SNOW] = (0.93, 0.95, 0.98)
@@ -33,10 +33,10 @@ BIOME_SHADOW[CLIFF] = (0.27, 0.26, 0.34)
 BIOME_SHADOW[SNOW] = (0.60, 0.68, 0.86)
 
 PROP_ALBEDO = {
-    "pine": (0.16, 0.42, 0.26), "broadleaf": (0.29, 0.60, 0.28), "sakura": (0.95, 0.72, 0.82),
+    "pine": (0.22, 0.48, 0.36), "broadleaf": (0.40, 0.65, 0.30), "sakura": (0.98, 0.72, 0.78),
     "bamboo": (0.52, 0.72, 0.33), "rock": (0.50, 0.48, 0.52), "boulder": (0.44, 0.43, 0.48),
     "bush": (0.30, 0.54, 0.30), "grass": (0.50, 0.74, 0.36), "crystal": (0.55, 0.82, 0.95),
-    "trunk": (0.37, 0.27, 0.21),
+    "trunk": (0.43, 0.34, 0.27),
 }
 
 ENTITY_ALBEDO = {
@@ -77,6 +77,7 @@ class SkyKeys:
 SKY_KEYS: dict[float, SkyKeys] = {
     0.00: SkyKeys((0.03, 0.05, 0.14), (0.09, 0.11, 0.24), (0.55, 0.60, 0.80), (0.07, 0.09, 0.19), 0.30, 0.18),
     0.24: SkyKeys((0.33, 0.47, 0.78), (0.99, 0.72, 0.55), (1.00, 0.84, 0.58), (0.84, 0.72, 0.68), 0.46, 0.85),
+    0.32: SkyKeys((0.25, 0.59, 0.89), (0.78, 0.89, 0.94), (1.00, 0.95, 0.82), (0.70, 0.83, 0.85), 0.64, 1.00),
     0.50: SkyKeys((0.27, 0.56, 0.92), (0.74, 0.88, 0.98), (1.00, 0.98, 0.90), (0.76, 0.86, 0.95), 0.55, 1.00),
     0.76: SkyKeys((0.26, 0.31, 0.63), (1.00, 0.60, 0.42), (1.00, 0.74, 0.46), (0.80, 0.60, 0.56), 0.44, 0.75),
     1.00: SkyKeys((0.03, 0.05, 0.14), (0.09, 0.11, 0.24), (0.55, 0.60, 0.80), (0.07, 0.09, 0.19), 0.30, 0.18),
@@ -109,28 +110,28 @@ class ToonStyle:
     """Parameters of the cel-shading ramp and the ink pass."""
 
     bands: int = 3                    # number of lighting steps
-    band_floor: float = 0.42          # darkest band multiplier
-    band_softness: float = 0.035      # anti-aliasing width between bands
-    rim_strength: float = 0.42        # anime rim light
+    band_floor: float = 0.58          # lifted, cool shadows
+    band_softness: float = 0.10       # softer painted light transitions
+    rim_strength: float = 0.18
     rim_power: float = 2.6
     specular_strength: float = 0.25
     sky_bounce: float = 0.22          # cool light from the sky on upward faces
-    outline_strength: float = 0.85
+    outline_strength: float = 0.24
     outline_depth_threshold: float = 0.022
     outline_normal_threshold: float = 0.45
-    saturation: float = 1.12
-    contrast: float = 1.05
-    exposure: float = 1.02
-    fog_start: float = 150.0
-    fog_end: float = 900.0
+    saturation: float = 1.04
+    contrast: float = 0.98
+    exposure: float = 1.08
+    fog_start: float = 65.0
+    fog_end: float = 620.0
     fog_max: float = 0.88
     fog_height_falloff: float = 0.0032
-    vignette: float = 0.14
+    vignette: float = 0.045
     water_shallow: tuple[float, float, float] = (0.35, 0.78, 0.80)
     water_deep: tuple[float, float, float] = (0.06, 0.26, 0.45)
     water_foam: tuple[float, float, float] = (0.95, 0.99, 1.0)
-    cloud_cover: float = 0.42
-    cloud_sharpness: float = 2.4
+    cloud_cover: float = 0.48
+    cloud_sharpness: float = 1.8
     extras: dict = field(default_factory=dict)
 
 

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from ..env import DISCRETE_ACTIONS, make_small
+from ..core.config import RenderConfig
 
 
 def write_frame(path, frame):
@@ -23,16 +24,24 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("/tmp/wildlands.ppm"))
     parser.add_argument("--interactive", action="store_true", help="enter named actions at a terminal")
     parser.add_argument("--gif", type=Path, help="optional recording; requires the video extra")
+    parser.add_argument("--renderer", choices=("landscape", "voxel"), default="landscape")
+    parser.add_argument("--width", type=int, default=320)
+    parser.add_argument("--height", type=int, default=180)
+    parser.add_argument("--first-person", action="store_true", help="use the agent's eye camera")
     args = parser.parse_args()
     if args.steps <= 0:
         parser.error("--steps must be positive")
+    if min(args.width, args.height) <= 0:
+        parser.error("image dimensions must be positive")
     if args.output.suffix.lower() != ".ppm":
         parser.error("--output must have a .ppm extension")
     if args.gif:
         import imageio.v2 as imageio
 
-    env = make_small(action_space="discrete", obs_rgb=False, max_steps=args.steps)
-    env.cfg.render_cfg.hud = True
+    env = make_small(action_space="discrete", obs_rgb=False, max_steps=args.steps,
+                     render_cfg=RenderConfig(style=args.renderer, width=args.width, height=args.height,
+                                             max_dist=100, third_person=not args.first_person,
+                                             cam_distance=5.5, cam_pitch_offset=-0.22, hud=True))
     frames, totals = [], {}
     try:
         _, info = env.reset(seed=args.seed)
