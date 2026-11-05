@@ -56,6 +56,8 @@ class Entity:
     attack_cd: float = 0.0
     bob: float = 0.0
     elemental: ElementalStatus = field(default_factory=ElementalStatus)
+    visual_role: str = ""          # geometry cues; never used by physics or task logic
+    visual_version: int = 1
 
     def __post_init__(self) -> None:
         self.pos = np.asarray(self.pos, dtype=np.float32)

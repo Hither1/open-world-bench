@@ -1,0 +1,148 @@
+{
+  "task": "a",
+  "seed": 7,
+  "controller": "privileged native-action ReferencePolicy",
+  "verification": {
+    "success": true,
+    "failures": [],
+    "completed": 12,
+    "required": 12,
+    "scope": "compact native-simulator reference prototype"
+  },
+  "initial_digest": "b8b7816f3c936fc674e4be1b386e5a401aa7f4ce9e12ec83c32b0fc7a9b567df",
+  "final_digest": "268951b873980abed005fb688d8336e889cbecc218952ecd3a29956369c5cf1f",
+  "decisions": 1118,
+  "simulated_seconds": 223.59999999998988,
+  "event_counts": {
+    "interact": 15,
+    "talk": 1,
+    "mechanism_feedback": 28,
+    "operation_complete": 17,
+    "party_swap": 17,
+    "skill": 19,
+    "relay_application": 15,
+    "move_land": 8,
+    "relay_active": 6,
+    "activate": 12,
+    "milestone_complete": 12,
+    "relay_interrupted": 2,
+    "player_hit": 4,
+    "enemy_hit": 6,
+    "reaction": 2,
+    "swing": 2,
+    "defeat": 2,
+    "item_acquired": 3,
+    "item_consumed": 3,
+    "item_granted": 2,
+    "designed_context_boundary": 2,
+    "lift_started": 1,
+    "lift_arrived": 1
+  },
+  "milestones": [
+    {
+      "id": "A01",
+      "time": 13.233333,
+      "operations": [
+        "op000_00",
+        "op001_00"
+      ]
+    },
+    {
+      "id": "A02",
+      "time": 27.233333,
+      "operations": [
+        "op002_01"
+      ]
+    },
+    {
+      "id": "A03",
+      "time": 50.833333,
+      "operations": [
+        "op003_02"
+      ]
+    },
+    {
+      "id": "A04",
+      "time": 76.033333,
+      "operations": [
+        "op005_03",
+        "op006_03"
+      ]
+    },
+    {
+      "id": "A05",
+      "time": 111.633333,
+      "operations": [
+        "op007_04",
+        "op008_04"
+      ]
+    },
+    {
+      "id": "A06",
+      "time": 120.433333,
+      "operations": [
+        "op009_05"
+      ]
+    },
+    {
+      "id": "A07",
+      "time": 148.833333,
+      "operations": [
+        "op010_06",
+        "op011_06"
+      ]
+    },
+    {
+      "id": "A08",
+      "time": 162.033333,
+      "operations": [
+        "op012_07"
+      ]
+    },
+    {
+      "id": "A09",
+      "time": 177.633333,
+      "operations": [
+        "op013_08"
+      ]
+    },
+    {
+      "id": "A10",
+      "time": 196.433333,
+      "operations": [
+        "op014_09",
+        "op015_09"
+      ]
+    },
+    {
+      "id": "A11",
+      "time": 208.466667,
+      "operations": [
+        "op016_10"
+      ]
+    },
+    {
+      "id": "A12",
+      "time": 223.433333,
+      "operations": [
+        "op017_11"
+      ]
+    }
+  ],
+  "decision_seconds": 0.2,
+  "limitations": [
+    "Compact authored course, not the full island-scale task suite",
+    "Privileged reference controller: no claim about learned memory or model performance",
+    "Ferry/causeway repair represented by item exchanges and access milestones",
+    "Native service lift and vent flights; no teleportation by the controller",
+    "Sentinel trials test phase mechanics without active sentinel damage",
+    "Designed context boundaries logged, not evaluated with a language-model memory store"
+  ],
+  "replay_verified": true,
+  "video_frames": 420,
+  "video_fps": 10,
+  "video_seconds": 42.0,
+  "render_stride": 8,
+  "render_wall_seconds": 182.10391736900783,
+  "actions_sha256": "0fa9ea2e6d7681d2a199268d40ef3bc6c0da6116581ee3dcdd2c71a922772b37"
+}

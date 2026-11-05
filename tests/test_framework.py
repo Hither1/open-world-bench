@@ -287,7 +287,8 @@ def test_gif_recording_works_through_common_runner(tmp_path):
     pytest.importorskip("imageio")
     image_module = pytest.importorskip("PIL.Image")
     with build("teyvat", max_steps=3) as env:
-        run_episode(env, DemoPolicy(), seed=7, output_dir=tmp_path / "video", video="gif")
+        run_episode(env, DemoPolicy(), seed=7, output_dir=tmp_path / "video", video="gif",
+                    video_renderer="cpu", video_size=(32, 24))
     with image_module.open(tmp_path / "video" / "episode.gif") as gif:
         assert gif.size == (32, 24) and gif.n_frames >= 2
         assert gif.info["duration"] == 200

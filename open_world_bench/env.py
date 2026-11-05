@@ -398,18 +398,15 @@ class OpenWorldEnv(gym.Env):
                                                      fov_y=self.cfg.camera.fov_y)
         return self._last_frame
 
-    def render_hd(self, width: int = 640, height: int = 480, hud: bool = True) -> np.ndarray:
-        """A high-resolution frame for videos; does not touch the obs renderer."""
+    def render_hd(self, width: int = 960, height: int = 540, hud: bool = True,
+                  *, renderer: str = "cycles", blender=None, samples: int = 48,
+                  threads: int = 8) -> np.ndarray:
+        """A Cycles presentation frame; CPU output requires renderer='cpu'."""
         from .render.hud import draw_hud
-
-        rs = replace(self.cfg.render, width=width, height=height,
-                     march_steps=max(128, self.cfg.render.march_steps),
-                     prop_draw_distance=max(260.0, self.cfg.render.prop_draw_distance))
-        renderer = make_renderer(rs, self.cfg.backend)
-        try:
-            img = renderer.render(self.world, self.char, self.cam, fov_y=self.cfg.camera.fov_y)
-        finally:
-            renderer.close()
+        from owb.render.presentation import PresentationRenderer
+        with PresentationRenderer(backend=renderer, width=width, height=height,
+                                  blender=blender, samples=samples, threads=threads) as presentation:
+            img = presentation.render(self)
         if hud:
             img = draw_hud(img, self)
         return img

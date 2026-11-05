@@ -1,0 +1,54 @@
+{
+  "encoder": "imageio-ffmpeg 0.6.0 / libx264",
+  "encoding_options": [
+    "-map",
+    "0:v:0",
+    "-an",
+    "-c:v",
+    "libx264",
+    "-profile:v",
+    "baseline",
+    "-level:v",
+    "3.1",
+    "-pix_fmt",
+    "yuv420p",
+    "-preset",
+    "fast",
+    "-crf",
+    "20",
+    "-threads",
+    "2",
+    "-movflags",
+    "+faststart"
+  ],
+  "videos": [
+    {
+      "file": "videos/teyvat-12-milestones.mp4",
+      "source": "assets/demos/teyvat-reference/task-a-seed-7/walkthrough.mp4",
+      "codec": "h264",
+      "stream": "Stream #0:0[0x1](und): Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], 425 kb/s, 10 fps, 10 tbr, 10240 tbn (default)",
+      "frames": 420,
+      "fps": 10.0,
+      "duration_seconds": 42.0,
+      "fast_start": true,
+      "full_decode_passed": true,
+      "bytes": 2233948,
+      "source_sha256": "a55b2963527be31e48cc09664d8bc12bd731288b5ddfc3fb912347bda8b97d80",
+      "sha256": "01333356a56499cacafe42c2f93738ea7a6f48b708d4b08358b567c47d5a0e40"
+    },
+    {
+      "file": "videos/teyvat-24-milestones.mp4",
+      "source": "assets/demos/teyvat-reference/task-b-seed-7/walkthrough.mp4",
+      "codec": "h264",
+      "stream": "Stream #0:0[0x1](und): Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], 462 kb/s, 10 fps, 10 tbr, 10240 tbn (default)",
+      "frames": 1234,
+      "fps": 10.0,
+      "duration_seconds": 123.4,
+      "fast_start": true,
+      "full_decode_passed": true,
+      "bytes": 7141187,
+      "source_sha256": "e7371ca0e7f667f4241e5ae96907360d975d7686a0ebf3bc69a76bd799c13bf8",
+      "sha256": "6585d6ad4b6bbe5933a6f9801acd826b9eef0765dacb21d622968f799e7fadf8"
+    }
+  ]
+}

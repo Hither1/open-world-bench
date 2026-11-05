@@ -15,16 +15,16 @@ class ModelBatch(MeshBatch):
         super().__init__()
         self.smooth_normals = []
 
-    def add(self, tris, color, obj_id=1, emissive=0.0, normals=None, vertex_normals=None):
+    def add(self, tris, color, obj_id=1, emissive=0.0, normals=None, vertex_normals=None, material=None):
         tris = np.asarray(tris, np.float32).reshape(-1, 3, 3)
         if not len(tris):
             return
-        super().add(tris, color, obj_id, emissive)
+        super().add(tris, color, obj_id, emissive, material=material)
         normals = normals if normals is not None else vertex_normals
         self.smooth_normals.append(np.zeros_like(tris) if normals is None else np.asarray(normals, np.float32))
 
     def extend(self, other):
-        for name in ("verts", "colors", "emissive", "ids", "normals", "smooth_normals"):
+        for name in ("verts", "colors", "emissive", "ids", "normals", "smooth_normals", "material_ids"):
             getattr(self, name).extend(getattr(other, name))
 
 # Subdivided octahedron: a rounded silhouette with only 32 faces.

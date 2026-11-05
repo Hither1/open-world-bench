@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ..env import DISCRETE_ACTIONS, make_small
 from ..core.config import RenderConfig
+from ..render.presentation import PresentationRenderer
 
 
 def write_frame(path, frame):
@@ -24,17 +25,20 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("/tmp/wildlands.ppm"))
     parser.add_argument("--interactive", action="store_true", help="enter named actions at a terminal")
     parser.add_argument("--gif", type=Path, help="optional recording; requires the video extra")
-    parser.add_argument("--renderer", choices=("landscape", "voxel"), default="landscape")
+    parser.add_argument("--renderer", choices=("cycles", "landscape", "voxel"), default="cycles")
+    parser.add_argument("--blender", help="Blender executable (or set OWB_BLENDER)")
+    parser.add_argument("--samples", type=int, default=48)
+    parser.add_argument("--threads", type=int, default=8)
     parser.add_argument("--quality", choices=("fast", "balanced", "high"), default="balanced")
     parser.add_argument("--supersample", type=int, choices=(1, 2, 3), default=1,
                         help="samples per image axis; 2 gives smoother foliage at extra CPU cost")
-    parser.add_argument("--width", type=int, default=320)
-    parser.add_argument("--height", type=int, default=180)
+    parser.add_argument("--width", type=int, default=960)
+    parser.add_argument("--height", type=int, default=540)
     parser.add_argument("--first-person", action="store_true", help="use the agent's eye camera")
     args = parser.parse_args()
     if args.steps <= 0:
         parser.error("--steps must be positive")
-    if min(args.width, args.height) <= 0:
+    if min(args.width, args.height, args.samples, args.threads) <= 0:
         parser.error("image dimensions must be positive")
     if args.output.suffix.lower() != ".ppm":
         parser.error("--output must have a .ppm extension")
@@ -42,14 +46,16 @@ def main():
         import imageio.v2 as imageio
 
     env = make_small(action_space="discrete", obs_rgb=False, max_steps=args.steps,
-                     render_cfg=RenderConfig(style=args.renderer, quality=args.quality, supersample=args.supersample,
+                     render_cfg=RenderConfig(style="landscape" if args.renderer=="cycles" else args.renderer, quality=args.quality, supersample=args.supersample,
                                              width=args.width, height=args.height,
                                              max_dist=100, third_person=not args.first_person,
                                              cam_distance=5.5, cam_pitch_offset=-0.22, hud=True))
     frames, totals = [], {}
+    presentation = PresentationRenderer(backend="cycles" if args.renderer=="cycles" else "cpu",
+        width=args.width, height=args.height, blender=args.blender, samples=args.samples, threads=args.threads)
     try:
         _, info = env.reset(seed=args.seed)
-        write_frame(args.output, env.render())
+        write_frame(args.output, presentation.render(env))
         if args.interactive:
             print("Commands:", ", ".join(DISCRETE_ACTIONS))
             print("Append a repeat count (e.g. forward 5); inventory lists slots; quit exits.")
@@ -90,25 +96,26 @@ def main():
                 for event in info["events"]:
                     totals[event["type"]] = totals.get(event["type"], 0) + 1
                 if args.gif:
-                    frames.append(env.render())
+                    frames.append(presentation.render(env))
                 ended = terminated or truncated
                 if ended:
                     break
             if args.interactive:
-                write_frame(args.output, env.render())
+                write_frame(args.output, presentation.render(env))
                 print(f"health={info['health']:.1f} stamina={info['stamina']:.1f} "
                       f"weather={info['weather']} slot={env.selected_slot}")
                 for event in info["events"]:
                     print(event)
             if ended:
                 break
-        write_frame(args.output, env.render())
+        write_frame(args.output, presentation.render(env))
         if args.gif and frames:
             imageio.mimsave(args.gif, frames, duration=1000 / env.metadata["render_fps"], loop=0)
         print(json.dumps(dict(seed=args.seed, steps=env.steps, health=info["health"],
                               stamina=info["stamina"], visited_cells=info["visited_cells"],
-                              events=totals, frame=str(args.output)), indent=2))
+                              events=totals, frame=str(args.output), presentation=presentation.metadata), indent=2))
     finally:
+        presentation.close()
         env.close()
 
 

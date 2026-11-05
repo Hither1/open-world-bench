@@ -5,6 +5,10 @@ use the original Breath of the Wild-inspired `wildlands` setting and retain
 exactly **12** and **24** milestones. The revision makes learning from experience,
 delayed retrieval, and reusable skills the central experimental structure.
 
+See the [illustrated milestone storyboards](wildlands-milestone-storyboards.md)
+for one visual panel per milestone, including actions, completion conditions,
+and the memory or skill being tested.
+
 ## What these tasks should establish
 
 The core sequence is **experience → unassisted practice → intervening work →

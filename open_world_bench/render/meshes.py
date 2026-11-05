@@ -14,6 +14,8 @@ from .. import math3d as mth
 from ..character import CharacterState, MoveState
 from .style import CHARACTER_PALETTE, ENTITY_ALBEDO, ENTITY_EMISSIVE, PROP_ALBEDO
 
+MATERIAL_NAMES = ("surface", "stone", "bark", "foliage", "metal", "cloth", "skin", "terrain")
+
 # Unit cube triangles (centred, side 1), wound counter-clockwise outward.
 _CUBE_V = np.array([
     [-.5, -.5, -.5], [.5, -.5, -.5], [.5, .5, -.5], [-.5, .5, -.5],
@@ -38,18 +40,22 @@ class MeshBatch:
     emissive: list[np.ndarray] = field(default_factory=list)
     ids: list[np.ndarray] = field(default_factory=list)
     normals: list[np.ndarray] = field(default_factory=list)
+    material_ids: list[np.ndarray] = field(default_factory=list)
+    current_material: int = 0
 
     def add(self, tris: np.ndarray, color, obj_id: int = 1, emissive: float = 0.0,
-            vertex_normals=None) -> None:
+            vertex_normals=None, material=None) -> None:
         tris = np.asarray(tris, dtype=np.float32).reshape(-1, 3, 3)
         if len(tris) == 0:
             return
         self.verts.append(tris)
-        self.colors.append(np.tile(np.asarray(color, dtype=np.float32), (len(tris), 1)))
+        self.colors.append(np.broadcast_to(np.asarray(color, dtype=np.float32), (len(tris), 3)).copy())
         self.emissive.append(np.full(len(tris), float(emissive), dtype=np.float32))
         self.ids.append(np.full(len(tris), int(obj_id), dtype=np.int32))
         self.normals.append(np.zeros_like(tris) if vertex_normals is None
                             else np.asarray(vertex_normals, np.float32).reshape(-1, 3, 3))
+        tag = self.current_material if material is None else material
+        self.material_ids.append(np.broadcast_to(np.asarray(tag, np.int8), (len(tris),)).copy())
 
     def box(self, center, size, color, yaw: float = 0.0, obj_id: int = 1, emissive: float = 0.0) -> None:
         size = np.asarray(size, dtype=np.float32)
@@ -138,92 +144,28 @@ class MeshBatch:
 
 # --------------------------------------------------------------------- props
 def add_prop(batch: MeshBatch, kind_name: str, pos: np.ndarray, yaw: float, scale: float, obj_id: int = 1) -> None:
-    """Layered, rounded foliage and tapered trunks from procedural meshes."""
-    trunk = PROP_ALBEDO["trunk"]
-    p = np.asarray(pos, dtype=np.float32)
-    s = float(scale)
-    if kind_name == "pine":
-        batch.tube(p, p + (0.0, 5.0 * s, 0.0), 0.22 * s, trunk, obj_id, end_radius=0.09 * s)
-        for k, (h, r) in enumerate(((1.8, 2.3), (4.0, 1.7), (6.0, 1.0))):
-            batch.cone(p + (0.0, h * s, 0.0), r * s, 3.6 * s, PROP_ALBEDO["pine"], 7, obj_id)
-    elif kind_name in ("broadleaf", "sakura"):
-        leaf = np.asarray(PROP_ALBEDO[kind_name])
-        batch.tube(p, p + (0.18 * s, 4.2 * s, 0.0), 0.27 * s, trunk, obj_id, end_radius=0.10 * s)
-        for k, (dx, dy, dz) in enumerate(((-1.15, 4.0, 0.25), (1.2, 4.4, 0.4), (0.0, 5.1, -0.4))):
-            off = np.array([dx * np.cos(yaw) - dz * np.sin(yaw), dy,
-                            dx * np.sin(yaw) + dz * np.cos(yaw)]) * s
-            batch.tube(p + (0.0, 2.3 * s, 0.0), p + off, 0.11 * s, trunk, obj_id, end_radius=0.035 * s)
-            color = np.clip(leaf * (0.88 + 0.10 * k) + (0.025 * k), 0, 1)
-            batch.ellipsoid(p + off, np.array([1.85, 1.35, 1.65]) * s, color, yaw, obj_id)
-    elif kind_name == "bamboo":
-        for k in range(3):
-            off = np.array([np.cos(yaw + k * 2.1) * 0.35 * s, 0.0, np.sin(yaw + k * 2.1) * 0.35 * s], dtype=np.float32)
-            batch.box(p + off + (0.0, 2.6 * s, 0.0), (0.16 * s, 5.2 * s, 0.16 * s), PROP_ALBEDO["bamboo"], yaw, obj_id)
-    elif kind_name in ("rock", "boulder"):
-        r = (0.55 if kind_name == "rock" else 1.5) * s
-        batch.ellipsoid(p + (0.0, r * 0.45, 0.0), (r, r * 0.78, r * 0.85),
-                        PROP_ALBEDO[kind_name], yaw, obj_id, sides=7, rings=3)
-    elif kind_name == "bush":
-        batch.ellipsoid(p + (0, 0.4 * s, 0), (0.8 * s, 0.65 * s, 0.7 * s),
-                        PROP_ALBEDO["bush"], yaw, obj_id, sides=6, rings=3)
-    elif kind_name == "grass":
-        for i in range(3):
-            a = yaw + i * 2.1
-            side = np.array([np.cos(a), 0, np.sin(a)]) * 0.13 * s
-            tip = p + np.array([0.13 * np.sin(a), 0.45 + i * 0.08, 0.13 * np.cos(a)]) * s
-            batch.add([[p - side, p + side, tip]], PROP_ALBEDO["grass"], obj_id)
-    elif kind_name == "crystal":
-        batch.cone(p, 0.45 * s, 2.4 * s, PROP_ALBEDO["crystal"], 5, obj_id, emissive=0.45)
+    """Stable per-instance botanical and geological variations."""
+    if kind_name not in ("pine","broadleaf","sakura","bamboo","rock","boulder","bush","grass","crystal"):
+        return
+    from .assets import add_detailed_prop
+    add_detailed_prop(batch,kind_name,np.asarray(pos),yaw,scale,obj_id)
 
 
-# ------------------------------------------------------------------ entities
 def add_entity(batch: MeshBatch, kind_name: str, pos: np.ndarray, yaw: float, used: bool,
-               obj_id: int, bob: float = 0.0) -> None:
-    p = np.asarray(pos, dtype=np.float32)
-    base = ENTITY_ALBEDO.get(kind_name, (0.8, 0.8, 0.8))
-    lit = ENTITY_EMISSIVE.get(kind_name)
-    glow = 0.0
-    color = base
-    if used and lit is not None:
-        color, glow = lit, 0.8
-
-    if kind_name == "npc":
-        _humanoid(batch, p, yaw, obj_id, tunic=base, hair=(0.25, 0.20, 0.24), phase=0.0, scale=1.0)
-    elif kind_name == "chest":
-        batch.box(p + (0.0, 0.35, 0.0), (1.1, 0.7, 0.8), (0.46, 0.33, 0.21), yaw, obj_id)
-        lid_y = 0.78 if not used else 1.0
-        batch.box(p + (0.0, lid_y, 0.0 if not used else -0.3), (1.1, 0.26, 0.8), base, yaw, obj_id, 0.15 if used else 0.0)
-    elif kind_name == "beacon":
-        batch.cone(p, 0.9, 3.2, (0.42, 0.40, 0.46), 6, obj_id, taper=0.45)
-        flame_h = 1.1 + 0.18 * np.sin(bob * 4.0)
-        batch.cone(p + (0.0, 3.1, 0.0), 0.55, flame_h, color, 6, obj_id, emissive=1.0 if used else 0.1)
-    elif kind_name == "pillar":
-        batch.box(p + (0.0, 2.0, 0.0), (0.9, 4.0, 0.9), (0.60, 0.58, 0.64), yaw, obj_id)
-        batch.cone(p + (0.0, 4.1, 0.0), 0.5, 0.9, color, 5, obj_id, emissive=1.0 if used else 0.1)
-    elif kind_name == "collectible":
-        h = 0.3 + 0.05 * np.sin(bob * 2.0)
-        batch.cone(p + (0.0, h, 0.0), 0.22, 0.5, (0.75, 0.9, 1.0), 5, obj_id, emissive=0.6)
-        batch.box(p + (0.0, 0.15, 0.0), (0.08, 0.3, 0.08), (0.35, 0.55, 0.35), yaw, obj_id)
-    elif kind_name in ("enemy", "boss"):
-        scale = 1.0 if kind_name == "enemy" else 1.7
-        _humanoid(batch, p, yaw, obj_id, tunic=base, hair=(0.18, 0.12, 0.2), phase=bob * 1.3, scale=scale)
-        batch.cone(p + (0.0, 1.9 * scale, 0.0), 0.3 * scale, 0.7 * scale,
-                   (0.95, 0.75, 0.35) if kind_name == "boss" else (0.7, 0.6, 0.9), 5, obj_id, emissive=0.5)
-    elif kind_name == "altar":
-        batch.box(p + (0.0, 0.5, 0.0), (2.4, 1.0, 2.4), (0.72, 0.70, 0.62), yaw, obj_id)
-        batch.cone(p + (0.0, 1.0, 0.0), 0.8, 1.4, color, 6, obj_id, emissive=glow)
-    elif kind_name == "waypoint":
-        batch.box(p + (0.0, 0.3, 0.0), (2.0, 0.6, 2.0), (0.55, 0.60, 0.62), yaw, obj_id)
-        batch.cone(p + (0.0, 0.6, 0.0), 0.7, 3.4, base, 6, obj_id, taper=0.2, emissive=0.35 + glow * 0.5)
-        batch.cone(p + (0.0, 4.0, 0.0), 0.45, 0.8, (0.9, 1.0, 0.95), 5, obj_id, emissive=0.9)
+               obj_id: int, bob: float = 0.0, *, identity=None, visual_role="", visual_version=1) -> None:
+    from .assets import add_detailed_entity
+    add_detailed_entity(batch,kind_name,pos,yaw,used,obj_id,bob,identity=identity,
+                        visual_role=visual_role,visual_version=visual_version)
 
 
 # ----------------------------------------------------------------- character
 def _humanoid(batch: MeshBatch, feet: np.ndarray, yaw: float, obj_id: int,
               tunic, hair, phase: float, scale: float = 1.0, lean: float = 0.0,
-              arms_out: bool = False) -> None:
+              arms_out: bool = False, skin=None, hair_style: int = 0) -> None:
     """An original adventurer silhouette with fitted clothing and jointed limbs."""
-    pal = CHARACTER_PALETTE
+    pal = dict(CHARACTER_PALETTE)
+    if skin is not None:
+        pal["skin"] = skin
     s = scale
     c, sn = np.cos(yaw), np.sin(yaw)
 
@@ -238,6 +180,7 @@ def _humanoid(batch: MeshBatch, feet: np.ndarray, yaw: float, obj_id: int,
     gold = (0.88, 0.73, 0.43)
     cloth = np.asarray(tunic)
     for side in (-1, 1):
+        batch.current_material = 5
         hip = local(side * 0.12, 0.88, 0)
         knee = local(side * 0.13, 0.49, side * swing)
         ankle = local(side * 0.14, 0.12, -side * swing * 0.5)
@@ -250,23 +193,34 @@ def _humanoid(batch: MeshBatch, feet: np.ndarray, yaw: float, obj_id: int,
         hand = local(side * (0.70 if arms_out else 0.30), 1.35 if arms_out else 0.88, -side * swing * 1.3)
         batch.tube(shoulder, elbow, 0.095 * s, tunic, obj_id, end_radius=0.065 * s)
         batch.tube(elbow, hand, 0.06 * s, pal["trim"], obj_id, end_radius=0.045 * s)
+        batch.current_material = 6
         batch.ellipsoid(hand, (0.055 * s, 0.075 * s, 0.05 * s), pal["skin"], yaw, obj_id, sides=6, rings=3)
 
+    batch.current_material = 5
     batch.ellipsoid(local(0, 1.20, 0), (0.225 * s, 0.30 * s, 0.14 * s), tunic, yaw, obj_id)
     batch.cone(local(0, 0.70, 0), 0.29 * s, 0.32 * s, cloth * 0.85, 8, obj_id, taper=0.60)
     batch.tube(local(0, 0.97, 0), local(0, 1.02, 0), 0.19 * s, gold, obj_id, sides=8)
+    batch.current_material = 6
     batch.tube(local(0, 1.42, 0), local(0, 1.53, 0), 0.065 * s, pal["skin"], obj_id)
     batch.ellipsoid(local(0, 1.67, 0), (0.155 * s, 0.20 * s, 0.145 * s), pal["skin"], yaw, obj_id)
+    batch.current_material = 5
     batch.ellipsoid(local(0, 1.78, 0.025), (0.18 * s, 0.145 * s, 0.17 * s), hair, yaw, obj_id)
     # Layered locks, swept fringe, and a small clasp remain legible from behind.
     for side in (-1, 1):
-        batch.tube(local(side * 0.14, 1.77, 0.04), local(side * 0.16, 1.43, 0.12),
-                   0.075 * s, hair, obj_id, end_radius=0.018 * s)
+        if hair_style == 0:
+            batch.tube(local(side * 0.14, 1.77, 0.04), local(side * 0.16, 1.43, 0.12),
+                       0.075 * s, hair, obj_id, end_radius=0.018 * s)
         batch.tube(local(side * 0.09, 1.82, -0.10), local(side * 0.12, 1.67, -0.14),
                    0.055 * s, hair, obj_id, end_radius=0.006 * s)
         batch.ellipsoid(local(side * 0.058, 1.68, -0.135), (0.026 * s, 0.035 * s, 0.012 * s),
                         (0.16, 0.24, 0.33), yaw, obj_id, sides=5, rings=3)
     batch.ellipsoid(local(0, 1.54, 0.14), (0.045 * s, 0.065 * s, 0.035 * s), gold, yaw, obj_id, sides=5, rings=3)
+    if hair_style == 2:
+        batch.tube(local(0,1.75,.14),local(.04,1.36,.20),.07*s,hair,obj_id,end_radius=.025*s)
+    elif hair_style == 3:
+        batch.ellipsoid(local(0,1.82,0),(.23*s,.10*s,.21*s),cloth*.72,yaw,obj_id)
+        batch.box(local(0,1.80,-.14),(.36*s,.035*s,.24*s),cloth*.72,yaw,obj_id)
+    batch.current_material = 0
 
 
 def add_character(batch: MeshBatch, st: CharacterState, obj_id: int = 2, spec=None) -> None:
@@ -288,6 +242,7 @@ def add_character(batch: MeshBatch, st: CharacterState, obj_id: int = 2, spec=No
               phase=phase, scale=1.0, lean=lean, arms_out=gliding or swimming)
 
     if gliding:
+        batch.current_material = 5
         # A wind-glider canopy: two panels in a shallow V, with a coloured
         # underside offset below the top skin so the two do not z-fight.
         c, s = np.cos(st.yaw), np.sin(st.yaw)
@@ -307,6 +262,7 @@ def add_character(batch: MeshBatch, st: CharacterState, obj_id: int = 2, spec=No
         # Rigging line from the canopy down to the character.
         batch.box(feet + up * 2.1, (0.06, 0.9, 0.06), pal["trim"], st.yaw, obj_id)
     elif not swimming:
+        batch.current_material = 5
         # A short cape so the silhouette reads from behind.
         c, s = np.cos(st.yaw), np.sin(st.yaw)
         right = np.array([c, 0.0, s], dtype=np.float32)
@@ -320,3 +276,4 @@ def add_character(batch: MeshBatch, st: CharacterState, obj_id: int = 2, spec=No
             d = top + right * (side * 0.36) + back * (0.38 + flap) - (0, 0.77, 0)
             batch.quad(a, b, c0, d, pal["cape"], obj_id)
             batch.tube(d, c0, 0.012, (0.88, 0.74, 0.45), obj_id, sides=4)
+    batch.current_material = 0

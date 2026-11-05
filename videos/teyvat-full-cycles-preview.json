@@ -1,0 +1,18 @@
+{
+  "environment": "teyvat",
+  "variant": "full",
+  "seed": 7,
+  "step": 1,
+  "presentation": {
+    "backend": "cycles",
+    "width": 960,
+    "height": 540,
+    "samples": 48,
+    "threads": 8
+  },
+  "source_video_frames": 2,
+  "source_video_fps": 5.0,
+  "source_video_codec": "h264",
+  "source_video_sha256": "af02c550e3266a5988b8d3aafc4224f0cf902fee85ff2917208e817d7a0bcb1b",
+  "description": "Full-world presentation recorder smoke check; not a reference-task walkthrough"
+}

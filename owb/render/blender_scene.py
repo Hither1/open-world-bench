@@ -24,7 +24,7 @@ def linear(rgb):
     return np.where(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055) ** 2.4)
 
 
-def material(name, *, emission=False, water=False):
+def material(name, *, emission=False, water=False, kind="surface"):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -34,6 +34,67 @@ def material(name, *, emission=False, water=False):
     links.new(colors.outputs["Color"], shader.inputs["Base Color"])
     shader.inputs["Roughness"].default_value = 0.82
     shader.inputs["Specular IOR Level"].default_value = 0.25
+    if not water and not emission:
+        coordinates=nodes.new("ShaderNodeTexCoord")
+        vector=coordinates.outputs["Object"]
+        if kind=="bark":
+            stretch=nodes.new("ShaderNodeVectorMath")
+            stretch.operation="MULTIPLY"
+            stretch.inputs[1].default_value=(7,7,.55)
+            links.new(vector,stretch.inputs[0])
+            vector=stretch.outputs["Vector"]
+        coarse=nodes.new("ShaderNodeTexNoise")
+        coarse.inputs["Scale"].default_value={"terrain":.13,"stone":3.5,"bark":2.4,"metal":5,"cloth":95}.get(kind,4)
+        coarse.inputs["Detail"].default_value=3
+        coarse.inputs["Roughness"].default_value=.7
+        links.new(vector,coarse.inputs["Vector"])
+        variation=nodes.new("ShaderNodeValToRGB")
+        variation.color_ramp.elements[0].color=(.56,.56,.56,1) if kind in ("terrain","stone","bark") else (.83,.83,.83,1)
+        variation.color_ramp.elements[1].color=(1.06,1.06,1.06,1)
+        links.new(coarse.outputs["Fac"],variation.inputs["Fac"])
+        multiply=nodes.new("ShaderNodeMixRGB")
+        multiply.blend_type="MULTIPLY";multiply.inputs[0].default_value=1
+        links.new(colors.outputs["Color"],multiply.inputs[1])
+        links.new(variation.outputs["Color"],multiply.inputs[2])
+        links.new(multiply.outputs["Color"],shader.inputs["Base Color"])
+        fine=nodes.new("ShaderNodeTexNoise")
+        fine.inputs["Scale"].default_value={"terrain":9,"stone":28,"bark":7,"metal":38,"cloth":180}.get(kind,35)
+        fine.inputs["Detail"].default_value=2
+        links.new(vector,fine.inputs["Vector"])
+        bump=nodes.new("ShaderNodeBump")
+        bump.inputs["Strength"].default_value={"terrain":.32,"stone":.35,"bark":.40,"cloth":.16,"foliage":.07,"skin":.06}.get(kind,.12)
+        bump.inputs["Distance"].default_value={"terrain":.055,"stone":.035,"bark":.025,"cloth":.004,"foliage":.002,"skin":.002}.get(kind,.008)
+        links.new(fine.outputs["Fac"],bump.inputs["Height"])
+        links.new(bump.outputs["Normal"],shader.inputs["Normal"])
+        shader.inputs["Roughness"].default_value={"stone":.88,"terrain":.95,"bark":.90,"foliage":.68,"metal":.48,"cloth":.92,"skin":.6}.get(kind,.82)
+        if kind=="metal":
+            shader.inputs["Metallic"].default_value=.72
+        if kind=="skin":
+            shader.inputs["Subsurface Weight"].default_value=.05
+        if kind=="foliage":
+            shader.inputs["Subsurface Weight"].default_value=.06
+            translucent=nodes.new("ShaderNodeBsdfTranslucent")
+            links.new(multiply.outputs["Color"],translucent.inputs["Color"])
+            mix=nodes.new("ShaderNodeMixShader");mix.inputs[0].default_value=.14
+            links.new(shader.outputs["BSDF"],mix.inputs[1])
+            links.new(translucent.outputs[0],mix.inputs[2])
+            links.new(mix.outputs[0],nodes.get("Material Output").inputs["Surface"])
+        if kind=="terrain":
+            # Earth patches are tied to world coordinates and vertex biome color.
+            patches=nodes.new("ShaderNodeTexNoise")
+            patches.inputs["Scale"].default_value=.045
+            patches.inputs["Detail"].default_value=3
+            links.new(coordinates.outputs["Object"],patches.inputs["Vector"])
+            mask=nodes.new("ShaderNodeMapRange")
+            mask.inputs["From Min"].default_value=.50
+            mask.inputs["From Max"].default_value=.78
+            mask.inputs["To Max"].default_value=.48
+            links.new(patches.outputs["Fac"],mask.inputs["Value"])
+            earth=nodes.new("ShaderNodeMixRGB")
+            links.new(mask.outputs[0],earth.inputs[0])
+            links.new(multiply.outputs[0],earth.inputs[1])
+            earth.inputs[2].default_value=(*linear(np.array((.40,.35,.23))),1)
+            links.new(earth.outputs[0],shader.inputs["Base Color"])
     if emission:
         links.new(colors.outputs["Color"], shader.inputs["Emission Color"])
         shader.inputs["Emission Strength"].default_value = 2.0
@@ -90,7 +151,7 @@ def add_mesh(data, index, spec, materials):
     if spec["water"]:
         mesh.materials.append(materials["water"])
     else:
-        mesh.materials.append(materials["surface"])
+        mesh.materials.append(materials.get(spec.get("material","surface"),materials["surface"]))
         mesh.materials.append(materials["emission"])
         mesh.polygons.foreach_set("material_index", (data[prefix + "emission"] > 0.1).astype(np.int32))
     mesh.polygons.foreach_set("use_smooth", np.full(len(mesh.polygons), spec["smooth"], dtype=bool))
@@ -197,6 +258,8 @@ def main():
         materials = dict(surface=material("Painted surfaces"),
                          emission=material("Elemental glow", emission=True),
                          water=material("Water", water=True))
+        for kind in ("terrain","stone","bark","foliage","metal","cloth","skin"):
+            materials[kind]=material(kind.title(),kind=kind)
         for i, spec in enumerate(metadata["meshes"]):
             add_mesh(data, i, spec, materials)
     scene.render.filepath = str(args.output.resolve())

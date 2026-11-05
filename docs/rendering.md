@@ -2,8 +2,10 @@
 
 OWB can now export a live **Teyvat or Wildlands** scene and render it in Blender.
 The Python simulator continues to own actions, physics, rewards, and observations.
-Blender is an optional offline presentation renderer; Godot is not yet a live
-environment backend.
+Blender Cycles is the default for Teyvat and Wildlands presentation output,
+including screenshots and recordings. Godot is not yet a live environment
+backend. CPU presentation requires an explicit option; missing or failing
+Blender never causes an automatic quality downgrade.
 
 The export includes terrain, visible procedural props, characters and their
 current poses, entities, water, the camera, and directional lighting. Wildlands
@@ -33,7 +35,15 @@ python -B -m owb.scripts.render_blender \
 ```
 
 Use a new output directory for each run. If `blender` is on your PATH, omit
-`--blender`. Each environment gets:
+`--blender`. You can also set `OWB_BLENDER` or save a machine-local executable
+path in the git-ignored `.owb-render.local.json` at the repository root:
+
+```json
+{"blender": "/path/to/blender", "ffmpeg": "/path/to/ffmpeg"}
+```
+
+`ffmpeg` is optional when it is on PATH or supplied by `imageio-ffmpeg` from the
+video extra. Each environment exported by `render_blender` gets:
 
 | File | Purpose |
 | --- | --- |
@@ -83,10 +93,46 @@ blender --background --factory-startup --python-exit-code 1 \
 Snapshots are camera-specific presentation artifacts, not savegames. The prop
 selection still uses the native renderer's visibility and population limits.
 The mesh includes more terrain than an agent can see, so it should not be supplied
-to a policy that is being evaluated on RGB-only observations. The current pipeline
-renders stills; the existing GIF/MP4 recorder still uses the CPU renderers.
+to a policy that is being evaluated on RGB-only observations. Presentation frames
+are separate from policy RGB observations and never advance the simulation.
 Skylands export is explicitly rejected until its construction objects and layered
 lighting have a dedicated adapter.
+
+## Record Cycles video
+
+The shared episode recorder defaults to Cycles for Teyvat and Wildlands:
+
+```bash
+python -B -m owb.scripts.benchmark --env teyvat --variant full \
+  --seed 7 --steps 20 --video mp4 --output /tmp/teyvat-cycles-recording
+```
+
+The default presentation size is 960×540 with 48 samples per pixel. Set
+`--video-size WIDTH HEIGHT`, `--samples`, `--threads`, and `--blender` as needed.
+`--size` and `--quality` continue to configure policy observations, independently
+of the recording. Video frames are captured from each actual simulator state;
+camera, positions, collisions, actions, and rewards are not altered by rendering.
+This is offline rendering and can take substantially longer than simulation.
+MP4 output uses H.264, `yuv420p`, and fast-start metadata for viewer compatibility.
+The recording's `config.json` includes the presentation backend and settings.
+
+The reference task recorder (`owb.scripts.teyvat_reference`), screenshot script,
+and native Teyvat `render_hd()` also default to Cycles. Reference frames are
+rendered at 864×486 inside a 1280×720 annotated layout, without upscaling a
+low-resolution observation. Reference summaries and render caches record the
+backend and settings, and assembly rejects a mixture of render settings. Legacy
+CPU caches cannot be assembled as Cycles recordings.
+
+For an explicitly requested CPU diagnostic, use `--video-renderer cpu` on the
+benchmark runner, `--renderer cpu` on the reference or screenshot scripts, or
+`render_hd(renderer="cpu")`. The Wildlands terminal script defaults to Cycles;
+its existing `--renderer landscape` and `--renderer voxel` select CPU output.
+Other environments retain their native recording path because their scenes do
+not yet have a Cycles exporter.
+
+The compact reference task geometry remains compact. A renderer change does
+not replace that course with the full island, and older videos are not
+automatically re-rendered. See the [reference demo scope](teyvat-reference-demos.md).
 
 ## Use the assets in Godot
 

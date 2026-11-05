@@ -6,13 +6,13 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import shutil
 import subprocess
 
 import numpy as np
 
 from ..bench import make_env
 from ..render.scene_export import export_scene
+from ..render.presentation import resolve_blender
 
 
 def showcase(env):
@@ -44,7 +44,7 @@ def main():
     parser.add_argument("--size", nargs=2, type=int, default=(960, 540), metavar=("WIDTH", "HEIGHT"))
     parser.add_argument("--samples", type=int, default=64)
     parser.add_argument("--threads", type=int, default=8)
-    parser.add_argument("--blender", default="blender", help="path to the Blender executable")
+    parser.add_argument("--blender", help="path to the Blender executable (or OWB_BLENDER)")
     parser.add_argument("--export-only", action="store_true", help="write snapshots without requiring Blender")
     parser.add_argument("--view", choices=("agent", "showcase"), default="agent")
     parser.add_argument("--output", type=Path, required=True, help="a new output directory")
@@ -53,9 +53,10 @@ def main():
         parser.error("size, samples and threads must be positive")
     if len(set(args.env)) != len(args.env):
         parser.error("each environment must appear only once")
-    blender = shutil.which(args.blender)
-    if not args.export_only and not blender:
-        parser.error("Blender was not found; pass --blender /path/to/blender or use --export-only")
+    try:
+        blender = resolve_blender(args.blender) if not args.export_only else None
+    except RuntimeError as exc:
+        parser.error(str(exc))
     if args.output.exists():
         parser.error(f"output already exists: {args.output}")
     args.output.mkdir(parents=True)

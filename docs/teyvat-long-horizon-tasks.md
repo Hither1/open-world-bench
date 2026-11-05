@@ -1,6 +1,8 @@
 # Teyvat: long-horizon memory and reusable skills
 
-Status: revised task designs, not runnable task implementations. The two tasks
+Status: the full task suite remains a design; [compact executable reference
+courses and demonstration videos](teyvat-reference-demos.md) are now available.
+The two tasks
 retain exactly **12** and **24** milestones in the Genshin-inspired environment.
 A milestone is a verifiable accomplishment requiring many actions, not a button
 press or a claim that the agent has learned something.
@@ -16,6 +18,25 @@ adaptation through agent-owned memory with model weights held fixed.
 | --- | --- | --- |
 | A: The Relay Keeper's Apprenticeship | 12 | One procedure can be retained and applied to new layouts, initial states, and interruptions after a long delay. |
 | B: The Expedition of Three Arts | 24 | Several procedures can be retained, selected, composed, and revised while preserving older knowledge that remains valid. |
+
+## Milestone graphics
+
+Each illustrated card shows the action, completion condition, and memory role.
+Colors label learning, intervening work, transfer, composition, and adaptation;
+fresh-context checkpoints are explicitly marked. These are designer-facing
+diagrams, not observations or solution hints supplied to the agent.
+
+| Sheet | Coverage | Exports |
+| --- | --- | --- |
+| Relay Keeper's Apprenticeship | A01–A12 | [PNG](../assets/design/teyvat-milestones/task-a-01-12.png) · [SVG](../assets/design/teyvat-milestones/task-a-01-12.svg) |
+| Expedition of Three Arts, first half | B01–B12 | [PNG](../assets/design/teyvat-milestones/task-b-01-12.png) · [SVG](../assets/design/teyvat-milestones/task-b-01-12.svg) |
+| Expedition of Three Arts, second half | B13–B24 | [PNG](../assets/design/teyvat-milestones/task-b-13-24.png) · [SVG](../assets/design/teyvat-milestones/task-b-13-24.svg) |
+
+[Printable three-page PDF](../assets/design/teyvat-milestones/teyvat-milestone-storyboards.pdf)
+· [Full graphics bundle, including 36 individual cards](../assets/design/teyvat-milestones/teyvat-milestone-graphics.zip).
+The bundle also includes editable SVGs, the caption manifest, and the renderer.
+Regenerate from the repository root with
+`python -B assets/design/teyvat-milestones/render.py` (Matplotlib and Pillow).
 
 ## What counts as a reusable skill
 
@@ -329,5 +350,6 @@ G and T. Then build Task B's individual tests, compositions, and scoped update.
 Use a correct-procedure reference so unsolvable sites or inadequate controls
 are not counted as forgetting.
 
-This revision changes the design only; it supplies no simulator implementation
-or benchmark results.
+The compact reference courses demonstrate the procedures and milestone outcomes.
+They do not yet implement the complete island-scale tasks or provide memory
+benchmark results; see the [reference-demo scope and verification](teyvat-reference-demos.md).

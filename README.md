@@ -28,10 +28,13 @@ game assets or code are redistributed.
 
 ### Teyvat and Wildlands — Blender renders
 
-The latest Teyvat and Wildlands showcase renders use seed 7 and Blender Cycles
-for offline rendering, with indirect lighting, cast shadows, reflective water,
-and smoother geometry. Agent observations and gameplay recordings use the CPU
-renderers.
+Teyvat and Wildlands screenshots and recordings default to Blender Cycles,
+with indirect lighting, cast shadows, reflective water, and smoother geometry.
+The showcase images below use seed 7. Presentation renders use the live simulator
+state; benchmark RGB observations retain their configured sensor renderer.
+Blender failures are reported instead of silently falling back to CPU output.
+Use `--renderer cpu` (or `--video-renderer cpu` for the benchmark runner) only
+for an explicitly requested diagnostic render.
 
 | Teyvat — Blender Cycles | Wildlands — Blender Cycles |
 | --- | --- |
@@ -133,6 +136,12 @@ longer runs are needed to evaluate task performance. See the
 [embodied agent guide](docs/embodied-agent.md) for limits and evaluation details.
 The guide also covers `--policy codex --codex-account-home /path/to/account` for
 using a saved Codex login, including the local `roboharness04` account.
+For Claude Opus 5.5 with your default Claude login, use `--policy claude
+--claude-account-home ~/.claude --model claude-opus-5-5` with the same environment
+and recording options. Gemini 4 Argon uses `--policy gemini --model gemini-4-argon`
+with `--gemini-account-home ~/.gemini --gemini-account-email you@gmail.com` after
+signing in to Gemini CLI with Google. All policies validate actions before stepping
+the simulator.
 
 ### Shared and native interfaces
 

@@ -1,0 +1,13 @@
+{
+  "task": "a",
+  "action_step": 138,
+  "state_digest": "f8a6982445358f7e47ba5f89a876cef10d3626d6c32aa771a687e902509bea2c",
+  "presentation": {
+    "backend": "cycles",
+    "width": 864,
+    "height": 486,
+    "samples": 48,
+    "threads": 8
+  },
+  "simulation_unchanged": true
+}

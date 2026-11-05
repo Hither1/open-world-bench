@@ -6,7 +6,7 @@ Blender converts these to Z-up; its glTF exporter converts back to Y-up.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import json
 from pathlib import Path
 
@@ -19,6 +19,7 @@ def _presentation_batch():
 
     class PresentationBatch(MeshBatch):
         """Spend more triangles on the same shapes for offline presentation."""
+        presentation_detail = True
         def ellipsoid(self, center, radii, color, yaw=0, obj_id=1, sides=8, rings=4):
             super().ellipsoid(center, radii, color, yaw, obj_id, max(sides, 18), max(rings, 8))
 
@@ -36,7 +37,7 @@ class SceneSnapshot:
     metadata: dict
     meshes: list[dict] = field(default_factory=list)
 
-    def add(self, name, triangles, colors, *, normals=None, emission=None, smooth=False, water=False):
+    def add(self, name, triangles, colors, *, normals=None, emission=None, smooth=False, water=False, material="surface"):
         triangles = np.asarray(triangles, np.float32).reshape(-1, 3, 3)
         if not len(triangles):
             return
@@ -44,7 +45,7 @@ class SceneSnapshot:
         self.meshes.append(dict(name=name, triangles=triangles.copy(), colors=colors,
                                 normals=np.zeros_like(triangles) if normals is None else np.asarray(normals, np.float32).copy(),
                                 emission=np.zeros(len(triangles), np.float32) if emission is None else np.asarray(emission, np.float32).copy(),
-                                smooth=bool(smooth), water=bool(water)))
+                                smooth=bool(smooth), water=bool(water), material=material))
 
     def save(self, path):
         """Write a new snapshot, refusing to overwrite an existing artifact."""
@@ -53,7 +54,7 @@ class SceneSnapshot:
         metadata = dict(self.metadata, meshes=[])
         arrays = {}
         for i, mesh in enumerate(self.meshes):
-            metadata["meshes"].append({k: mesh[k] for k in ("name", "smooth", "water")})
+            metadata["meshes"].append({k: mesh[k] for k in ("name", "smooth", "water", "material")})
             for key in ("triangles", "colors", "normals", "emission"):
                 arrays[f"mesh_{i}_{key}"] = mesh[key]
         with path.open("xb") as handle:
@@ -168,7 +169,13 @@ def _add_batch(scene, batch):
             triangles[start:end][flip] = part[flip][:, [0, 2, 1]]
             normals[start:end][flip] = normals[start:end][flip][:, [0, 2, 1]]
             start = end
-        scene.add("Characters and props", triangles, colors, normals=normals, emission=emission)
+        from open_world_bench.render.meshes import MATERIAL_NAMES
+        material_ids=np.concatenate(batch.material_ids)
+        for material_id in np.unique(material_ids):
+            mask=material_ids==material_id
+            name=MATERIAL_NAMES[int(material_id)]
+            scene.add("Characters and props: "+name, triangles[mask], colors[mask],
+                      normals=normals[mask], emission=emission[mask], material=name)
 
 
 def _teyvat(native, size):
@@ -200,12 +207,16 @@ def _teyvat(native, size):
         (smoothstep(4.2, 0.6, p[:, 1]) * np.clip(1 - slope / np.radians(34), 0, 1), BIOME_ALBEDO[BEACH]),
     ):
         color = color * (1 - weight[:, None]) + albedo * weight[:, None]
-    scene.add("Island terrain", triangles, color, smooth=True)
+    scene.add("Island terrain", triangles, color, smooth=True, material="terrain")
     extent = terrain.cfg.size * 4
     plane = np.array([[[-extent, terrain.cfg.sea_level, -extent], [-extent, terrain.cfg.sea_level, extent]],
                       [[extent, terrain.cfg.sea_level, -extent], [extent, terrain.cfg.sea_level, extent]]])
     scene.add("Ocean", _grid_triangles(plane), (0.16, 0.61, 0.66), water=True)
-    _add_batch(scene, SoftRenderer(native.cfg.render)._build_meshes(
+    # Observation budgets must not reduce presentation geometry or vegetation.
+    settings = replace(native.cfg.render, width=size[0], height=size[1],
+                       draw_props=True, draw_entities=True, draw_character=True,
+                       ground_cover=True, prop_draw_distance=max(260, native.cfg.render.prop_draw_distance))
+    _add_batch(scene, SoftRenderer(settings)._build_meshes(
         world, native.char, eye, _unit(target - eye), batch=_presentation_batch(), full_detail=True))
     return scene
 
@@ -217,7 +228,8 @@ def _wildlands(native, size):
     from ..core import blocks as B
 
     world, cfg, agent = native.world, native.cfg, native.agent
-    renderer = LandscapeRenderer(cfg.render_cfg)
+    settings = replace(cfg.render_cfg, width=size[0], height=size[1], quality="high")
+    renderer = LandscapeRenderer(settings)
     renderer._prepare(world)
     eye = agent.pos + (0, cfg.sim_cfg.eye_height, 0)
     cam = Camera(eye, agent.yaw, agent.pitch)
@@ -241,9 +253,9 @@ def _wildlands(native, size):
     grass = np.clip((normal[:, 1] - 0.65) / 0.3, 0, 1)
     grass[~np.isin(block, (B.GRASS, B.DIRT, B.MOSS_STONE))] = 0
     color = color * (1 - grass[:, None]) + np.array((0.46, 0.59, 0.24)) * grass[:, None]
-    scene.add("Terrain with caves", triangles, color, smooth=True)
+    scene.add("Terrain with caves", triangles, color, smooth=True, material="terrain")
     triangles, block = _voxel_faces(renderer._detail.vox, renderer._detail.vox != B.AIR)
-    scene.add("Architecture", triangles, P.COLOR_F[block])
+    scene.add("Architecture", triangles, P.COLOR_F[block], material="stone")
     triangles, _ = _voxel_faces(world.vox, world.vox == B.WATER)
     scene.add("Water", triangles, (0.16, 0.61, 0.66), water=True)
     entities = native.npcs.render_list(agent.pos) + native.bodies.render_list() + native.gameplay.render_list()

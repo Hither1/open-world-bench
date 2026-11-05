@@ -329,7 +329,8 @@ class SoftRenderer(Renderer):
                 if dxz > s.prop_draw_distance * 1.6:
                     continue
                 add_entity(batch, ENTITY_NAMES[int(e.kind)], e.pos, e.yaw, e.used,
-                           obj_id=100 + n, bob=e.bob)
+                           obj_id=100 + n, bob=e.bob, identity=(world.cfg.seed,e.id),
+                           visual_role=e.visual_role, visual_version=e.visual_version)
                 aura = e.elemental.aura.element
                 if e.elemental.frozen > 0.0:
                     aura = Element.FROST

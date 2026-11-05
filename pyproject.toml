@@ -17,7 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 agent = ["openai>=2.1", "Pillow>=9"]
 gl = ["moderngl>=5.8"]
-video = ["imageio>=2.31", "imageio-ffmpeg>=0.4"]
+video = ["imageio>=2.31", "imageio-ffmpeg>=0.4", "Pillow>=9"]
 fast = ["numba>=0.58"]
 dev = ["pytest>=7"]
 

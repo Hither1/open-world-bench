@@ -42,11 +42,13 @@ The variant selects defaults only without a native configuration. `env.native`
 exposes the simulator for debugging.
 
 `render_quality="presentation"` enables 2x supersampling and stronger terrain/
-shadow sampling for shareable recordings. `"fast"` keeps lower-cost observations;
+shadow sampling for policy observations. `"fast"` keeps lower-cost observations;
 neither setting changes physics, tasks, or the output tensor shape. Teyvat uses
 original procedural adventurer meshes, layered foliage, softer cel lighting,
 atmospheric color, and fine outlines. It remains a CPU research renderer rather
 than a production game engine with authored animation and materials.
+User-facing Teyvat/Wildlands recordings use Blender Cycles independently of
+these sensor settings; see the [rendering guide](rendering.md).
 
 ## Controls
 
@@ -147,6 +149,12 @@ a general task-solving baseline.
 choose structured actions with GPT-6-Astra. Run it with `--policy openai`; see the
 [embodied agent guide](embodied-agent.md) for setup, request limits, and memory.
 Policies may expose `metadata()` and `last_decision` for recorder diagnostics.
+`ClaudePolicy` uses the same observation/action contract through a saved Claude
+Code login; select `--policy claude --model claude-opus-5-5` and pass
+`--claude-account-home` for the intended profile.
+`GeminiPolicy` selects a saved Gemini CLI Google login; use `--policy gemini
+--model gemini-4-argon`, `--gemini-account-home ~/.gemini`, and
+`--gemini-account-email` to identify and verify the intended account.
 
 ## Recorded demos
 
@@ -160,14 +168,20 @@ PYTHONDONTWRITEBYTECODE=1 python -m owb.scripts.benchmark \
   --policy demo --video gif --output /tmp/owb-shared-demo
 ```
 
-Add `--quality presentation` for the higher-quality renderer. For example, record
-Teyvat at `--env teyvat --size 384 216 --quality presentation`.
+Teyvat and Wildlands videos default to Blender Cycles at 960×540 and 48 samples.
+Configure Blender using `--blender`, `OWB_BLENDER`, or the local configuration
+described in the [rendering guide](rendering.md). `--video-size` and `--samples`
+configure the video. `--size` and `--quality` configure policy observations.
+An explicit `--video-renderer cpu` selects diagnostic CPU output. There is no
+automatic fallback when Blender fails. Other worlds retain their native video
+renderer until they have a Cycles scene exporter.
 
 Each `ENV-SEED/` contains `config.json` (schema, common/native configurations,
-actual seed and field vocabularies), `trajectory.jsonl` (reset and action/reward/
+actual seed, presentation renderer/settings, and field vocabularies), `trajectory.jsonl` (reset and action/reward/
 event records with proprioception/instruction), `summary.json`, and optional
-`episode.gif` or `episode.mp4`. Videos contain reset and decision RGB frames at
-the configured decision interval. Existing run directories are never overwritten.
+`episode.gif` or `episode.mp4`. Videos render the reset and decision states at
+the configured decision interval. Cycles frames are presentation output, not a
+copy of the policy's RGB observation. Existing run directories are never overwritten.
 Omit `--video` for JSON-only recording. Python callers can use
 `run_episode(..., output_dir=path, video="gif")`.
 

@@ -1,0 +1,348 @@
+{
+  "mode": "built-in image_gen",
+  "source": "docs/wildlands-long-horizon-tasks.md",
+  "sheets": [
+    {
+      "file": "task-a-01-06",
+      "title": "THE FROSTBOUND PASS",
+      "subtitle": "Task A · 12 milestones · Sheet 1/2 · Learn, practice, then leave",
+      "footer": "S1 = support and release   S2 = safe updraft   |   Concept storyboard · proposed mechanics",
+      "panels": [
+        [
+          "A01",
+          "Accept the commission",
+          "Read the work order and cache landmark.",
+          "Cache clue recorded.",
+          "STORE landmark → A08",
+          "Traveler at village noticeboard, parchment with a distinctive forked tree and chest sketch, flooded mountain road distant. A small dotted memory link goes from parchment to a notebook."
+        ],
+        [
+          "A02",
+          "Restore the workshop lift",
+          "Support the load, then release the brake.",
+          "Lift reaches a stable upper stop.",
+          "LEARN S1 · feedback",
+          "Stone workshop cutaway, counterweight cradle with metal slab, brake lever, suspended lift platform. Clear action arrow slab onto cradle, upward lift arrow, gauge moves to safe band."
+        ],
+        [
+          "A03",
+          "Reach the thermal gallery",
+          "Compare hearths; establish a safe draft.",
+          "Traveler reaches the upper gallery.",
+          "LEARN S2 · conditions",
+          "Two small hearth shafts in stone workshop: one exposed/blocked with broken weak air arrows and one sheltered open shaft with rising teal airflow. Glider traveler ascends working shaft to gallery."
+        ],
+        [
+          "A04",
+          "Open the practice gate",
+          "Solve a changed counterweight layout.",
+          "Gate opens and latches safely.",
+          "CHECK S1 · no hints",
+          "A different gate, brake on opposite side, two small supported weights replacing a single slab, safe gauge. Arrows show physical load to raised portcullis. Tiny earlier single-slab memory ghost, not an exact repeated scene."
+        ],
+        [
+          "A05",
+          "Recover the salvage kit",
+          "Adapt the draft setup to a new gallery.",
+          "Salvage kit acquired.",
+          "CHECK S2 · no hints",
+          "Traveler glides from repositioned sheltered hearth to a higher offset balcony with a compact salvage toolkit. Curved air/flight arrow and open treasure box; distinct from A03."
+        ],
+        [
+          "A06",
+          "Survey the valley",
+          "Read calibration and coastal bearings.",
+          "Survey evidence recorded.",
+          "STORE calibration → A11",
+          "Traveler at tower overlooking coast and mountain intake; close readable graphical gauge chart with one marked notch and compass bearing pointing to coastal supply depot. Notebook memory icon, ordinary stairs visible."
+        ]
+      ],
+      "prompt": "Use case: infographic-diagram.\nAsset type: illustrated game-design milestone storyboard for a research repository.\nPrimary request: Create ONE polished LANDSCAPE editorial storyboard sheet, aspect ratio 3:2, at high resolution, with EXACTLY SIX equal panels in a strict 3-column by 2-row grid. Each panel must illustrate the named milestone, not merely display an icon. Order left-to-right, top-to-bottom. Preserve all six milestone IDs exactly once. Use a consistent original small explorer in a muted teal cloak, stone ruins, painterly open-world fantasy landscapes, warm ivory paper background, crisp dark ink typography, restrained teal/ochre accents. Inspired by Breath of the Wild exploration but no franchise logos or named franchise characters.\nComposition: generous top title band, six bordered rectangular panels with ample gutters, short footer. Every panel has a dark clearly readable ID and title at the top, a large central diagrammatic scene showing the required action with a few clean directional arrows and relevant objects, and three short readable caption lines at the bottom: DO, DONE, and the memory/skill tag. Keep all captions inside their own panel and distinct from the scene. Typography is large, clear sans-serif; no cursive. Use green success cues, amber learning, blue memory, purple transfer/composition, and red only for a specific unsafe state. Do not rely on color alone: retain text and symbols.\nCritical: exact specified captions, no extra microtext, no invented milestone, no cropped panels, no duplicate numbers, no hallucinated UI paragraphs. Do not make the sheet look like actual in-engine screenshots. Draw useful spatial/mechanistic relationships so a reader can understand what the agent must do. A memory inset may show previously learned information but must not dominate the scene.\n\nTitle (verbatim): \"THE FROSTBOUND PASS\"\nSubtitle (verbatim): \"Task A · 12 milestones · Sheet 1/2 · Learn, practice, then leave\"\nFooter (verbatim): \"S1 = support and release   S2 = safe updraft   |   Concept storyboard · proposed mechanics\"\n\nPanel 1, TOP row column 1:\nTitle (verbatim): \"A01 · Accept the commission\"\nCaption 1 (verbatim): \"DO  Read the work order and cache landmark.\"\nCaption 2 (verbatim): \"DONE  Cache clue recorded.\"\nTag (verbatim): \"STORE landmark → A08\"\nIllustration: Traveler at village noticeboard, parchment with a distinctive forked tree and chest sketch, flooded mountain road distant. A small dotted memory link goes from parchment to a notebook.\n\nPanel 2, TOP row column 2:\nTitle (verbatim): \"A02 · Restore the workshop lift\"\nCaption 1 (verbatim): \"DO  Support the load, then release the brake.\"\nCaption 2 (verbatim): \"DONE  Lift reaches a stable upper stop.\"\nTag (verbatim): \"LEARN S1 · feedback\"\nIllustration: Stone workshop cutaway, counterweight cradle with metal slab, brake lever, suspended lift platform. Clear action arrow slab onto cradle, upward lift arrow, gauge moves to safe band.\n\nPanel 3, TOP row column 3:\nTitle (verbatim): \"A03 · Reach the thermal gallery\"\nCaption 1 (verbatim): \"DO  Compare hearths; establish a safe draft.\"\nCaption 2 (verbatim): \"DONE  Traveler reaches the upper gallery.\"\nTag (verbatim): \"LEARN S2 · conditions\"\nIllustration: Two small hearth shafts in stone workshop: one exposed/blocked with broken weak air arrows and one sheltered open shaft with rising teal airflow. Glider traveler ascends working shaft to gallery.\n\nPanel 4, BOTTOM row column 1:\nTitle (verbatim): \"A04 · Open the practice gate\"\nCaption 1 (verbatim): \"DO  Solve a changed counterweight layout.\"\nCaption 2 (verbatim): \"DONE  Gate opens and latches safely.\"\nTag (verbatim): \"CHECK S1 · no hints\"\nIllustration: A different gate, brake on opposite side, two small supported weights replacing a single slab, safe gauge. Arrows show physical load to raised portcullis. Tiny earlier single-slab memory ghost, not an exact repeated scene.\n\nPanel 5, BOTTOM row column 2:\nTitle (verbatim): \"A05 · Recover the salvage kit\"\nCaption 1 (verbatim): \"DO  Adapt the draft setup to a new gallery.\"\nCaption 2 (verbatim): \"DONE  Salvage kit acquired.\"\nTag (verbatim): \"CHECK S2 · no hints\"\nIllustration: Traveler glides from repositioned sheltered hearth to a higher offset balcony with a compact salvage toolkit. Curved air/flight arrow and open treasure box; distinct from A03.\n\nPanel 6, BOTTOM row column 3:\nTitle (verbatim): \"A06 · Survey the valley\"\nCaption 1 (verbatim): \"DO  Read calibration and coastal bearings.\"\nCaption 2 (verbatim): \"DONE  Survey evidence recorded.\"\nTag (verbatim): \"STORE calibration → A11\"\nIllustration: Traveler at tower overlooking coast and mountain intake; close readable graphical gauge chart with one marked notch and compass bearing pointing to coastal supply depot. Notebook memory icon, ordinary stairs visible.\n"
+    },
+    {
+      "file": "task-a-07-12",
+      "title": "THE FROSTBOUND PASS",
+      "subtitle": "Task A · 12 milestones · Sheet 2/2 · Recall and transfer",
+      "footer": "S1 = support and release   S2 = safe updraft   |   Concept storyboard · proposed mechanics",
+      "panels": [
+        [
+          "A07",
+          "Obtain the regulator",
+          "Exchange the kit at the coastal locker.",
+          "Regulator and cache key acquired.",
+          "DELAY · useful intervening work",
+          "Coastal supply locker on jetty, exchange tray receives salvage kit and dispenses round bronze regulator plus small key. Traveler and long route from tower in background; clear exchange arrow."
+        ],
+        [
+          "A08",
+          "Find the remembered cache",
+          "Use the old landmark and new key.",
+          "Service handle acquired.",
+          "RECALL A01 · landmark",
+          "Forked tree from work-order motif beside rocks; traveler finds chest and inserts key, curved service handle visible. Small memory inset of parchment forked-tree sketch. No navigation arrow to unknown location."
+        ],
+        [
+          "A09",
+          "Open the intake housing",
+          "Adapt support and release to new weights.",
+          "Housing is stably open.",
+          "TRANSFER S1 · from A04",
+          "Mountain intake cutaway: cradle now on right, rearranged brake and several smaller weights, differently positioned safe gauge. Traveler holds two weights with turquoise magnetic tether. Housing opens; snowy ridge behind."
+        ],
+        [
+          "A10",
+          "Reach the intake gallery",
+          "Choose the sheltered shaft in the rain.",
+          "Traveler lands safely at the controls.",
+          "TRANSFER S2 · from A05",
+          "Rainy cliffside: exposed hearth sputters under rain with red small cross; protected roofed shaft generates clear teal updraft. Traveler glides safely to intake gallery. Emphasize changed weather and shelter choice."
+        ],
+        [
+          "A11",
+          "Repair and calibrate",
+          "Fit both parts; recall the survey mark.",
+          "Stable flow for 5 s; road drains.",
+          "RECALL A06 · calibration",
+          "Cutaway intake regulator and curved handle fitted into sockets; traveler turns wheel matching notebook gauge inset, water level decreases exposing road. Simple 5 s timer mark. Before/after waterline arrow."
+        ],
+        [
+          "A12",
+          "Reopen the pass",
+          "Traverse the drained road and report.",
+          "Road open; intake still operational.",
+          "VERIFY · mission complete",
+          "Traveler crosses dry mountain road with low blue water beside it, distant repaired intake operating, village Reedbank noticeboard ahead with completion seal. A checkmark over dry road and small live-status light."
+        ]
+      ],
+      "prompt": "Use case: infographic-diagram.\nAsset type: illustrated game-design milestone storyboard for a research repository.\nPrimary request: Create ONE polished LANDSCAPE editorial storyboard sheet, aspect ratio 3:2, at high resolution, with EXACTLY SIX equal panels in a strict 3-column by 2-row grid. Each panel must illustrate the named milestone, not merely display an icon. Order left-to-right, top-to-bottom. Preserve all six milestone IDs exactly once. Use a consistent original small explorer in a muted teal cloak, stone ruins, painterly open-world fantasy landscapes, warm ivory paper background, crisp dark ink typography, restrained teal/ochre accents. Inspired by Breath of the Wild exploration but no franchise logos or named franchise characters.\nComposition: generous top title band, six bordered rectangular panels with ample gutters, short footer. Every panel has a dark clearly readable ID and title at the top, a large central diagrammatic scene showing the required action with a few clean directional arrows and relevant objects, and three short readable caption lines at the bottom: DO, DONE, and the memory/skill tag. Keep all captions inside their own panel and distinct from the scene. Typography is large, clear sans-serif; no cursive. Use green success cues, amber learning, blue memory, purple transfer/composition, and red only for a specific unsafe state. Do not rely on color alone: retain text and symbols.\nCritical: exact specified captions, no extra microtext, no invented milestone, no cropped panels, no duplicate numbers, no hallucinated UI paragraphs. Do not make the sheet look like actual in-engine screenshots. Draw useful spatial/mechanistic relationships so a reader can understand what the agent must do. A memory inset may show previously learned information but must not dominate the scene.\n\nTitle (verbatim): \"THE FROSTBOUND PASS\"\nSubtitle (verbatim): \"Task A · 12 milestones · Sheet 2/2 · Recall and transfer\"\nFooter (verbatim): \"S1 = support and release   S2 = safe updraft   |   Concept storyboard · proposed mechanics\"\n\nPanel 1, TOP row column 1:\nTitle (verbatim): \"A07 · Obtain the regulator\"\nCaption 1 (verbatim): \"DO  Exchange the kit at the coastal locker.\"\nCaption 2 (verbatim): \"DONE  Regulator and cache key acquired.\"\nTag (verbatim): \"DELAY · useful intervening work\"\nIllustration: Coastal supply locker on jetty, exchange tray receives salvage kit and dispenses round bronze regulator plus small key. Traveler and long route from tower in background; clear exchange arrow.\n\nPanel 2, TOP row column 2:\nTitle (verbatim): \"A08 · Find the remembered cache\"\nCaption 1 (verbatim): \"DO  Use the old landmark and new key.\"\nCaption 2 (verbatim): \"DONE  Service handle acquired.\"\nTag (verbatim): \"RECALL A01 · landmark\"\nIllustration: Forked tree from work-order motif beside rocks; traveler finds chest and inserts key, curved service handle visible. Small memory inset of parchment forked-tree sketch. No navigation arrow to unknown location.\n\nPanel 3, TOP row column 3:\nTitle (verbatim): \"A09 · Open the intake housing\"\nCaption 1 (verbatim): \"DO  Adapt support and release to new weights.\"\nCaption 2 (verbatim): \"DONE  Housing is stably open.\"\nTag (verbatim): \"TRANSFER S1 · from A04\"\nIllustration: Mountain intake cutaway: cradle now on right, rearranged brake and several smaller weights, differently positioned safe gauge. Traveler holds two weights with turquoise magnetic tether. Housing opens; snowy ridge behind.\n\nPanel 4, BOTTOM row column 1:\nTitle (verbatim): \"A10 · Reach the intake gallery\"\nCaption 1 (verbatim): \"DO  Choose the sheltered shaft in the rain.\"\nCaption 2 (verbatim): \"DONE  Traveler lands safely at the controls.\"\nTag (verbatim): \"TRANSFER S2 · from A05\"\nIllustration: Rainy cliffside: exposed hearth sputters under rain with red small cross; protected roofed shaft generates clear teal updraft. Traveler glides safely to intake gallery. Emphasize changed weather and shelter choice.\n\nPanel 5, BOTTOM row column 2:\nTitle (verbatim): \"A11 · Repair and calibrate\"\nCaption 1 (verbatim): \"DO  Fit both parts; recall the survey mark.\"\nCaption 2 (verbatim): \"DONE  Stable flow for 5 s; road drains.\"\nTag (verbatim): \"RECALL A06 · calibration\"\nIllustration: Cutaway intake regulator and curved handle fitted into sockets; traveler turns wheel matching notebook gauge inset, water level decreases exposing road. Simple 5 s timer mark. Before/after waterline arrow.\n\nPanel 6, BOTTOM row column 3:\nTitle (verbatim): \"A12 · Reopen the pass\"\nCaption 1 (verbatim): \"DO  Traverse the drained road and report.\"\nCaption 2 (verbatim): \"DONE  Road open; intake still operational.\"\nTag (verbatim): \"VERIFY · mission complete\"\nIllustration: Traveler crosses dry mountain road with low blue water beside it, distant repaired intake operating, village Reedbank noticeboard ahead with completion seal. A checkmark over dry road and small live-status light.\n"
+    },
+    {
+      "file": "task-b-01-06",
+      "title": "THE VALLEY BEFORE THE STORM",
+      "subtitle": "Task B · 24 milestones · Sheet 1/4 · Build a skill repertoire",
+      "footer": "S1 = support and release   S2 = safe updraft   S3 = route before feeding   |   Concept storyboard",
+      "panels": [
+        [
+          "B01",
+          "Accept the commission",
+          "Read the refuge and overflow assignment.",
+          "Mission facts recorded.",
+          "STORE facts → B22 / B24",
+          "Village work order with refuge house landmark and approved empty overflow basin on parchment. Traveler copies two distinct facts into notebook. Three basin landscape miniature, one authorized basin highlighted with seal."
+        ],
+        [
+          "B02",
+          "Restore the training lift",
+          "Observe feedback; support and release.",
+          "Lift operates stably.",
+          "LEARN S1",
+          "Workshop counterweight mechanism, supported slab on cradle, identifiable brake and safe-band gauge; traveler releases brake after loading. Small inset shows unsupported load triggering harmless brake trip, not death."
+        ],
+        [
+          "B03",
+          "Repair a second gate",
+          "Solve a new mass and control layout.",
+          "Gate opens safely without hints.",
+          "CHECK S1",
+          "Stone gate with two smaller weights, controls physically relocated, supported load and stable raised gate. Subtle earlier lift silhouette inset for transfer; no full action instruction overlay."
+        ],
+        [
+          "B04",
+          "Restore the thermal shaft",
+          "Compare draft conditions; establish lift.",
+          "Traveler reaches the gallery.",
+          "LEARN S2",
+          "Contrasting obstructed and sheltered open shafts, smoky weak blocked draft versus clear stable teal updraft, adventurer with glider in working shaft. Safe local feedback gauges."
+        ],
+        [
+          "B05",
+          "Reach a second gallery",
+          "Adapt to moved vents and shelter.",
+          "Safe arrival without procedural hints.",
+          "CHECK S2",
+          "New thermal room with rotated vent shutter, sloping roof, offset landing; glider traveler follows curved arrow and reaches balcony. Clear difference from training room."
+        ],
+        [
+          "B06",
+          "Restore the flow circuit",
+          "Open a safe outlet before feeding.",
+          "Authorized flow is stable.",
+          "LEARN S3",
+          "Transparent cutaway water training rig, inlet valve initially shut, selected outlet open, other branch closed, then blue water runs to safe basin. Small red pressure trip inset for feeding closed outlet. Clear inlet-to-outlet diagram."
+        ]
+      ],
+      "prompt": "Use case: infographic-diagram.\nAsset type: illustrated game-design milestone storyboard for a research repository.\nPrimary request: Create ONE polished LANDSCAPE editorial storyboard sheet, aspect ratio 3:2, at high resolution, with EXACTLY SIX equal panels in a strict 3-column by 2-row grid. Each panel must illustrate the named milestone, not merely display an icon. Order left-to-right, top-to-bottom. Preserve all six milestone IDs exactly once. Use a consistent original small explorer in a muted teal cloak, stone ruins, painterly open-world fantasy landscapes, warm ivory paper background, crisp dark ink typography, restrained teal/ochre accents. Inspired by Breath of the Wild exploration but no franchise logos or named franchise characters.\nComposition: generous top title band, six bordered rectangular panels with ample gutters, short footer. Every panel has a dark clearly readable ID and title at the top, a large central diagrammatic scene showing the required action with a few clean directional arrows and relevant objects, and three short readable caption lines at the bottom: DO, DONE, and the memory/skill tag. Keep all captions inside their own panel and distinct from the scene. Typography is large, clear sans-serif; no cursive. Use green success cues, amber learning, blue memory, purple transfer/composition, and red only for a specific unsafe state. Do not rely on color alone: retain text and symbols.\nCritical: exact specified captions, no extra microtext, no invented milestone, no cropped panels, no duplicate numbers, no hallucinated UI paragraphs. Do not make the sheet look like actual in-engine screenshots. Draw useful spatial/mechanistic relationships so a reader can understand what the agent must do. A memory inset may show previously learned information but must not dominate the scene.\n\nTitle (verbatim): \"THE VALLEY BEFORE THE STORM\"\nSubtitle (verbatim): \"Task B · 24 milestones · Sheet 1/4 · Build a skill repertoire\"\nFooter (verbatim): \"S1 = support and release   S2 = safe updraft   S3 = route before feeding   |   Concept storyboard\"\n\nPanel 1, TOP row column 1:\nTitle (verbatim): \"B01 · Accept the commission\"\nCaption 1 (verbatim): \"DO  Read the refuge and overflow assignment.\"\nCaption 2 (verbatim): \"DONE  Mission facts recorded.\"\nTag (verbatim): \"STORE facts → B22 / B24\"\nIllustration: Village work order with refuge house landmark and approved empty overflow basin on parchment. Traveler copies two distinct facts into notebook. Three basin landscape miniature, one authorized basin highlighted with seal.\n\nPanel 2, TOP row column 2:\nTitle (verbatim): \"B02 · Restore the training lift\"\nCaption 1 (verbatim): \"DO  Observe feedback; support and release.\"\nCaption 2 (verbatim): \"DONE  Lift operates stably.\"\nTag (verbatim): \"LEARN S1\"\nIllustration: Workshop counterweight mechanism, supported slab on cradle, identifiable brake and safe-band gauge; traveler releases brake after loading. Small inset shows unsupported load triggering harmless brake trip, not death.\n\nPanel 3, TOP row column 3:\nTitle (verbatim): \"B03 · Repair a second gate\"\nCaption 1 (verbatim): \"DO  Solve a new mass and control layout.\"\nCaption 2 (verbatim): \"DONE  Gate opens safely without hints.\"\nTag (verbatim): \"CHECK S1\"\nIllustration: Stone gate with two smaller weights, controls physically relocated, supported load and stable raised gate. Subtle earlier lift silhouette inset for transfer; no full action instruction overlay.\n\nPanel 4, BOTTOM row column 1:\nTitle (verbatim): \"B04 · Restore the thermal shaft\"\nCaption 1 (verbatim): \"DO  Compare draft conditions; establish lift.\"\nCaption 2 (verbatim): \"DONE  Traveler reaches the gallery.\"\nTag (verbatim): \"LEARN S2\"\nIllustration: Contrasting obstructed and sheltered open shafts, smoky weak blocked draft versus clear stable teal updraft, adventurer with glider in working shaft. Safe local feedback gauges.\n\nPanel 5, BOTTOM row column 2:\nTitle (verbatim): \"B05 · Reach a second gallery\"\nCaption 1 (verbatim): \"DO  Adapt to moved vents and shelter.\"\nCaption 2 (verbatim): \"DONE  Safe arrival without procedural hints.\"\nTag (verbatim): \"CHECK S2\"\nIllustration: New thermal room with rotated vent shutter, sloping roof, offset landing; glider traveler follows curved arrow and reaches balcony. Clear difference from training room.\n\nPanel 6, BOTTOM row column 3:\nTitle (verbatim): \"B06 · Restore the flow circuit\"\nCaption 1 (verbatim): \"DO  Open a safe outlet before feeding.\"\nCaption 2 (verbatim): \"DONE  Authorized flow is stable.\"\nTag (verbatim): \"LEARN S3\"\nIllustration: Transparent cutaway water training rig, inlet valve initially shut, selected outlet open, other branch closed, then blue water runs to safe basin. Small red pressure trip inset for feeding closed outlet. Clear inlet-to-outlet diagram.\n"
+    },
+    {
+      "file": "task-b-07-12",
+      "title": "THE VALLEY BEFORE THE STORM",
+      "subtitle": "Task B · 24 milestones · Sheet 2/4 · Intervening work and new evidence",
+      "footer": "B09–B11 may be interleaved.   |   Store experiences; later tasks will need them.   |   Concept storyboard",
+      "panels": [
+        [
+          "B07",
+          "Commission a second circuit",
+          "Route a changed network to its outlet.",
+          "Stable flow without procedural hints.",
+          "CHECK S3",
+          "Larger branched training water network with different valve positions and requested outlet on a local tag. Traveler configures path and gauge green. Distinct topology from first circuit."
+        ],
+        [
+          "B08",
+          "Survey the reserve depot",
+          "Inspect its landmark and bridge approach.",
+          "Depot and original route remembered.",
+          "STORE place → B20",
+          "Traveler atop causeway tower looks at recognizable stone arch depot across intact bridge. Depot shutter closed with power indicator dark. Notebook sketch records distinctive arch and bridge; no winch retrieved yet."
+        ],
+        [
+          "B09",
+          "Prepare expedition supplies",
+          "Light the refuge fire; cook separate dishes.",
+          "Cold and heat provisions ready.",
+          "DELAY · useful intervening work",
+          "Sheltered ridge camp, cooking pot, two distinct dishes in bowls with snowflake and sun symbols separated, provisions in backpack, ordinary campfire no shaft. Traveler cooking."
+        ],
+        [
+          "B10",
+          "Recover the wind coupling",
+          "Retrieve it by combat or safe stealth.",
+          "Wind coupling acquired.",
+          "DELAY · useful intervening work",
+          "Raider-held yard, chest with compact gear coupling, traveler crouches behind stone wall on optional stealth route, distant guards. Dotted optional route and sword silhouette indicate alternative approaches without violence gore."
+        ],
+        [
+          "B11",
+          "Recover two couplings",
+          "Follow the coastal supply route.",
+          "Pump and engine couplings acquired.",
+          "DELAY · useful intervening work",
+          "Coastal locker and path with traveler using commission authorization card; two clearly separate machine couplings in opened box with pump/water and furnace icons. Ordinary traversal."
+        ],
+        [
+          "B12",
+          "Survey channels and safety",
+          "Read basin mapping and plume safe band.",
+          "Both evidence sources recorded.",
+          "STORE map + safe conditions",
+          "Archive station overlooking water channels. Two distinct readable graphical panels: three symbol-to-basin correspondences, and thermometer red upper band / green launch band. Traveler writes both in notebook, no entire skill checklist."
+        ]
+      ],
+      "prompt": "Use case: infographic-diagram.\nAsset type: illustrated game-design milestone storyboard for a research repository.\nPrimary request: Create ONE polished LANDSCAPE editorial storyboard sheet, aspect ratio 3:2, at high resolution, with EXACTLY SIX equal panels in a strict 3-column by 2-row grid. Each panel must illustrate the named milestone, not merely display an icon. Order left-to-right, top-to-bottom. Preserve all six milestone IDs exactly once. Use a consistent original small explorer in a muted teal cloak, stone ruins, painterly open-world fantasy landscapes, warm ivory paper background, crisp dark ink typography, restrained teal/ochre accents. Inspired by Breath of the Wild exploration but no franchise logos or named franchise characters.\nComposition: generous top title band, six bordered rectangular panels with ample gutters, short footer. Every panel has a dark clearly readable ID and title at the top, a large central diagrammatic scene showing the required action with a few clean directional arrows and relevant objects, and three short readable caption lines at the bottom: DO, DONE, and the memory/skill tag. Keep all captions inside their own panel and distinct from the scene. Typography is large, clear sans-serif; no cursive. Use green success cues, amber learning, blue memory, purple transfer/composition, and red only for a specific unsafe state. Do not rely on color alone: retain text and symbols.\nCritical: exact specified captions, no extra microtext, no invented milestone, no cropped panels, no duplicate numbers, no hallucinated UI paragraphs. Do not make the sheet look like actual in-engine screenshots. Draw useful spatial/mechanistic relationships so a reader can understand what the agent must do. A memory inset may show previously learned information but must not dominate the scene.\n\nTitle (verbatim): \"THE VALLEY BEFORE THE STORM\"\nSubtitle (verbatim): \"Task B · 24 milestones · Sheet 2/4 · Intervening work and new evidence\"\nFooter (verbatim): \"B09–B11 may be interleaved.   |   Store experiences; later tasks will need them.   |   Concept storyboard\"\n\nPanel 1, TOP row column 1:\nTitle (verbatim): \"B07 · Commission a second circuit\"\nCaption 1 (verbatim): \"DO  Route a changed network to its outlet.\"\nCaption 2 (verbatim): \"DONE  Stable flow without procedural hints.\"\nTag (verbatim): \"CHECK S3\"\nIllustration: Larger branched training water network with different valve positions and requested outlet on a local tag. Traveler configures path and gauge green. Distinct topology from first circuit.\n\nPanel 2, TOP row column 2:\nTitle (verbatim): \"B08 · Survey the reserve depot\"\nCaption 1 (verbatim): \"DO  Inspect its landmark and bridge approach.\"\nCaption 2 (verbatim): \"DONE  Depot and original route remembered.\"\nTag (verbatim): \"STORE place → B20\"\nIllustration: Traveler atop causeway tower looks at recognizable stone arch depot across intact bridge. Depot shutter closed with power indicator dark. Notebook sketch records distinctive arch and bridge; no winch retrieved yet.\n\nPanel 3, TOP row column 3:\nTitle (verbatim): \"B09 · Prepare expedition supplies\"\nCaption 1 (verbatim): \"DO  Light the refuge fire; cook separate dishes.\"\nCaption 2 (verbatim): \"DONE  Cold and heat provisions ready.\"\nTag (verbatim): \"DELAY · useful intervening work\"\nIllustration: Sheltered ridge camp, cooking pot, two distinct dishes in bowls with snowflake and sun symbols separated, provisions in backpack, ordinary campfire no shaft. Traveler cooking.\n\nPanel 4, BOTTOM row column 1:\nTitle (verbatim): \"B10 · Recover the wind coupling\"\nCaption 1 (verbatim): \"DO  Retrieve it by combat or safe stealth.\"\nCaption 2 (verbatim): \"DONE  Wind coupling acquired.\"\nTag (verbatim): \"DELAY · useful intervening work\"\nIllustration: Raider-held yard, chest with compact gear coupling, traveler crouches behind stone wall on optional stealth route, distant guards. Dotted optional route and sword silhouette indicate alternative approaches without violence gore.\n\nPanel 5, BOTTOM row column 2:\nTitle (verbatim): \"B11 · Recover two couplings\"\nCaption 1 (verbatim): \"DO  Follow the coastal supply route.\"\nCaption 2 (verbatim): \"DONE  Pump and engine couplings acquired.\"\nTag (verbatim): \"DELAY · useful intervening work\"\nIllustration: Coastal locker and path with traveler using commission authorization card; two clearly separate machine couplings in opened box with pump/water and furnace icons. Ordinary traversal.\n\nPanel 6, BOTTOM row column 3:\nTitle (verbatim): \"B12 · Survey channels and safety\"\nCaption 1 (verbatim): \"DO  Read basin mapping and plume safe band.\"\nCaption 2 (verbatim): \"DONE  Both evidence sources recorded.\"\nTag (verbatim): \"STORE map + safe conditions\"\nIllustration: Archive station overlooking water channels. Two distinct readable graphical panels: three symbol-to-basin correspondences, and thermometer red upper band / green launch band. Traveler writes both in notebook, no entire skill checklist.\n"
+    },
+    {
+      "file": "task-b-13-18",
+      "title": "THE VALLEY BEFORE THE STORM",
+      "subtitle": "Task B · 24 milestones · Sheet 3/4 · Select and adapt remembered skills",
+      "footer": "Branches may run in any order: RIDGE B13–B15   |   MARSH B16   |   QUARRY B17–B18",
+      "panels": [
+        [
+          "B13",
+          "Open the ridge housing",
+          "Recognize the family; adapt load control.",
+          "Actuator housing is stably open.",
+          "RIDGE · TRANSFER S1",
+          "Ridge mechanism with consistent crest, new weighted cradle geometry and rearranged brake, snowy background. Magnetic manipulation of smaller weights opens housing. Small remembered lift motif."
+        ],
+        [
+          "B14",
+          "Reach the wind deck",
+          "Adapt the draft to wind and shelter.",
+          "Traveler reaches the service deck.",
+          "RIDGE · TRANSFER S2",
+          "Windy ridge with tilted trees and sheltered thermal shaft, glider traveler adjusts route to offset service deck. Visible wind arrows separate from upward warm-air arrows."
+        ],
+        [
+          "B15",
+          "Commission the wind station",
+          "Install the recovered wind coupling.",
+          "Stable output for 5 s.",
+          "RIDGE · COMPLETE",
+          "Traveler fits gear coupling into wind actuator, wind vane/turbine turns, stable output gauge and small 5 s timer. Green latch indicator, persistent online station."
+        ],
+        [
+          "B16",
+          "Commission the marsh pump",
+          "Fit its coupling; route the larger network.",
+          "Stable output for 5 s.",
+          "MARSH · TRANSFER S3",
+          "Wetland pump house cutaway with branched pipes, traveler opens chosen outlet while other branches closed and then enables inlet. Pump coupling fitted, water follows highlighted path, gauge stable."
+        ],
+        [
+          "B17",
+          "Make the quarry shaft safe",
+          "Cool the plume before attempting flight.",
+          "Temperature enters the safe band.",
+          "QUARRY · SELECT S3 before S2",
+          "Most important conditional scene: dangerous orange furnace plume, thermometer red and glider with stop sign; traveler instead diverts blue cooling flow through bypass, thermometer transitions to green. Explicit causal cooling arrow, no traveler launches into red plume."
+        ],
+        [
+          "B18",
+          "Commission the quarry engine",
+          "Use the cooled shaft; fit engine coupling.",
+          "Stable output for 5 s.",
+          "QUARRY · TRANSFER S2",
+          "Same quarry shaft now cooled, safe teal airflow and green thermometer, traveler glides to service deck and fits coupling to engine, online gauge. Small left-to-right safe ascent to engine installation."
+        ]
+      ],
+      "prompt": "Use case: infographic-diagram.\nAsset type: illustrated game-design milestone storyboard for a research repository.\nPrimary request: Create ONE polished LANDSCAPE editorial storyboard sheet, aspect ratio 3:2, at high resolution, with EXACTLY SIX equal panels in a strict 3-column by 2-row grid. Each panel must illustrate the named milestone, not merely display an icon. Order left-to-right, top-to-bottom. Preserve all six milestone IDs exactly once. Use a consistent original small explorer in a muted teal cloak, stone ruins, painterly open-world fantasy landscapes, warm ivory paper background, crisp dark ink typography, restrained teal/ochre accents. Inspired by Breath of the Wild exploration but no franchise logos or named franchise characters.\nComposition: generous top title band, six bordered rectangular panels with ample gutters, short footer. Every panel has a dark clearly readable ID and title at the top, a large central diagrammatic scene showing the required action with a few clean directional arrows and relevant objects, and three short readable caption lines at the bottom: DO, DONE, and the memory/skill tag. Keep all captions inside their own panel and distinct from the scene. Typography is large, clear sans-serif; no cursive. Use green success cues, amber learning, blue memory, purple transfer/composition, and red only for a specific unsafe state. Do not rely on color alone: retain text and symbols.\nCritical: exact specified captions, no extra microtext, no invented milestone, no cropped panels, no duplicate numbers, no hallucinated UI paragraphs. Do not make the sheet look like actual in-engine screenshots. Draw useful spatial/mechanistic relationships so a reader can understand what the agent must do. A memory inset may show previously learned information but must not dominate the scene.\n\nTitle (verbatim): \"THE VALLEY BEFORE THE STORM\"\nSubtitle (verbatim): \"Task B · 24 milestones · Sheet 3/4 · Select and adapt remembered skills\"\nFooter (verbatim): \"Branches may run in any order: RIDGE B13–B15   |   MARSH B16   |   QUARRY B17–B18\"\n\nPanel 1, TOP row column 1:\nTitle (verbatim): \"B13 · Open the ridge housing\"\nCaption 1 (verbatim): \"DO  Recognize the family; adapt load control.\"\nCaption 2 (verbatim): \"DONE  Actuator housing is stably open.\"\nTag (verbatim): \"RIDGE · TRANSFER S1\"\nIllustration: Ridge mechanism with consistent crest, new weighted cradle geometry and rearranged brake, snowy background. Magnetic manipulation of smaller weights opens housing. Small remembered lift motif.\n\nPanel 2, TOP row column 2:\nTitle (verbatim): \"B14 · Reach the wind deck\"\nCaption 1 (verbatim): \"DO  Adapt the draft to wind and shelter.\"\nCaption 2 (verbatim): \"DONE  Traveler reaches the service deck.\"\nTag (verbatim): \"RIDGE · TRANSFER S2\"\nIllustration: Windy ridge with tilted trees and sheltered thermal shaft, glider traveler adjusts route to offset service deck. Visible wind arrows separate from upward warm-air arrows.\n\nPanel 3, TOP row column 3:\nTitle (verbatim): \"B15 · Commission the wind station\"\nCaption 1 (verbatim): \"DO  Install the recovered wind coupling.\"\nCaption 2 (verbatim): \"DONE  Stable output for 5 s.\"\nTag (verbatim): \"RIDGE · COMPLETE\"\nIllustration: Traveler fits gear coupling into wind actuator, wind vane/turbine turns, stable output gauge and small 5 s timer. Green latch indicator, persistent online station.\n\nPanel 4, BOTTOM row column 1:\nTitle (verbatim): \"B16 · Commission the marsh pump\"\nCaption 1 (verbatim): \"DO  Fit its coupling; route the larger network.\"\nCaption 2 (verbatim): \"DONE  Stable output for 5 s.\"\nTag (verbatim): \"MARSH · TRANSFER S3\"\nIllustration: Wetland pump house cutaway with branched pipes, traveler opens chosen outlet while other branches closed and then enables inlet. Pump coupling fitted, water follows highlighted path, gauge stable.\n\nPanel 5, BOTTOM row column 2:\nTitle (verbatim): \"B17 · Make the quarry shaft safe\"\nCaption 1 (verbatim): \"DO  Cool the plume before attempting flight.\"\nCaption 2 (verbatim): \"DONE  Temperature enters the safe band.\"\nTag (verbatim): \"QUARRY · SELECT S3 before S2\"\nIllustration: Most important conditional scene: dangerous orange furnace plume, thermometer red and glider with stop sign; traveler instead diverts blue cooling flow through bypass, thermometer transitions to green. Explicit causal cooling arrow, no traveler launches into red plume.\n\nPanel 6, BOTTOM row column 3:\nTitle (verbatim): \"B18 · Commission the quarry engine\"\nCaption 1 (verbatim): \"DO  Use the cooled shaft; fit engine coupling.\"\nCaption 2 (verbatim): \"DONE  Stable output for 5 s.\"\nTag (verbatim): \"QUARRY · TRANSFER S2\"\nIllustration: Same quarry shaft now cooled, safe teal airflow and green thermometer, traveler glides to service deck and fits coupling to engine, online gauge. Small left-to-right safe ascent to engine installation.\n"
+    },
+    {
+      "file": "task-b-19-24",
+      "title": "THE VALLEY BEFORE THE STORM",
+      "subtitle": "Task B · 24 milestones · Sheet 4/4 · Update memory and compose skills",
+      "footer": "Final composition: support the lock → prepare safe routing → ascend → enable flow.   |   Concept storyboard",
+      "panels": [
+        [
+          "B19",
+          "Inspect the storm update",
+          "Read the bridge-closure report.",
+          "Old route superseded by current evidence.",
+          "UPDATE B08 · route memory",
+          "Stormy hub noticeboard, old intact-bridge sketch crossed out beside new dated report depicting collapsed bridge and safe alternate stone route. Traveler reads; distant bridge visibly broken. Superseding-arrow between old and new notes."
+        ],
+        [
+          "B20",
+          "Retrieve the reserve winch",
+          "Return to the depot by a safe route.",
+          "Unique winch acquired.",
+          "RECALL B08 + UPDATE B19",
+          "Distinctive stone arch depot from B08 now shutter powered open, old bridge broken and safe detour visible. Traveler retrieves winch spool from depot; small map inset old route dashed/crossed and new route solid."
+        ],
+        [
+          "B21",
+          "Repair the final lock",
+          "Support the assembly; install the winch.",
+          "Lock stable; gallery shutter released.",
+          "COMPOSE · S1",
+          "Cutaway large floodgate held by supported counterweight while traveler installs winch cable spool. Successful stable mechanism opens small upper shaft shutter. Causal arrow lock support to shutter access."
+        ],
+        [
+          "B22",
+          "Configure the final outlets",
+          "Combine authorization and the old map.",
+          "Safe outlet open; inlet still isolated.",
+          "COMPOSE · S3 + B01 + B12",
+          "Two memory cards combine: approved basin document and valve-symbol chart. Traveler configures three branch valves, only approved empty basin path open, other paths closed, inlet visibly closed. No arbitrary new fixed answer names."
+        ],
+        [
+          "B23",
+          "Bring the floodworks online",
+          "Ascend, then complete safe commissioning.",
+          "All systems stable for 5 s; road drains.",
+          "COMPOSE · S2 → S3",
+          "Single connected cutaway: repaired lock, prepared blue outlet route, thermal shaft lifts glider traveler to elevated feed valve; open inlet last, three station status lights green, water lowers off road. Arrows show dependency and 5 s stable check."
+        ],
+        [
+          "B24",
+          "Verify and signal the refuge",
+          "Cross the road to the assigned refuge.",
+          "Signal sent; floodworks remain safe.",
+          "RECALL B01 · VERIFY",
+          "Traveler crosses drained evacuation road to distinctive refuge house, activates small signal mast with light pulse, distant valley stations operating and water routed to empty basin. Protected homes dry; green completion marker."
+        ]
+      ],
+      "prompt": "Use case: infographic-diagram.\nAsset type: illustrated game-design milestone storyboard for a research repository.\nPrimary request: Create ONE polished LANDSCAPE editorial storyboard sheet, aspect ratio 3:2, at high resolution, with EXACTLY SIX equal panels in a strict 3-column by 2-row grid. Each panel must illustrate the named milestone, not merely display an icon. Order left-to-right, top-to-bottom. Preserve all six milestone IDs exactly once. Use a consistent original small explorer in a muted teal cloak, stone ruins, painterly open-world fantasy landscapes, warm ivory paper background, crisp dark ink typography, restrained teal/ochre accents. Inspired by Breath of the Wild exploration but no franchise logos or named franchise characters.\nComposition: generous top title band, six bordered rectangular panels with ample gutters, short footer. Every panel has a dark clearly readable ID and title at the top, a large central diagrammatic scene showing the required action with a few clean directional arrows and relevant objects, and three short readable caption lines at the bottom: DO, DONE, and the memory/skill tag. Keep all captions inside their own panel and distinct from the scene. Typography is large, clear sans-serif; no cursive. Use green success cues, amber learning, blue memory, purple transfer/composition, and red only for a specific unsafe state. Do not rely on color alone: retain text and symbols.\nCritical: exact specified captions, no extra microtext, no invented milestone, no cropped panels, no duplicate numbers, no hallucinated UI paragraphs. Do not make the sheet look like actual in-engine screenshots. Draw useful spatial/mechanistic relationships so a reader can understand what the agent must do. A memory inset may show previously learned information but must not dominate the scene.\n\nTitle (verbatim): \"THE VALLEY BEFORE THE STORM\"\nSubtitle (verbatim): \"Task B · 24 milestones · Sheet 4/4 · Update memory and compose skills\"\nFooter (verbatim): \"Final composition: support the lock → prepare safe routing → ascend → enable flow.   |   Concept storyboard\"\n\nPanel 1, TOP row column 1:\nTitle (verbatim): \"B19 · Inspect the storm update\"\nCaption 1 (verbatim): \"DO  Read the bridge-closure report.\"\nCaption 2 (verbatim): \"DONE  Old route superseded by current evidence.\"\nTag (verbatim): \"UPDATE B08 · route memory\"\nIllustration: Stormy hub noticeboard, old intact-bridge sketch crossed out beside new dated report depicting collapsed bridge and safe alternate stone route. Traveler reads; distant bridge visibly broken. Superseding-arrow between old and new notes.\n\nPanel 2, TOP row column 2:\nTitle (verbatim): \"B20 · Retrieve the reserve winch\"\nCaption 1 (verbatim): \"DO  Return to the depot by a safe route.\"\nCaption 2 (verbatim): \"DONE  Unique winch acquired.\"\nTag (verbatim): \"RECALL B08 + UPDATE B19\"\nIllustration: Distinctive stone arch depot from B08 now shutter powered open, old bridge broken and safe detour visible. Traveler retrieves winch spool from depot; small map inset old route dashed/crossed and new route solid.\n\nPanel 3, TOP row column 3:\nTitle (verbatim): \"B21 · Repair the final lock\"\nCaption 1 (verbatim): \"DO  Support the assembly; install the winch.\"\nCaption 2 (verbatim): \"DONE  Lock stable; gallery shutter released.\"\nTag (verbatim): \"COMPOSE · S1\"\nIllustration: Cutaway large floodgate held by supported counterweight while traveler installs winch cable spool. Successful stable mechanism opens small upper shaft shutter. Causal arrow lock support to shutter access.\n\nPanel 4, BOTTOM row column 1:\nTitle (verbatim): \"B22 · Configure the final outlets\"\nCaption 1 (verbatim): \"DO  Combine authorization and the old map.\"\nCaption 2 (verbatim): \"DONE  Safe outlet open; inlet still isolated.\"\nTag (verbatim): \"COMPOSE · S3 + B01 + B12\"\nIllustration: Two memory cards combine: approved basin document and valve-symbol chart. Traveler configures three branch valves, only approved empty basin path open, other paths closed, inlet visibly closed. No arbitrary new fixed answer names.\n\nPanel 5, BOTTOM row column 2:\nTitle (verbatim): \"B23 · Bring the floodworks online\"\nCaption 1 (verbatim): \"DO  Ascend, then complete safe commissioning.\"\nCaption 2 (verbatim): \"DONE  All systems stable for 5 s; road drains.\"\nTag (verbatim): \"COMPOSE · S2 → S3\"\nIllustration: Single connected cutaway: repaired lock, prepared blue outlet route, thermal shaft lifts glider traveler to elevated feed valve; open inlet last, three station status lights green, water lowers off road. Arrows show dependency and 5 s stable check.\n\nPanel 6, BOTTOM row column 3:\nTitle (verbatim): \"B24 · Verify and signal the refuge\"\nCaption 1 (verbatim): \"DO  Cross the road to the assigned refuge.\"\nCaption 2 (verbatim): \"DONE  Signal sent; floodworks remain safe.\"\nTag (verbatim): \"RECALL B01 · VERIFY\"\nIllustration: Traveler crosses drained evacuation road to distinctive refuge house, activates small signal mast with light pulse, distant valley stations operating and water routed to empty basin. Protected homes dry; green completion marker.\n"
+    }
+  ]
+}

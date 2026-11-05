@@ -1,7 +1,7 @@
 """Recreate the README screenshots: python -m owb.scripts.screenshots.
 
 Requires the video extra for PNG output. Both scenes use seed 7 and fixed
-showcase viewpoints; images come directly from the CPU renderers.
+showcase viewpoints. Teyvat and Wildlands use Blender Cycles by default.
 """
 from __future__ import annotations
 
@@ -16,13 +16,14 @@ from open_world_bench import make_env
 from ..core.config import EnvConfig, RenderConfig
 from ..env.wildlands import WildlandsEnv
 from ..env.skylands import SkylandsEnv, default_config as skylands_config
+from ..render.presentation import PresentationRenderer, add_render_arguments
 
 
 SEED = 7
 WIDTH, HEIGHT = 960, 540
 
 
-def capture_wildlands(style="landscape", quality="high", view="overlook"):
+def capture_wildlands(style="landscape", quality="high", view="overlook", **rendering):
     env = WildlandsEnv(EnvConfig(
         obs_rgb=False,
         render_cfg=RenderConfig(width=WIDTH, height=HEIGHT, max_dist=200 if view == "overlook" else 112,
@@ -50,19 +51,21 @@ def capture_wildlands(style="landscape", quality="high", view="overlook"):
         else:
             env.cfg.render_cfg.cam_pitch_offset = -0.10
         env.elements.climate.time = 0.38
-        return env.render()
+        with PresentationRenderer(width=WIDTH, height=HEIGHT, **rendering) as renderer:
+            return renderer.render(env)
     finally:
         env.close()
 
 
-def capture_teyvat():
+def capture_teyvat(**rendering):
     env = make_env(seed=SEED, backend="soft")
     try:
         env.reset(seed=SEED)
         # Keep the Windrest spawn, framing the coast and nearby waypoint.
         env.char.yaw = -0.5
         env.cam = env.camera_rig.reset(env.char, yaw=env.char.yaw)
-        return env.render_hd(width=WIDTH, height=HEIGHT, hud=False)
+        with PresentationRenderer(width=WIDTH, height=HEIGHT, **rendering) as renderer:
+            return renderer.render(env)
     finally:
         env.close()
 
@@ -104,12 +107,14 @@ def main():
     parser.add_argument("--size", type=int, nargs=2, default=(WIDTH, HEIGHT), metavar=("WIDTH", "HEIGHT"))
     parser.add_argument("--skylands-quality", choices=("fast", "balanced", "high"), default="balanced")
     parser.add_argument("--compare-wildlands", action="store_true", help="also capture the voxel backend from the same camera")
+    add_render_arguments(parser)
     args = parser.parse_args()
-    if min(args.size) <= 0:
+    if min(*args.size, args.samples, args.threads) <= 0:
         parser.error("image dimensions must be positive")
     WIDTH, HEIGHT = args.size
+    rendering=dict(backend=args.renderer,blender=args.blender,samples=args.samples,threads=args.threads)
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    for name, capture in (("wildlands", lambda: capture_wildlands(quality=args.quality, view=args.wildlands_view)), ("teyvat", capture_teyvat),
+    for name, capture in (("wildlands", lambda: capture_wildlands(quality=args.quality, view=args.wildlands_view, **rendering)), ("teyvat", lambda: capture_teyvat(**rendering)),
                           ("skylands", lambda: capture_skylands(args.skylands_layer, args.skylands_quality))):
         if args.environment not in ("all", name):
             continue
@@ -122,7 +127,7 @@ def main():
     if args.compare_wildlands:
         suffix = f"-{args.wildlands_view}" if args.wildlands_view != "overlook" else ""
         path = args.output_dir / f"wildlands{suffix}-voxel.png"
-        iio.imwrite(path, capture_wildlands(style="voxel", quality=args.quality, view=args.wildlands_view))
+        iio.imwrite(path, capture_wildlands(style="voxel", quality=args.quality, view=args.wildlands_view, backend="cpu"))
         print(f"Saved {path} (same seed, camera, time, and HUD)", flush=True)
 
 

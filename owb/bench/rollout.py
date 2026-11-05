@@ -85,15 +85,23 @@ class DemoPolicy:
 
 class EpisodeRecorder:
     """JSONL transitions plus optional GIF/MP4; refuses to overwrite a run."""
-    def __init__(self, directory, env, seed, video=None):
+    def __init__(self, directory, env, seed, video=None, *, video_renderer=None,
+                 video_size=(960, 540), blender=None, samples=48, threads=8):
         if video not in (None, "gif", "mp4"):
             raise ValueError("video must be None, 'gif', or 'mp4'")
-        self.video, self.log = None, None
+        self.video, self.log, self.presentation = None, None, None
+        self.env = env
         if video:
             try:
                 import imageio.v2 as imageio
             except ImportError as exc:
                 raise ImportError('video recording requires pip install -e ".[video]"') from exc
+            if video_renderer is None and env.name in ("teyvat", "wildlands"):
+                video_renderer = "cycles"
+            if video_renderer is not None:
+                from ..render.presentation import PresentationRenderer
+                self.presentation = PresentationRenderer(backend=video_renderer,
+                    width=video_size[0], height=video_size[1], blender=blender, samples=samples, threads=threads)
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=False)
         config = dict(schema_version=SCHEMA_VERSION, environment=env.name, seed=seed,
@@ -101,7 +109,8 @@ class EpisodeRecorder:
                       schema=dict(buttons=BUTTONS, commands=COMMANDS, modalities=MODALITIES,
                                   proprio=PROPRIO_NAMES, inventory=INVENTORY_COLUMNS,
                                   item_ids=ITEM_IDS, survival=SURVIVAL_NAMES),
-                      video=video, decision_seconds=env.config.decision_seconds)
+                      video=video, decision_seconds=env.config.decision_seconds,
+                      presentation=self.presentation.metadata if self.presentation else None)
         config["schema"].update(construction=PART_COLUMNS, build_state=BUILD_STATE_NAMES)
         try:
             self._write_json("config.json", config)
@@ -110,8 +119,10 @@ class EpisodeRecorder:
                 self.video = imageio.get_writer(self.directory / "episode.gif", mode="I",
                                                duration=env.config.decision_seconds * 1000, loop=0)
             elif video == "mp4":
-                self.video = imageio.get_writer(self.directory / "episode.mp4",
-                                               fps=1 / env.config.decision_seconds, macro_block_size=1)
+                from ..render.video import H264Writer
+                size = video_size if self.presentation else env.config.image_size
+                self.video = H264Writer(self.directory / "episode.mp4", size=size,
+                                        fps=1 / env.config.decision_seconds)
         except Exception:
             self.close()
             raise
@@ -128,7 +139,8 @@ class EpisodeRecorder:
         self.log.write(json.dumps(jsonable(row), allow_nan=False) + "\n")
         self.log.flush()
         if self.video is not None:
-            self.video.append_data(observation["rgb"])
+            frame = self.presentation.render(self.env) if self.presentation else observation["rgb"]
+            self.video.append_data(frame)
 
     def finish(self, summary):
         self._write_json("summary.json", summary)
@@ -138,11 +150,14 @@ class EpisodeRecorder:
             if self.video is not None:
                 self.video.close()
         finally:
+            if self.presentation is not None:
+                self.presentation.close()
             if self.log is not None:
                 self.log.close()
 
 
-def run_episode(env, policy=None, *, seed=None, output_dir=None, video=None) -> dict:
+def run_episode(env, policy=None, *, seed=None, output_dir=None, video=None,
+                video_renderer=None, video_size=(960, 540), blender=None, samples=48, threads=8) -> dict:
     """Run until termination/truncation. Policies receive observations only.
 
     A policy is callable and may expose reset(seed) for episode-local memory.
@@ -155,7 +170,9 @@ def run_episode(env, policy=None, *, seed=None, output_dir=None, video=None) -> 
     observation, info = env.reset(seed=seed)
     if hasattr(policy, "reset"):
         policy.reset(seed)
-    recorder = EpisodeRecorder(output_dir, env, seed, video) if output_dir is not None else None
+    recorder = (EpisodeRecorder(output_dir, env, seed, video, video_renderer=video_renderer,
+                video_size=video_size, blender=blender, samples=samples, threads=threads)
+                if output_dir is not None else None)
     counts = Counter()
     try:
         if recorder:
