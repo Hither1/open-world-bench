@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "checked_actions": 1118,
+  "checked_events": true,
+  "checked_positions": true,
+  "checked_milestone_hashes": 12,
+  "runtime": {
+    "python": "3.12.7",
+    "numpy": "2.1.3"
+  },
+  "verification": {
+    "success": true,
+    "failures": [],
+    "completed": 12,
+    "required": 12,
+    "scope": "compact native-simulator reference prototype"
+  },
+  "actions_sha256": "0fa9ea2e6d7681d2a199268d40ef3bc6c0da6116581ee3dcdd2c71a922772b37",
+  "validated_source_sha256": {
+    "open_world_bench/reference_tasks.py": "2ef01d49c603078ac4f9d3538f5e6285604a415775a6e98a99e7a391d0a84a0e",
+    "open_world_bench/reference_policy.py": "69ee29c39aa42eb30bf1141226cdaa528aae46e11e1de62601573ef7f882574f",
+    "open_world_bench/env.py": "c5f6f390c255b83f07ad372ed19c45504855edd5effc05035764c1e63c43f538",
+    "open_world_bench/world.py": "a0ee40db079f3d3617fafdd87dd0d701c7574ff8af8cbc10c5ce0f909166be08",
+    "open_world_bench/character.py": "cb7125d7d351046691ee97f67b2404977c7e15bf939bd406701bf08c68ba6250",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "owb/scripts/teyvat_reference.py": "d2495a90623c2bedb054ebec20b1cb601355059a510b5ea2eb86cad57441928d",
+    "owb/render/presentation.py": "35e99fc90b441c957bbf4a9e26da709820a0bd316ad6386bd1d323b416532aec",
+    "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
+    "owb/render/blender_scene.py": "6fe39a6dd60be83835282add386ceab964c4ed889f903cb2228ad85b6973ca85",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  },
+  "video_sha256": {}
+}

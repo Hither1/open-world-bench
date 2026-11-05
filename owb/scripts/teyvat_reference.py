@@ -143,6 +143,50 @@ def load_font(size,bold=False):
         return ImageFont.truetype(str(Path(matplotlib.get_data_path())/"fonts"/"ttf"/name),size)
 
 
+def frame_plan(rows,stride,fps):
+    """Keep successful swaps and their preceding state visible during fast travel.
+
+    Both recording paths use this plan. Holds repeat real simulator frames;
+    they do not interpolate, change actions, or invent a swap animation.
+    """
+    from open_world_bench.party import DEFAULT_PARTY
+    important={"relay_application","relay_interrupted","relay_active","sentinel_exposed",
+               "sentinel_interrupted","sentinel_reformed","vent_launch","vent_landed",
+               "milestone_complete","item_acquired","lift_arrived","talk","party_swap"}
+    plan={}
+    previous=None
+    for row in rows:
+        chapter=row["milestone"]!=previous
+        previous=row["milestone"]
+        eventful=bool({e["type"] for e in row["events"]} & important)
+        if row["step"]%stride==0 or eventful or chapter:
+            plan[row["step"]]={"chapter":chapter,
+                "repeats":max(1,int(fps*.75)) if eventful or chapter else 1,
+                "transition":None}
+    active=DEFAULT_PARTY[0]
+    for i,row in enumerate(rows):
+        swaps=[e for e in row["events"] if e["type"]=="party_swap"]
+        if not swaps:
+            continue
+        target=swaps[-1]["character"]
+        transition={"from":active,"to":target,"phase":"after"}
+        entry=plan[row["step"]]
+        entry["transition"]=transition
+        entry["repeats"]=max(entry["repeats"],round(fps*1.2))
+        if i:
+            before=plan.setdefault(rows[i-1]["step"],
+                {"chapter":False,"repeats":1,"transition":None})
+            # A consecutive swap keeps its own successful-swap label.
+            if before["transition"] is None:
+                before["transition"]={**transition,"phase":"before"}
+            before["repeats"]=max(before["repeats"],round(fps*.4))
+        active=target
+    # Always show the final verified state, even when it is off the stride.
+    if rows:
+        plan.setdefault(rows[-1]["step"],{"chapter":False,"repeats":max(1,fps),"transition":None})
+    return plan
+
+
 class Overlay:
     def __init__(self,task,manifest,render_stride,fps,*,renderer="cycles",blender=None,samples=48,threads=8):
         self.task,self.manifest=task,manifest
@@ -155,7 +199,12 @@ class Overlay:
     def close(self):
         self.renderer.close()
 
-    def frame(self,env,row,chapter=False):
+    @property
+    def metadata(self):
+        return {**self.renderer.metadata,"layout":"party-continuity-v1",
+                "swap_before_hold_seconds":.4,"swap_after_hold_seconds":1.2}
+
+    def frame(self,env,row,chapter=False,transition=None):
         from PIL import Image,ImageDraw
         from open_world_bench import math3d
         image=Image.new("RGB",(1280,720),(18,43,53))
@@ -190,12 +239,25 @@ class Overlay:
                 w=draw.textbbox((0,0),label,font=self.bold[14] if 14 in self.bold else self.fonts[14])[2]
                 draw.rounded_rectangle((x-w//2-5,y-3,x+w//2+5,y+19),4,fill=(22,49,57))
                 draw.text((x-w//2,y),label,font=self.fonts[14],fill=(255,239,196))
-        x,y=918,103
-        draw.text((x,y),"WORLD STATE",font=self.bold[18],fill=accent);y+=34
+        x,y=910,103
+        draw.text((x,y),"ONE CONTROLLER / PARTY",font=self.bold[16],fill=accent);y+=28
+        for i,member in enumerate(env.party.members):
+            active=i==env.party.active_index
+            color=tuple(round(c*255) for c in member.spec.tunic)
+            draw.rounded_rectangle((x,y,1255,y+39),5,
+                fill=(41,76,83) if active else (23,49,59),
+                outline=accent if active else (53,78,85),width=2 if active else 1)
+            draw.rectangle((x+9,y+10,x+15,y+29),fill=color)
+            draw.text((x+25,y+3),member.spec.name,font=self.bold[16],fill=(247,246,233))
+            draw.text((x+25,y+22),"ACTIVE" if active else "In party",font=self.fonts[14],fill=accent if active else (160,186,190))
+            draw.text((x+226,y+10),member.spec.element.name.title(),font=self.fonts[16],fill=(227,235,229))
+            y+=44
+        y+=12
+        draw.text((x,y),"WORLD STATE",font=self.bold[18],fill=accent);y+=29
         state_lines=[f"Completed: {len(env.course.completed)} / {len(env.course.milestones)}",
-                     f"Simulation: {env.world.elapsed:.1f} s",f"Decision: {row['step']}",
-                     f"Character: {env.party.active.spec.name}",f"Health: {env.char.hp:.0f}",
-                     f"Stamina: {env.char.stamina:.0f}",f"Movement: {env.char.state.name.lower()}"]
+                     f"Time: {env.world.elapsed:.1f} s | Step: {row['step']}",
+                     f"HP: {env.char.hp:.0f} | Stamina: {env.char.stamina:.0f}",
+                     f"Movement: {env.char.state.name.lower()}"]
         if op:
             s=op.state
             state_lines+= ["",f"Mechanism: {op.kind}"]
@@ -211,7 +273,16 @@ class Overlay:
         else:
             state_lines += ["","ALL MILESTONES COMPLETE"]
         for value in state_lines:
-            draw.text((x,y),value,font=self.fonts[18],fill=(227,235,229));y+=25
+            draw.text((x,y),value,font=self.fonts[18],fill=(227,235,229));y+=23
+        if transition:
+            from open_world_bench.party import ROSTER
+            old,new=ROSTER[transition["from"]],ROSTER[transition["to"]]
+            prefix="NEXT SWAP" if transition["phase"]=="before" else "PARTY SWAP"
+            draw.rounded_rectangle((40,510,870,569),7,fill=(23,55,63),outline=accent,width=2)
+            draw.text((55,517),f"{prefix}: {old.name} → {new.name}",font=self.bold[20],fill=(247,246,233))
+            ability=f"Upcoming: {new.element.name.title()} ability" if transition["phase"]=="before" else f"{new.element.name.title()} ability selected"
+            draw.text((55,544),f"{ability} | Same controller, same journey",
+                      font=self.fonts[16],fill=accent)
         draw.rectangle((24,599,1255,666),fill=(29,65,73))
         events=[e for e in row['events'] if e['type']=='milestone_complete']
         message=("VERIFIED: "+events[-1]['milestone']+" completed") if events else row['explanation']
@@ -234,9 +305,7 @@ def replay_video(task,seed,directory,rows,manifest,*,stride=5,fps=10,renderer="c
     preview=[]
     last_mid=None
     start=time.monotonic()
-    important={"relay_application","relay_interrupted","relay_active","sentinel_exposed",
-               "sentinel_interrupted","sentinel_reformed","vent_launch","vent_landed",
-               "milestone_complete","item_acquired","lift_arrived","talk"}
+    plan=frame_plan(rows,stride,fps)
     try:
         env.reset(seed=seed)
         assert env.state_digest()==manifest["initial_digest"]
@@ -254,10 +323,10 @@ def replay_video(task,seed,directory,rows,manifest,*,stride=5,fps=10,renderer="c
             if "state_digest" in row:
                 assert env.state_digest()==row["state_digest"],f"Replay diverged at {row['milestone']}"
             kinds={e["type"] for e in row["events"]}
-            eventful=bool(kinds & important)
-            if row["step"]%stride==0 or eventful or new_chapter:
-                frame=overlay.frame(env,row,chapter=new_chapter)
-                repeats=max(1,int(fps*.75)) if eventful or new_chapter else 1
+            if row["step"] in plan:
+                entry=plan[row["step"]]
+                frame=overlay.frame(env,row,chapter=entry["chapter"],transition=entry["transition"])
+                repeats=entry["repeats"]
                 writer.append(frame,repeats)
                 if row["milestone"] in ({"A03"} if task=="a" else {"B19"}) and len(preview)<90:
                     small=Image.fromarray(frame).resize((640,360),Image.Resampling.LANCZOS)
@@ -276,7 +345,7 @@ def replay_video(task,seed,directory,rows,manifest,*,stride=5,fps=10,renderer="c
             preview[0][0].save(directory/"preview.gif",save_all=True,append_images=[p for p,_ in preview[1:]],
                                duration=[d for _,d in preview],loop=0,optimize=True)
         summary={**manifest,"replay_verified":True,"video_frames":writer.frames,"video_fps":fps,
-                 "presentation":overlay.renderer.metadata,
+                 "presentation":overlay.metadata,
                  "video_seconds":writer.frames/fps,"render_stride":stride,
                  "render_wall_seconds":time.monotonic()-start,
                  "actions_sha256":hashlib.sha256((directory/"actions.jsonl").read_bytes()).hexdigest()}
@@ -341,9 +410,7 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
     overlay=Overlay(task,manifest,stride,fps,renderer=renderer,blender=blender,samples=samples,threads=threads)
     entries=[]
     previous=None
-    important={"relay_application","relay_interrupted","relay_active","sentinel_exposed",
-               "sentinel_interrupted","sentinel_reformed","vent_launch","vent_landed",
-               "milestone_complete","item_acquired","lift_arrived","talk"}
+    plan=frame_plan(rows,stride,fps)
     try:
         env.reset(seed=seed)
         assert env.state_digest()==manifest["initial_digest"]
@@ -362,21 +429,21 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
             if number<first:
                 continue
             kinds={e["type"] for e in row["events"]}
-            eventful=bool(kinds & important)
-            if row["step"]%stride==0 or eventful or new:
-                frame=overlay.frame(env,row,chapter=new)
+            if row["step"] in plan:
+                entry=plan[row["step"]]
+                frame=overlay.frame(env,row,chapter=entry["chapter"],transition=entry["transition"])
                 filename=f"{row['step']:06d}.png"
                 Image.fromarray(frame).save(folder/filename)
                 entries.append({"file":filename,"step":row["step"],"milestone":row["milestone"],
                                 "title":row["title"],"new_chapter":new,"simulation_start":before,
-                                "repeats":max(1,int(fps*.75)) if eventful or new else 1})
+                                "repeats":entry["repeats"],"transition":entry["transition"]})
             if "milestone_complete" in kinds:
                 print(f"Rendered chunk {first:02d}-{last:02d}: {row['milestone']}",flush=True)
         if last==total:
             assert env.state_digest()==manifest["final_digest"]
             assert env.course.verify()["success"] and env.quests.all_complete
         save_json(folder/"index.json",{"first":first,"last":last,"fps":fps,"stride":stride,
-                 "presentation":overlay.renderer.metadata,
+                 "presentation":overlay.metadata,
                  "trace_sha256":hashlib.sha256((directory/"actions.jsonl").read_bytes()).hexdigest(),
                  "checkpoint":env.state_digest(),"frames":entries})
     finally:

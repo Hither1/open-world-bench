@@ -152,6 +152,16 @@ class WildlandsReferenceEnv(WildlandsEnv):
         result.landmarks=[Landmark('course','Reedbank reference course',(24.5,Y,24.5),4)]
         result.spawn=(22.5,Y+.01,24.5)
         w.temperature[:] = .15
+        # The authored workshop/service routes are temperate training areas.
+        # Preserve native exposure rules and procedural climate elsewhere.
+        course_mask=np.zeros(w.biome.shape,bool)
+        for x,z in coords:
+            course_mask[max(0,x-10):min(160,x+14),max(0,z-9):min(160,z+10)]=True
+        for z in (24,60,96,128): course_mask[20:150,z-2:z+3]=True
+        for x in (24,52,80,108,136): course_mask[x-2:x+3,20:133]=True
+        course_mask[122:141,88:99]=True
+        w.biome[course_mask]=0
+        w.temperature[course_mask]=.7
         w.recompute_heightmaps()
         return result
 
@@ -221,6 +231,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 self.world.fill_box((x+8,29,z-3),(x+13,32,z+3),B.MOSS_STONE)
                 self.world.fill_box((x+8,32,z-3),(x+13,32,z+3),B.BRICK)
                 # A raised, sheltered source sits beside (not in) the flight path.
+                self.world.fill_box((x+1,28,z+3),(x+3,28,z+5),B.BRICK)
                 self.world.set_block(x+2,29,z+4,B.CAMPFIRE)
                 self.world.fill_box((x-1,35,z+3),(x+4,35,z+5),B.PLANK)
                 if m.consumes: self._target(m,'install',(x+11,34,z))
@@ -283,10 +294,12 @@ class WildlandsReferenceEnv(WildlandsEnv):
 
     def _reachable(self,pos,radius=3.2):
         delta=np.asarray(pos)-self.agent.eye; distance=float(np.linalg.norm(delta))
+        if distance>radius: return False
         hit=self.world.raycast(self.agent.eye,delta,max(0,distance-.35))
         return distance<=radius and not hit.hit
 
     def _dispatch(self,command,ingredients,action):
+        self.last_text = ''
         tid=int(action['target']); obj=self.targets.get(tid)
         if command=='drag':
             if self.held is None: return self._fail('no held magnetic body')
@@ -322,6 +335,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 body.held=True; body.vel[:]=0; self.held=body.id
                 return [dict(type='magnetic_grip',body=body.id)]
             if command=='install':
+                if role!='install': return self._fail('not an installation socket')
                 if s['installed']: return self._fail('parts already installed')
                 if m.kind=='balance' and not s['released']: return self._fail('support lock before installation')
                 if m.kind=='thermal' and not s['landed']: return self._fail('reach service deck first')
@@ -394,9 +408,16 @@ class WildlandsReferenceEnv(WildlandsEnv):
         if m.id=='B12': return f'Outlet symbols 1,2,3 lead to basins {[v+1 for v in self.basin_map]}. Furnace launch is safe only at 45 C or below.'
         if m.id=='B19': return 'Storm report v2: wooden causeway bridge is closed. Use the north stone detour to the same reserve depot.'
         roles={self.targets[v]['symbol']:k for k,v in m.targets.items() if k in ('brake','release','vent','heat','inlet')}
-        if m.kind=='balance': return f'Family counterweight: {roles}. Hold the brake; support {m.state["count"]*320} kg; release only after the load is stable.'
-        if m.kind=='thermal': return f'Family thermal: {roles}. Open draft, protect heat, check plume temperature, then launch. Exposed hearths fail.'
-        if m.kind in ('flow','cool','prepare'): return f'Family flow: {roles}. Isolate inlet, open authorized outlet, then feed. Local requested outlet: {m.state["expected"]+1}.'
+        if m.kind=='balance':
+            hint=f'Family counterweight: {roles}. Hold brake, establish support, then release. ' if m.id in ('A02','B02') else ''
+            return hint+f'Load safe band: {m.state["count"]*320} kg. Current load: {m.state["load"]} kg.'
+        if m.kind=='thermal':
+            hint=f'Family thermal: {roles}. Open draft, protect heat, check temperature, then launch. Exposed hearths fail. ' if m.id in ('A03','B04') else ''
+            return hint+f'Plume launch safe: {m.state["safe"]}.'
+        if m.kind in ('flow','cool','prepare'):
+            if m.kind=='prepare': return 'Three outlet symbols. Consult the previously surveyed basin map and commission authorization.'
+            hint=f'Family flow: {roles}. Isolate inlet, open authorized outlet, then feed. ' if m.id=='B06' else ''
+            return hint+f'Local requested outlet: {m.state["expected"]+1}. Temperature: {m.state["temperature"]:.1f} C.'
         return m.title
 
     def _valid_load(self,m):
@@ -480,8 +501,20 @@ class WildlandsReferenceEnv(WildlandsEnv):
             self.elements.climate.weather='storm'
             events.append(dict(type='bridge_closed',version=2))
         if self.task=='a' and 'A09' in completed_ids: self.elements.climate.weather='rain'
-        self.success=len(self.completed)==len(self.milestones) and self.drained and self.agent.alive
+        self.success=(len(self.completed)==len(self.milestones) and self.drained
+                      and self.agent.alive and self.system_operational())
         return self.success,reward+(10 if self.success else 0)
+
+    def system_operational(self):
+        """Final success requires working equipment, not just historical flags."""
+        if self.task=='a':
+            s=self.by_id['A11'].state
+            return s['installed'] and s.get('engaged',False) and s['selected']==self.calibration and s['elapsed']>=5
+        wind,pump,engine,lock,flow=(self.by_id[k].state for k in ('B15','B16','B18','B21','B22'))
+        valid_flow=lambda s: s['inlet'] and s['outlets']==[k==s['expected'] for k in range(3)] and s['stable']>=5
+        return (wind['installed'] and wind['elapsed']>=5 and pump['installed'] and valid_flow(pump)
+                and engine['installed'] and engine['landed'] and engine['elapsed']>=5
+                and lock['installed'] and lock['released'] and lock['stable']>=2 and valid_flow(flow))
 
     def _observation(self):
         obs=super()._observation()
@@ -535,3 +568,10 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 color=(.2,.67,.38) if on else (.65,.27,.16)
             batch.box(pos-(0,.35,0),(.38,.7,.38),(.39,.31,.21))
             batch.ellipsoid(pos,(.26,.26,.12),color)
+
+    def presentation_camera(self):
+        m=self.by_id.get(getattr(self,'reference_view_id','')) or self.current
+        focus=self.agent.pos.astype(float)+(0,1,0)
+        if m and np.linalg.norm(focus[[0,2]]-np.asarray(m.site))<16:
+            focus=.45*focus+.55*np.array((m.site[0]+2,Y+1,m.site[1]))
+        return focus+(-11,9,-13),focus

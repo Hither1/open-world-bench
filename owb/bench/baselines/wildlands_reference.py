@@ -120,6 +120,7 @@ class WildlandsReferencePolicy:
                 target=body.pos.copy(); target[1]=Y+2
                 if abs(body.pos[1]-target[1])<.04: self.carry_stage=1
             if self.carry_stage==1:
+                target=np.asarray(s['slots'][k]).copy()
                 target[1]=Y+2
                 if np.linalg.norm(body.pos-target)<.04: self.carry_stage=2
             if self.carry_stage==2: target=np.asarray(s['slots'][k])

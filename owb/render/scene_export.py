@@ -233,7 +233,13 @@ def _wildlands(native, size):
     renderer._prepare(world)
     eye = agent.pos + (0, cfg.sim_cfg.eye_height, 0)
     cam = Camera(eye, agent.yaw, agent.pitch)
-    if cfg.render_cfg.third_person:
+    if hasattr(native, "presentation_camera"):
+        camera_eye, camera_target = native.presentation_camera()
+        direction = np.asarray(camera_target) - np.asarray(camera_eye)
+        cam = Camera(np.asarray(camera_eye, np.float32),
+                     float(np.arctan2(direction[2], direction[0])),
+                     float(np.arctan2(direction[1], np.linalg.norm(direction[[0, 2]]))))
+    elif cfg.render_cfg.third_person:
         cam = resolve_third_person(world, eye, agent.yaw, agent.pitch,
                                    cfg.render_cfg.cam_distance, cfg.render_cfg.cam_pitch_offset)
     forward = cam.basis()[0]
@@ -264,6 +270,11 @@ def _wildlands(native, size):
             color=(59, 128, 147), semantic=B.SEM_SELF, yaw=agent.yaw,
             gliding=agent.gliding, phase=agent.distance_travelled * 2.5))
     _add_batch(scene, renderer._meshes(world, cam.pos, forward, entities, native.ticks))
+    if hasattr(native, "presentation_meshes"):
+        batch = _presentation_batch()
+        native.presentation_meshes(batch)
+        _add_batch(scene, batch)
+        scene.metadata["reference_task"] = native.task
     return scene
 
 
@@ -285,7 +296,8 @@ def capture_scene(env, *, width=960, height=540):
     if isinstance(native, OpenWorldEnv):
         return _teyvat(native, (width, height))
     # Deliberately exclude subclasses with extra scene content until adapted.
-    if type(native) is WildlandsEnv:
+    from ..env.wildlands_reference import WildlandsReferenceEnv
+    if type(native) in (WildlandsEnv, WildlandsReferenceEnv):
         return _wildlands(native, (width, height))
     raise ValueError("scene export currently supports teyvat and wildlands")
 

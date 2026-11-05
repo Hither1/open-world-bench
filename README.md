@@ -24,6 +24,21 @@ game assets or code are redistributed.
 | `skylands` | The Legend of Zelda: Tears of the Kingdom | Vertical, three-layer worlds plus construction: combining parts into contraptions, reusing recipes discovered much earlier, sky/surface/depths cross-referencing. |
 | `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. |
 
+## Evaluation results
+
+Planned task success rates (%) for each model and environment. **—** means results
+are pending; no evaluation scores are reported yet.
+
+| Model | Minecraft | Teyvat | Wildlands | Skylands | Mobile robot |
+| --- | --- | --- | --- | --- | --- |
+| Opus5.5 | — | — | — | — | — |
+| GPT-6-Astra | — | — | — | — | — |
+| Gemini-4-Argon | — | — | — | — | — |
+
+Published results will include the task suite/version, seeds, episode counts, and
+action/model-call budgets used for comparison. Environments without a defined
+task-success criterion will remain unscored.
+
 ## Latest demos
 
 ### Teyvat and Wildlands — Blender renders
@@ -38,7 +53,11 @@ for an explicitly requested diagnostic render.
 
 | Teyvat — Blender Cycles | Wildlands — Blender Cycles |
 | --- | --- |
-| ![Teyvat scene rendered in Blender](assets/screenshots/teyvat-blender.png) | ![Wildlands scene rendered in Blender](assets/screenshots/wildlands-blender.png) |
+| ![Teyvat scene rendered in Blender](assets/screenshots/teyvat-diverse-cycles.png) | ![Wildlands scene rendered in Blender](assets/screenshots/wildlands-blender.png) |
+
+Teyvat now uses varied botanical meshes, irregular rocks, distinct relay
+structures, and separate natural materials. See the
+[asset refresh and matched before/after views](docs/teyvat-visual-assets.md).
 
 ```bash
 python -B -m owb.scripts.render_blender \

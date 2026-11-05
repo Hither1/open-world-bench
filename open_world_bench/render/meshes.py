@@ -1,8 +1,8 @@
-"""Low-poly mesh building for the character, entities and near props.
+"""Procedural mesh primitives, material tags, and character articulation.
 
 Meshes are plain triangle soups: `verts` is (T, 3, 3) and `colors` is (T, 3).
-Flat per-triangle normals are what give the cel-shaded faceted look, so no
-vertex normals are kept.
+Organic assets include authored normals. The same asset families feed policy
+observations and the denser Cycles presentation geometry.
 """
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import numpy as np
 
 from .. import math3d as mth
 from ..character import CharacterState, MoveState
-from .style import CHARACTER_PALETTE, ENTITY_ALBEDO, ENTITY_EMISSIVE, PROP_ALBEDO
+from .style import CHARACTER_PALETTE
 
 MATERIAL_NAMES = ("surface", "stone", "bark", "foliage", "metal", "cloth", "skin", "terrain")
 

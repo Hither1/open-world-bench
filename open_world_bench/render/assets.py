@@ -50,13 +50,15 @@ def _pack(batch):
 
 def _leaves(batch, rng, center, extent, color, count, *, narrow=False):
     """Individual folded leaves, with gaps, asymmetry, and upward-biased normals."""
+    # Leaf density must not change the random stream that defines branch shape.
+    rng=np.random.default_rng(int(rng.integers(0,2**32)))
     _tag(batch, FOLIAGE)
     center, extent = np.asarray(center), np.asarray(extent)
     directions = rng.normal(size=(count, 3))
     directions /= np.maximum(np.linalg.norm(directions, axis=1, keepdims=True), 1e-8)
     points = center + directions * extent * rng.uniform(.25, 1, (count, 1)) ** .4
     angles = rng.uniform(0, 2*np.pi, count)
-    lengths = rng.uniform(.18, .36, count) * np.linalg.norm(extent) ** .35
+    lengths = rng.uniform(.21, .40, count) * np.linalg.norm(extent) ** .35
     axis = np.stack((np.cos(angles), rng.uniform(-.55, .6, count), np.sin(angles)), axis=1)
     axis *= lengths[:, None]
     side = np.stack((-np.sin(angles), np.zeros(count), np.cos(angles)), axis=1)
@@ -105,7 +107,7 @@ def _tree(batch, rng, kind, detail):
     lean = rng.uniform(-.42,.42,2)
     trunk = (.53,.50,.43) if species==1 and kind=="broadleaf" else (.30,.23,.16)
     leaf = ((.30,.42,.16),(.39,.48,.20),(.23,.37,.18),(.36,.43,.17))[species]
-    if kind=="sakura": leaf=(.73,.47,.49)
+    if kind=="sakura": leaf=(.83,.64,.67)
     if kind=="pine": leaf=(.19,.32,.24)
     leaf=_color(leaf,rng)
     _tag(batch,BARK)
@@ -116,7 +118,7 @@ def _tree(batch, rng, kind, detail):
         root=np.array((np.cos(angle)*.65,.025,np.sin(angle)*.65))
         batch.tube(root,joints[1]*.35,.055,trunk,end_radius=.18,sides=6)
     if kind=="pine":
-        levels=6 if detail else 4
+        levels=6
         for level in range(levels):
             y=height*(.21+.64*level/max(levels-1,1))
             reach=(height-y)*.34
@@ -128,12 +130,14 @@ def _tree(batch, rng, kind, detail):
                 batch.tube(start,tip,.075,trunk,end_radius=.014,sides=6)
                 for t in (.45,.86):
                     _leaves(batch,rng,start*(1-t)+tip*t,(reach*.47,.30,reach*.40),
-                            leaf,38 if detail else 13,narrow=True)
+                            leaf,52 if detail else 18,narrow=True)
         _leaves(batch,rng,joints[-1],(.33,.65,.33),leaf,40 if detail else 18,narrow=True)
         return
-    count=9 if detail else 6
+    count=9
     width=(2.1,1.6,2.7,2.2)[species]
+    branch_seeds=rng.integers(0,2**32,size=count)
     for k in range(count):
+        rng=np.random.default_rng(int(branch_seeds[k]))
         a=k*2.39996+rng.uniform(-.3,.3)
         radial=width*rng.uniform(.5,1.1)
         y=height*rng.uniform(.60,.98)
@@ -145,11 +149,11 @@ def _tree(batch, rng, kind, detail):
         batch.tube(mid,end,.065,trunk,end_radius=.014,sides=6)
         extent=np.array((1.1,.82,.95))*rng.uniform(.8,1.15)
         if species==2: extent[1]*=1.5
-        _leaves(batch,rng,end,extent,leaf,105 if detail else 30,narrow=species==2)
+        _leaves(batch,rng,end,extent,leaf,185 if detail else 45,narrow=species==2)
         if detail:
             twig=end+rng.uniform(-.5,.5,3)+(0,.45,0)
             _tag(batch,BARK);batch.tube(mid,twig,.027,trunk,end_radius=.008,sides=5)
-            _leaves(batch,rng,twig,(.55,.5,.55),leaf,30,narrow=species==2)
+            _leaves(batch,rng,twig,(.55,.5,.55),leaf,45,narrow=species==2)
 
 
 def _grass(batch,rng,detail):

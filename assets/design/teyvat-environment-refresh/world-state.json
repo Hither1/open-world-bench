@@ -1,0 +1,32 @@
+{
+  "seed": 7,
+  "variant": "full",
+  "step": 1,
+  "position": [
+    272.1870422363281,
+    17.917560577392578,
+    -263.3184509277344
+  ],
+  "camera_eye": [
+    272.1870422363281,
+    20.676939010620117,
+    -257.46307373046875
+  ],
+  "camera_target": [
+    272.1870422363281,
+    19.36756134033203,
+    -263.3184509277344
+  ],
+  "render_size": [
+    960,
+    540
+  ],
+  "samples": 48,
+  "comparison": "Same full-world state and camera as videos/teyvat-full-cycles-preview.png",
+  "simulation_unchanged_by_export": true,
+  "renderer": "Blender Cycles",
+  "threads": 8,
+  "scene_sha256": "c95dfda27bb3e98add84d3aecf7c48206b9f79500da2e255ac1b14227b77221f",
+  "image_sha256": "0fed3d5d9bc904f7125144ccc1fb1b7059e4f405555b7a41d230bb19a96fb476",
+  "render_version": "diverse-assets-v2-fuller-foliage"
+}

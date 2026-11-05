@@ -38,6 +38,27 @@ fail in embedded viewers. WebM support also depends on the viewer.
 Both traces complete without player deaths. Task B includes 16 vent launches
 and 16 confirmed gliding landings. Video duration includes the event pauses.
 
+The visible character changes are party swaps by the same controller: Kestrel
+(Ember), Maren (Tide), and Wren (Gale). The legacy videos contain 17 and 44 swaps,
+respectively. Their travel sampling skips the exact moment of four swaps in each
+video, and their overlay does not explain the transition. That makes the action
+look discontinuous even though the underlying world and task progress continue.
+
+New recordings keep the whole party visible, highlight the active member, and
+show every successful swap with a labeled before/after pause (at least 0.4 s
+before and 1.2 s after at the default frame rate). Both recording paths use the
+same frame schedule. These holds repeat actual replay states; they do not add
+simulated actions or an invented animation. The existing full MP4s above have
+not been regenerated with this presentation fix. The course still uses the
+three-character party; a single-character ability system would be a separate
+mechanics change requiring fresh reference traces.
+
+The updated overlay can be inspected in these Cycles frames from the first swap:
+[before, action 45](../assets/design/teyvat-party-continuity/step-0045.png) and
+[after, action 46](../assets/design/teyvat-party-continuity/step-0046.png).
+Their [metadata](../assets/design/teyvat-party-continuity/preview.json) records
+render settings, source/trace hashes, and the full 1,118-action replay check.
+
 ## What is implemented
 
 - Persistent relay stages, seeded element-role assignments, overload, an

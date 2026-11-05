@@ -1,0 +1,44 @@
+{
+  "scope": "Two paused replay states around the first party swap; not a full walkthrough or swap animation",
+  "task": "a",
+  "seed": 7,
+  "presentation": {
+    "backend": "cycles",
+    "width": 864,
+    "height": 486,
+    "samples": 48,
+    "threads": 8,
+    "layout": "party-continuity-v1",
+    "swap_before_hold_seconds": 0.4,
+    "swap_after_hold_seconds": 1.2
+  },
+  "frames": [
+    {
+      "step": 45,
+      "file": "step-0045.png",
+      "state_digest": "eb0c52f1ad6b820a4b5c65c2b82f90eb1830cef03949f3fb8fee9833f66bfa3e",
+      "active_character": "kestrel",
+      "sha256": "9840739e0567e130d109232207f515a949db7db2f31fb0a547183ade2a161b3c"
+    },
+    {
+      "step": 46,
+      "file": "step-0046.png",
+      "state_digest": "4a76babce992e859fb7f0362ae27beb668389ddab8a01806374adca1e2637da2",
+      "active_character": "wren",
+      "sha256": "6db72e6988eeacfb03839ea989d2d814c129f7b568a067f59b2a950980408c52"
+    }
+  ],
+  "actions_sha256": "0fa9ea2e6d7681d2a199268d40ef3bc6c0da6116581ee3dcdd2c71a922772b37",
+  "replay_verified": {
+    "actions": 1118,
+    "milestones": 12,
+    "events": true,
+    "positions": true,
+    "final_digest": "268951b873980abed005fb688d8336e889cbecc218952ecd3a29956369c5cf1f"
+  },
+  "source_sha256": {
+    "owb/scripts/teyvat_reference.py": "1fc48a54d452824f381b9caa3df3d36a2c79370f8c20d23a60b86f1a23da4669",
+    "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
+    "owb/render/blender_scene.py": "6fe39a6dd60be83835282add386ceab964c4ed889f903cb2228ad85b6973ca85"
+  }
+}

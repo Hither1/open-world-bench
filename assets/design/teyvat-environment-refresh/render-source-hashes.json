@@ -1,0 +1,10 @@
+{
+  "open_world_bench/render/assets.py": "9c7b0ec4dcb6ccf782a2ce9b558bba71f8a915b850ca70b971f303eabb86a236",
+  "open_world_bench/render/meshes.py": "c0f014a2f1fc6570d49834c6718b8d84e26104d62a3708d5a9fccd804d946231",
+  "open_world_bench/render/soft_renderer.py": "aaed918fe0ed89b1ab6dcf9bdc10895b2bc19e7bbf7aeb7896d3ba7f7e69de5c",
+  "open_world_bench/world.py": "a0ee40db079f3d3617fafdd87dd0d701c7574ff8af8cbc10c5ce0f909166be08",
+  "open_world_bench/reference_tasks.py": "2ef01d49c603078ac4f9d3538f5e6285604a415775a6e98a99e7a391d0a84a0e",
+  "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
+  "owb/render/blender_scene.py": "6fe39a6dd60be83835282add386ceab964c4ed889f903cb2228ad85b6973ca85",
+  "owb/render/models.py": "5f6fc94413ff03c85db124c0c6b0ab1fea98ef23fdfa8656eae2cbf357f7c66a"
+}

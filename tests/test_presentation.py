@@ -10,6 +10,87 @@ import pytest
 from owb.render.presentation import PresentationRenderer
 
 
+@pytest.mark.parametrize("task,expected_swaps",[("a",17),("b",44)])
+def test_reference_timeline_keeps_every_successful_party_swap(task,expected_swaps):
+    from pathlib import Path
+    from owb.scripts.teyvat_reference import frame_plan
+    directory=Path(__file__).resolve().parents[1]/"assets/demos/teyvat-reference"/f"task-{task}-seed-7"
+    rows=[json.loads(line) for line in (directory/"actions.jsonl").read_text().splitlines()]
+    plan=frame_plan(rows,stride=8,fps=10)
+    active="kestrel"
+    count=0
+    for i,row in enumerate(rows):
+        for event in row["events"]:
+            if event["type"]!="party_swap":
+                continue
+            count+=1
+            entry=plan[row["step"]]
+            assert entry["transition"]=={"from":active,"to":event["character"],"phase":"after"}
+            assert entry["repeats"]>=12
+            before=plan[rows[i-1]["step"]]
+            assert before["transition"]["phase"]=="before"
+            assert before["repeats"]>=4
+            active=event["character"]
+    assert count==expected_swaps
+    assert rows[-1]["step"] in plan
+
+
+def test_rejected_swap_request_is_not_presented_as_a_character_change():
+    from owb.scripts.teyvat_reference import frame_plan
+    rows=[{"step":1,"milestone":"A01","action":{"swap":3},"events":[]},
+          {"step":2,"milestone":"A01","action":{"swap":0},"events":[]}]
+    assert all(entry["transition"] is None for entry in frame_plan(rows,8,10).values())
+
+
+def test_direct_and_chunk_recorders_preserve_the_same_swap_timeline(monkeypatch,tmp_path):
+    import shutil
+    from pathlib import Path
+    from owb.scripts import teyvat_reference as recorder
+    source=Path(__file__).resolve().parents[1]/"assets/demos/teyvat-reference/task-a-seed-7"
+    directory=tmp_path/"recording"
+    directory.mkdir()
+    for name in ("actions.jsonl","reference-manifest.json"):
+        shutil.copyfile(source/name,directory/name)
+    rows=[json.loads(line) for line in (directory/"actions.jsonl").read_text().splitlines()]
+    manifest=json.loads((directory/"reference-manifest.json").read_text())
+    seen=[]
+    class OverlaySpy:
+        metadata={"backend":"cycles","layout":"test"}
+        def __init__(self,*args,**kwargs):
+            pass
+        def frame(self,env,row,chapter=False,transition=None):
+            assert env.char.pos.tolist()==row["position_after"]
+            if transition:
+                key="from" if transition["phase"]=="before" else "to"
+                assert env.party.active.spec.id==transition[key]
+            seen.append((row["step"],chapter,transition,env.state_digest()))
+            return np.zeros((12,16,3),dtype=np.uint8)
+        def close(self):
+            pass
+    class VideoSpy:
+        def __init__(self,*args):
+            self.frames=0
+        def append(self,frame,repeat=1):
+            self.frames+=repeat
+        def close(self):
+            pass
+        def publish(self):
+            pass
+    monkeypatch.setattr(recorder,"Overlay",OverlaySpy)
+    monkeypatch.setattr(recorder,"Video",VideoSpy)
+    summary=recorder.replay_video("a",7,directory,rows,manifest,stride=8,fps=10)
+    direct=seen.copy()
+    seen.clear()
+    # Include the A02/A03 boundary so pre-swap frames cannot be lost at chunks.
+    cache=tmp_path/"cache"
+    recorder.render_chunk(directory,cache,1,2,stride=8,fps=10)
+    recorder.render_chunk(directory,cache,3,12,stride=8,fps=10)
+    assert seen==direct
+    indices=[json.loads(p.read_text()) for p in sorted(cache.glob("*/index.json"))]
+    assert sum(e["repeats"] for p in indices for e in p["frames"])==summary["video_frames"]
+    assert indices[-1]["checkpoint"]==manifest["final_digest"]
+
+
 def test_missing_cycles_is_an_error_not_a_cpu_fallback(monkeypatch):
     monkeypatch.setattr("owb.render.presentation.shutil.which", lambda _: None)
     with pytest.raises(RuntimeError, match="no automatic fallback"):

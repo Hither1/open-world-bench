@@ -19,6 +19,11 @@ rendering of the existing original assets. Detailed anime characters, authored
 textures, animations, and larger environmental art sets remain separate art work;
 changing the renderer alone cannot supply them.
 
+Teyvat's [procedural asset refresh](teyvat-visual-assets.md) adds seeded shape
+variation, individual foliage, distinct task fixtures, and material groups for
+stone, bark, foliage, metal, cloth, skin, and terrain. These groups survive scene
+export; Blender assigns their different surface responses during rendering.
+
 ## Render both environments
 
 Install the repository and an [official Blender release](https://www.blender.org/download/).
@@ -53,7 +58,7 @@ video extra. Each environment exported by `render_blender` gets:
 | `scene.glb` | Portable meshes, vertex colors, materials, camera, and directional light. |
 
 The default `--view agent` preserves the camera and state after reset.
-`--view showcase` explicitly sets the README viewpoints, including Wildlands'
+`--view showcase` selects fixed presentation viewpoints, including Wildlands'
 survey tower and daytime lighting. `--variant small --size 320 180 --samples 16`
 reduces the cost of a quick preview. Full Wildlands exports can occupy hundreds
 of megabytes because the mesh preserves the complete terrain and its caves.
