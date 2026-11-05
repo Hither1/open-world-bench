@@ -21,7 +21,7 @@ def main():
     parser.add_argument("--decision-seconds", type=float, default=0.2)
     parser.add_argument("--model", default="gpt-6-astra")
     parser.add_argument("--reasoning-effort", choices=("low", "medium", "high", "xhigh", "max"), default="low")
-    parser.add_argument("--max-output-tokens", type=int, default=2048)
+    parser.add_argument("--max-output-tokens", type=int, default=2048, help="Per-response cap for --policy openai only")
     parser.add_argument("--max-model-calls", type=int, default=100, help="Per-episode request cap")
     parser.add_argument("--history-steps", type=int, default=6)
     parser.add_argument("--api-timeout", type=float, default=60)

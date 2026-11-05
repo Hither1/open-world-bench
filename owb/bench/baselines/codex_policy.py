@@ -65,7 +65,10 @@ class CodexClient:
         for name in ("OPENAI_API_KEY", "OPENAI_BASE_URL", "CODEX_API_KEY",
                      "OPENAI_ORG_ID", "OPENAI_PROJECT_ID"):
             child_env.pop(name, None)
-        with tempfile.TemporaryDirectory(prefix="owb-codex-decision-") as directory:
+        # Host TMPDIR may be NFS: delayed CLI writes can race directory removal there.
+        # Cleanup failures must not discard a valid model action.
+        with tempfile.TemporaryDirectory(prefix="owb-codex-decision-", dir="/tmp",
+                                         ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             frame, schema, output = root / "observation.png", root / "action.schema.json", root / "action.json"
             frame.write_bytes(base64.b64decode(data_url.split(",", 1)[1]))
