@@ -26,7 +26,7 @@ import numpy as np
 os.environ.setdefault("MPLCONFIGDIR",str(Path(tempfile.gettempdir())/"owb-reference-matplotlib"))
 
 from owb.sims.teyvat.reference_tasks import ReferenceTaskEnv
-from owb.sims.teyvat.reference_policy import ReferencePolicy
+from owb.agents.oracle.teyvat_reference import ReferencePolicy
 from owb.render.presentation import PresentationRenderer, add_render_arguments
 
 
@@ -386,7 +386,9 @@ def verify_recording(directory):
         assert env.state_digest()==manifest["final_digest"]
         assert env.quests.all_complete and env.course.verify()["success"]
         root=Path(__file__).resolve().parents[2]
-        sources=["owb/sims/teyvat/reference_tasks.py","owb/sims/teyvat/reference_policy.py",
+        sources=["owb/sims/teyvat/reference_tasks.py","owb/agents/oracle/teyvat_reference.py",
+                 "owb/tasks/teyvat/course.py","owb/tasks/teyvat/setup.py",
+                 *sorted(str(p.relative_to(root)) for p in (root/"owb/tasks/teyvat/mechanisms").glob("*.py")),
                  "owb/sims/teyvat/architecture.py","owb/sims/teyvat/render/architecture.py",
                  "owb/sims/teyvat/camera.py",
                  "owb/sims/teyvat/env.py","owb/sims/teyvat/world.py","owb/sims/teyvat/character.py",

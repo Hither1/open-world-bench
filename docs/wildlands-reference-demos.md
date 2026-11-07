@@ -131,3 +131,19 @@ configuration. Tests and replay verification run headlessly and do not need
 Cycles. Relevant automated checks cover remote-control rejection, supported
 mass and brake ordering, flow isolation/recovery, atomic part installation,
 hot-plume rejection, final live-system checks, and presentation isolation.
+
+## Code layout
+
+| Part | Location |
+| --- | --- |
+| Env (sim configuration, observations, `state_digest`, presentation meshes) | `owb/sims/voxel/env/wildlands_reference.py` (`WildlandsReferenceEnv`) |
+| Milestone record and ledger (`outcome`, `system_operational`) | `owb/tasks/wildlands/course.py` |
+| Mechanisms and course commands | `owb/tasks/wildlands/mechanisms/` |
+| Placement (`author_world`, `setup: wildlands.reference_course`, A/B site tables) | `owb/tasks/wildlands/setup.py` |
+| Milestone specs | `owb/tasks/specs/wildlands/reference_course_{a,b}.yaml` |
+| Privileged reference controller | `owb/agents/oracle/wildlands_reference.py` (`WildlandsReferencePolicy`) |
+| Collection / verification / render CLI | `owb/scripts/wildlands_reference.py` |
+
+`owb.bench.baselines.wildlands_reference` and `owb.env.wildlands_reference` remain
+importable. The full-trace replay of both recordings is `tests/test_reference_replay.py`.
+See docs/tasks.md, "Reference courses".

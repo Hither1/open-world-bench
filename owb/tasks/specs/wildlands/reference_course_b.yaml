@@ -1,0 +1,168 @@
+# Wildlands reference course B (compact demonstration course; docs/wildlands-reference-demos.md).
+# Mirrors the course built by setup `wildlands.reference_course`
+# (owb/tasks/wildlands/setup.py); tests/test_reference_specs.py checks it against that
+# course and the recorded trace.
+# Completion conditions here are held durations and live-world states (stable feed for
+# 5 s, plume <= 45 C, two seconds of released motion, ...), which the Predicate language
+# cannot express; the mechanism modules (owb/tasks/wildlands/mechanisms/) evaluate them and
+# the course ledger emits `milestone_complete`, which these milestones fire on
+# (owb.tasks.wildlands.course.evaluator_events puts the milestone id in `entity`).
+# `requires` is the course's assessment DAG (Milestone.prereqs).
+# `stage`/`role` are memory-role annotations taken from docs/wildlands-long-horizon-tasks.md;
+# they do not affect scoring. Session split points (after B08, B12 or B19) belong to the agent harness.
+# setup_params: `course` selects the site table; the setup RNG is default_rng(seed + 8191).
+id: wildlands.reference_course_b
+version: 1
+sim: wildlands
+title: 'Wildlands reference course B: The Valley Before the Storm (compact)'
+instruction: Restore the valley floodworks, divert the rising water away from the designated refuge, and
+  reopen its evacuation road.
+budget:
+  steps: 14000
+setup: wildlands.reference_course
+setup_params:
+  course: b
+milestones:
+- id: B01
+  title: "Accept the floodworks commission"
+  stage: instance facts
+  role: learning
+  done: {kind: event, type: milestone_complete, targets: [B01]}
+- id: B02
+  title: "Restore the training lift"
+  stage: acquisition
+  role: learning
+  requires: [B01]
+  done: {kind: event, type: milestone_complete, targets: [B02]}
+- id: B03
+  title: "Repair the second gate"
+  stage: acquisition
+  role: learning
+  requires: [B02]
+  done: {kind: event, type: milestone_complete, targets: [B03]}
+- id: B04
+  title: "Restore the thermal shaft"
+  stage: acquisition
+  role: learning
+  requires: [B03]
+  done: {kind: event, type: milestone_complete, targets: [B04]}
+- id: B05
+  title: "Reach the second gallery"
+  stage: acquisition
+  role: learning
+  requires: [B04]
+  done: {kind: event, type: milestone_complete, targets: [B05]}
+- id: B06
+  title: "Restore the flow circuit"
+  stage: acquisition
+  role: learning
+  requires: [B05]
+  done: {kind: event, type: milestone_complete, targets: [B06]}
+- id: B07
+  title: "Commission the second circuit"
+  stage: acquisition
+  role: learning
+  requires: [B06]
+  done: {kind: event, type: milestone_complete, targets: [B07]}
+- id: B08
+  title: "Survey the reserve depot"
+  stage: episodic landmark
+  role: learning
+  requires: [B07]
+  done: {kind: event, type: milestone_complete, targets: [B08]}
+- id: B09
+  title: "Prepare expedition supplies"
+  stage: intervening work
+  role: interference
+  requires: [B08]
+  done: {kind: event, type: milestone_complete, targets: [B09]}
+- id: B10
+  title: "Recover the wind coupling"
+  stage: intervening work
+  role: interference
+  requires: [B08]
+  done: {kind: event, type: milestone_complete, targets: [B10]}
+- id: B11
+  title: "Recover two couplings"
+  stage: intervening work
+  role: interference
+  requires: [B08]
+  done: {kind: event, type: milestone_complete, targets: [B11]}
+- id: B12
+  title: "Survey channels and safety"
+  stage: safety facts
+  role: learning
+  requires: [B09, B10, B11]
+  done: {kind: event, type: milestone_complete, targets: [B12]}
+- id: B13
+  title: "Open the ridge housing"
+  stage: regional transfer
+  role: transfer
+  requires: [B12]
+  done: {kind: event, type: milestone_complete, targets: [B13]}
+- id: B14
+  title: "Reach the wind deck"
+  stage: regional transfer
+  role: transfer
+  requires: [B13]
+  done: {kind: event, type: milestone_complete, targets: [B14]}
+- id: B15
+  title: "Commission the wind station"
+  stage: regional transfer
+  role: transfer
+  requires: [B14]
+  done: {kind: event, type: milestone_complete, targets: [B15]}
+- id: B16
+  title: "Commission the marsh pump"
+  stage: regional transfer
+  role: transfer
+  requires: [B12]
+  done: {kind: event, type: milestone_complete, targets: [B16]}
+- id: B17
+  title: "Make the quarry shaft safe"
+  stage: regional transfer
+  role: transfer
+  requires: [B12]
+  done: {kind: event, type: milestone_complete, targets: [B17]}
+- id: B18
+  title: "Commission the quarry engine"
+  stage: regional transfer
+  role: transfer
+  requires: [B17]
+  done: {kind: event, type: milestone_complete, targets: [B18]}
+- id: B19
+  title: "Inspect the storm update"
+  stage: fact update
+  role: adaptation
+  requires: [B15, B16, B18]
+  done: {kind: event, type: milestone_complete, targets: [B19]}
+- id: B20
+  title: "Retrieve the reserve winch"
+  stage: transfer after update
+  role: transfer
+  requires: [B19]
+  done: {kind: event, type: milestone_complete, targets: [B20]}
+- id: B21
+  title: "Repair the final lock"
+  stage: final composition
+  role: composition
+  requires: [B20]
+  done: {kind: event, type: milestone_complete, targets: [B21]}
+- id: B22
+  title: "Configure final outlets"
+  stage: final composition
+  role: composition
+  requires: [B21]
+  done: {kind: event, type: milestone_complete, targets: [B22]}
+- id: B23
+  title: "Bring the floodworks online"
+  stage: final composition
+  role: composition
+  requires: [B22]
+  done: {kind: event, type: milestone_complete, targets: [B23]}
+- id: B24
+  title: "Signal the designated refuge"
+  stage: recall and completion
+  role: recall
+  requires: [B23]
+  done: {kind: event, type: milestone_complete, targets: [B24]}

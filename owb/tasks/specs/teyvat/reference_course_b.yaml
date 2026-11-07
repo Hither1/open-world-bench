@@ -1,0 +1,166 @@
+# Teyvat reference course B (compact demonstration course; docs/teyvat-reference-demos.md).
+# Mirrors the course built by setup `teyvat.reference_course` (owb/tasks/teyvat/setup.py);
+# tests/test_reference_specs.py checks it against that course and the recorded trace.
+# A milestone fires once every operation of it has emitted `operation_complete`
+# (owb.tasks.teyvat.course.evaluator_events puts the operation id in `entity`).
+# Operation ids are layout-only (cell index + milestone index); they do not depend on the seed.
+# The course is ordered: each milestone requires the previous one.
+# `stage`/`role` are memory-role annotations taken from docs/teyvat-long-horizon-tasks.md
+# (learning / interference / transfer / composition / adaptation); they do not affect scoring.
+# Fresh-context checkpoints (before B11, B21 and B24) belong to the agent harness, not to milestones.
+# setup_params: `course` selects the build list; the setup RNG is default_rng(seed + 739).
+id: teyvat.reference_course_b
+version: 1
+sim: teyvat
+title: 'Teyvat reference course B: The Expedition of Three Arts (compact)'
+instruction: Reopen the valley's expedition route, recover the beacon heart, and bring the distant outpost
+  online. Train with the relay keeper, sentinel warden, and wind guide before setting out.
+budget:
+  steps: 30000
+setup: teyvat.reference_course
+setup_params:
+  course: b
+milestones:
+- id: B01
+  title: "Learn relay repair"
+  stage: acquisition
+  role: learning
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op000_00]}, {kind: event, type: operation_complete, targets: [op001_00]}]}
+- id: B02
+  title: "Recover a faulty relay"
+  stage: acquisition
+  role: learning
+  requires: [B01]
+  done: {kind: event, type: operation_complete, targets: [op002_01]}
+- id: B03
+  title: "Learn sentinel combat"
+  stage: acquisition
+  role: learning
+  requires: [B02]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op003_02]}, {kind: event, type: operation_complete, targets: [op004_02]}]}
+- id: B04
+  title: "Handle shield reformation"
+  stage: acquisition
+  role: learning
+  requires: [B03]
+  done: {kind: event, type: operation_complete, targets: [op005_03]}
+- id: B05
+  title: "Learn the vent crossing"
+  stage: acquisition
+  role: learning
+  requires: [B04]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op006_04]}, {kind: event, type: operation_complete, targets: [op007_04]}]}
+- id: B06
+  title: "Reach a new overlook"
+  stage: acquisition
+  role: learning
+  requires: [B05]
+  done: {kind: event, type: operation_complete, targets: [op008_05]}
+- id: B07
+  title: "Survey the supply depot"
+  stage: episodic landmark
+  role: learning
+  requires: [B06]
+  done: {kind: event, type: operation_complete, targets: [op010_06]}
+- id: B08
+  title: "Recover the repair kit"
+  stage: interference
+  role: interference
+  requires: [B07]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op011_07]}, {kind: event, type: operation_complete, targets: [op012_07]}]}
+- id: B09
+  title: "Dive for the coupling"
+  stage: interference
+  role: interference
+  requires: [B08]
+  done: {kind: event, type: operation_complete, targets: [op013_08]}
+- id: B10
+  title: "Reopen the causeway"
+  stage: interference
+  role: interference
+  requires: [B09]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op014_09]}, {kind: event, type: operation_complete, targets: [op015_09]}]}
+- id: B11
+  title: "Restore the signal station"
+  stage: delayed transfer
+  role: transfer
+  requires: [B10]
+  done: {kind: event, type: operation_complete, targets: [op016_10]}
+- id: B12
+  title: "Reach the cliff post"
+  stage: delayed transfer
+  role: transfer
+  requires: [B11]
+  done: {kind: event, type: operation_complete, targets: [op017_11]}
+- id: B13
+  title: "Recover the field seal"
+  stage: delayed transfer
+  role: transfer
+  requires: [B12]
+  done: {kind: event, type: operation_complete, targets: [op018_12]}
+- id: B14
+  title: "Restore reserve power"
+  stage: delayed transfer
+  role: transfer
+  requires: [B13]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op019_13]}, {kind: event, type: operation_complete, targets: [op020_13]}]}
+- id: B15
+  title: "Retrieve service tools"
+  stage: delayed transfer
+  role: transfer
+  requires: [B14]
+  done: {kind: event, type: operation_complete, targets: [op021_14]}
+- id: B16
+  title: "Open the sky-lift route"
+  stage: pairwise composition
+  role: composition
+  requires: [B15]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op022_15]}, {kind: event, type: operation_complete, targets: [op023_15]}, {kind: event, type: operation_complete, targets: [op024_15]}]}
+- id: B17
+  title: "Restore the guarded gate"
+  stage: pairwise composition
+  role: composition
+  requires: [B16]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op025_16]}, {kind: event, type: operation_complete, targets: [op026_16]}]}
+- id: B18
+  title: "Recover the shrine seal"
+  stage: pairwise composition
+  role: composition
+  requires: [B17]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op027_17]}, {kind: event, type: operation_complete, targets: [op028_17]}]}
+- id: B19
+  title: "Discover the relay update"
+  stage: rule update
+  role: adaptation
+  requires: [B18]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op029_18]}, {kind: event, type: operation_complete, targets: [op030_18]}, {kind: event, type: operation_complete, targets: [op031_18]}]}
+- id: B20
+  title: "Establish a landing route"
+  stage: transfer after update
+  role: transfer
+  requires: [B19]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op032_19]}, {kind: event, type: operation_complete, targets: [op033_19]}]}
+- id: B21
+  title: "Reuse the updated rule"
+  stage: transfer after update
+  role: transfer
+  requires: [B20]
+  done: {kind: event, type: operation_complete, targets: [op034_20]}
+- id: B22
+  title: "Repair an older station"
+  stage: transfer after update
+  role: transfer
+  requires: [B21]
+  done: {kind: event, type: operation_complete, targets: [op035_21]}
+- id: B23
+  title: "Recover the beacon heart"
+  stage: composition
+  role: composition
+  requires: [B22]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op036_22]}, {kind: event, type: operation_complete, targets: [op037_22]}, {kind: event, type: operation_complete, targets: [op038_22]}]}
+- id: B24
+  title: "Commission a distant outpost"
+  stage: composition
+  role: composition
+  requires: [B23]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op039_23]}, {kind: event, type: operation_complete, targets: [op040_23]}, {kind: event, type: operation_complete, targets: [op041_23]}, {kind: event, type: operation_complete, targets: [op042_23]}]}

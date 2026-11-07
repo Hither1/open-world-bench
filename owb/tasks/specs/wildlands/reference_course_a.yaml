@@ -1,0 +1,96 @@
+# Wildlands reference course A (compact demonstration course; docs/wildlands-reference-demos.md).
+# Mirrors the course built by setup `wildlands.reference_course`
+# (owb/tasks/wildlands/setup.py); tests/test_reference_specs.py checks it against that
+# course and the recorded trace.
+# Completion conditions here are held durations and live-world states (stable feed for
+# 5 s, plume <= 45 C, two seconds of released motion, ...), which the Predicate language
+# cannot express; the mechanism modules (owb/tasks/wildlands/mechanisms/) evaluate them and
+# the course ledger emits `milestone_complete`, which these milestones fire on
+# (owb.tasks.wildlands.course.evaluator_events puts the milestone id in `entity`).
+# `requires` is the course's assessment DAG (Milestone.prereqs).
+# `stage`/`role` are memory-role annotations taken from docs/wildlands-long-horizon-tasks.md;
+# they do not affect scoring. Session split points (after A08) belong to the agent harness.
+# setup_params: `course` selects the site table; the setup RNG is default_rng(seed + 8191).
+id: wildlands.reference_course_a
+version: 1
+sim: wildlands
+title: 'Wildlands reference course A: The Frostbound Pass (compact)'
+instruction: Repair the mountain intake, drain the flooded pass, and return to Reedbank with the road
+  open.
+budget:
+  steps: 14000
+setup: wildlands.reference_course
+setup_params:
+  course: a
+milestones:
+- id: A01
+  title: "Accept the repair commission"
+  stage: episodic fact
+  role: learning
+  done: {kind: event, type: milestone_complete, targets: [A01]}
+- id: A02
+  title: "Restore the workshop lift"
+  stage: acquisition
+  role: learning
+  requires: [A01]
+  done: {kind: event, type: milestone_complete, targets: [A02]}
+- id: A03
+  title: "Reach the thermal gallery"
+  stage: acquisition
+  role: learning
+  requires: [A02]
+  done: {kind: event, type: milestone_complete, targets: [A03]}
+- id: A04
+  title: "Open the practice gate"
+  stage: immediate check
+  role: learning
+  requires: [A03]
+  done: {kind: event, type: milestone_complete, targets: [A04]}
+- id: A05
+  title: "Recover the salvage kit"
+  stage: immediate check
+  role: learning
+  requires: [A04]
+  done: {kind: event, type: milestone_complete, targets: [A05]}
+- id: A06
+  title: "Survey the valley"
+  stage: intervening work
+  role: interference
+  requires: [A05]
+  done: {kind: event, type: milestone_complete, targets: [A06]}
+- id: A07
+  title: "Obtain the replacement regulator"
+  stage: intervening work
+  role: interference
+  requires: [A06]
+  done: {kind: event, type: milestone_complete, targets: [A07]}
+- id: A08
+  title: "Retrieve the cached handle"
+  stage: intervening work
+  role: interference
+  requires: [A07]
+  done: {kind: event, type: milestone_complete, targets: [A08]}
+- id: A09
+  title: "Open the intake housing"
+  stage: delayed transfer
+  role: transfer
+  requires: [A08]
+  done: {kind: event, type: milestone_complete, targets: [A09]}
+- id: A10
+  title: "Reach the intake gallery"
+  stage: delayed transfer
+  role: transfer
+  requires: [A09]
+  done: {kind: event, type: milestone_complete, targets: [A10]}
+- id: A11
+  title: "Repair and calibrate the intake"
+  stage: recall and completion
+  role: recall
+  requires: [A10]
+  done: {kind: event, type: milestone_complete, targets: [A11]}
+- id: A12
+  title: "Reopen the pass and report"
+  stage: recall and completion
+  role: recall
+  requires: [A11]
+  done: {kind: event, type: milestone_complete, targets: [A12]}
