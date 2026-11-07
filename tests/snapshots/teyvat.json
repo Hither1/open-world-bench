@@ -1,0 +1,1403 @@
+{
+ "action_space": "Dict('build_move': Box(-1.0, 1.0, (3,), float32), 'buttons': MultiBinary(6), 'command': Discrete(13), 'ingredients': MultiDiscrete([33 33 33 33 33]), 'look': Box(-1.0, 1.0, (2,), float32), 'move': Box(-1.0, 1.0, (2,), float32), 'part': Discrete(9), 'slot': Discrete(32), 'swap': Discrete(5))",
+ "config": {
+  "image_size": [
+   64,
+   48
+  ],
+  "max_steps": 150,
+  "seed": 7
+ },
+ "environment": "teyvat",
+ "kind": "common",
+ "observation_space": "Dict('build_state': Box(-inf, inf, (6,), float32), 'button_mask': MultiBinary(6), 'command_mask': MultiBinary(13), 'construction': Box(-inf, inf, (8, 9), float32), 'goal': Box(-inf, inf, (15,), float32), 'instruction': Text(1, 1024, charset=\t\n\u000b\f\r !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~), 'inventory': Box(0.0, inf, (32, 16), float32), 'minimap': Box(0, 255, (32, 32), uint8), 'modality_mask': MultiBinary(7), 'party': Box(0.0, inf, (30,), float32), 'proprio': Box(-inf, inf, (12,), float32), 'rgb': Box(0, 255, (48, 64, 3), uint8), 'survival': Box(-inf, inf, (8,), float32), 'swap_mask': MultiBinary(5))",
+ "schema_version": 2,
+ "steps": 150,
+ "summary": {
+  "environment": "teyvat",
+  "episode_return": 0.6697436857223507,
+  "event_counts": {
+   "move_glide_start": 3,
+   "move_jump": 12,
+   "move_land": 15,
+   "party_swap": 23,
+   "skill": 9,
+   "swing": 22,
+   "talk": 1
+  },
+  "metrics": {
+   "objectives_done": 1,
+   "quests_done": 0
+  },
+  "schema_version": 2,
+  "seed": 7,
+  "simulated_seconds": 30.00000000000065,
+  "steps": 150,
+  "success": false,
+  "success_defined": true,
+  "task_progress": 0.06666666666666667,
+  "task_progress_defined": true,
+  "terminated": false,
+  "termination_reason": "time_limit",
+  "truncated": true
+ },
+ "summary_digest": "404d147881c42f47c0220e12126707159ff5e91ec966b9aad1899215a34c1a82",
+ "transitions": [
+  {
+   "action": null,
+   "info": "df48269e3d3f425adfdd029af1b2bdce21a6dbae45238da3141229ebd797255e",
+   "obs": "2f4aba295a2fdf435a203194d6b4ad308b8276cbf32e0b91d8ecd21c6bedbfd5",
+   "rgb": "76516611e52bbc88ff998865853dc094852024e5ff5a9317e6e0b7ccab66bec0"
+  },
+  {
+   "action": "f6192120e677e5d94feefe5379ff4cf2768b12af47083bbf7721520b7c56e62f",
+   "info": "04f7613a93c623c6a605b0073732b07fe2285baaf86d87b9f4c6b0fc5896fc1a",
+   "obs": "bf4d24205c72b505ca5df1971327de88bba1273bdfc79ad40997bf5105f545cf",
+   "reward": "-0x1.0624dd2f1a9fcp-10",
+   "rgb": "eae3a3b9fc360d71d5b13c1f83b1f12547b44639471c02e35595a5b71ee7ac94",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "f752570b2d7132c827bc23e0681865d4407f244e6d797f663987087c88903a3f",
+   "info": "59d621a5966d272aa88a562360115848556ca0b003fe92e4868cf2798f24e13e",
+   "obs": "936a3593c40113b960cae0005cb9d533d4e5abf1fb747df0b714e185f6cbf230",
+   "reward": "-0x1.2cbe49ba5e354p-7",
+   "rgb": "a69f443c153ea0dd1997c6dac33b56556b4d752eeea83c16dad65718eaf7ccf9",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "088021f9eb77ca2e8c6d7a9e55022849bae36f30001d2891a44a80be0613f2ce",
+   "info": "1760e576546f69a543ae74d3a3a559d0651429b7000ab47a95ff90bba3dcbdb4",
+   "obs": "1911d8747e43c3417b1134e8f32458b3d5f37f95a33aecb698a3968195ee340f",
+   "reward": "-0x1.729810624dd2fp-10",
+   "rgb": "d16c6607164bd352149061ae84af29fc4348e030156cb4dfca8cadd4608c02f0",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5c481a88052d6650348c741857b6abe41be192d18ce56c2346f566ecdfd5f753",
+   "info": "0a388ad410a4dc5eef5a22f9fd46e13edb8a83c7efbf999b3ea4c0fc890ef100",
+   "obs": "d256813eb4bb8d196c3eeb3115e1d545ac07e06f3682555dd7160316d4084cdc",
+   "reward": "-0x1.bda76c8b43958p-10",
+   "rgb": "5dd4950d687ced5c1f753c0e883e46b52ee9f22dce21ff8718cf0589b4089e7f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "4415d1a7e502dff1228cbea94d1111d1b5f3e46afe63bc4885efad841308a3a0",
+   "info": "dc38ea686d4d2a250d83a5cf7b384f855c32471529ae16280741cc6eda1d5cdd",
+   "obs": "c2447e1bfa44888f88ff8fb98696cadd52ba90e9c60b44bdef21917328749bb2",
+   "reward": "-0x1.01e153f7ced92p-7",
+   "rgb": "a4ecca820584c329ac0946ac290f0f7310d495d83b741305fbceee37dad66442",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "9fd32f08978e8e362cf4fb46a1b21941071fde374290ca138aa9f9a17b83d5da",
+   "info": "0e75c90270ae407c11c2a4537b2d9098ac0107f335ec27a19a4422ebb093b65c",
+   "obs": "cfde047e5e4687cdd116a4a6eb3e006899c0473bd75aa1ab0ec968ca23d7e088",
+   "reward": "-0x1.0a613f7ced916p-7",
+   "rgb": "1c7ee1d48d8bf7e55c2e78f7fdbd8d03e83df799bf5f4c3d5afdf15281e48faf",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "a66556e764bf6e5460ae43079de7662e43d33df6e0cc6f1dd2412da5b547cdfa",
+   "info": "de0dfbe25304f5bdd3332c4d8ee80f2a53ec126a1e332b201c898ab1dc5262a0",
+   "obs": "c364388f20bf74e4f564ecb76fe36eaef6e82a30843380f54025fa0fa3a47ca8",
+   "reward": "-0x1.51f553f7ced92p-7",
+   "rgb": "bb23ee02ef59385a4b58a83b9dfb579698bb385b888a89c7241e4a2b4761ca3f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "c14e7167ab706c193bceb3d082006650d587fc055d17f4d022a91d7d545b59b1",
+   "info": "5de87c25c67fe99863ee8e04c09029aeb33bf607417d41a8b258cdd26acf4cd0",
+   "obs": "94cb5ae7107671a9f388b4bf4aeb2ce1a46a4da74cefd4508388e3c626378c38",
+   "reward": "-0x1.2ef3ba5e353f8p-7",
+   "rgb": "d47043d7e78ade2e00457d0566f3f03500978e91e7128d7cd47213cda0b1e813",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5f2300ac033ba77ce3c7ef574ee14006a2a451804863afc0aba17f10852f1612",
+   "info": "9af2941f86beaba02476d9b21ac773c92e0c857d7171ee8da0f6a7242ccce065",
+   "obs": "b0e07ef9dd9319fe9856c48555a07cea87a9d6ce4e7d3d55b8714a2a504e9fa2",
+   "reward": "-0x1.01bdb22d0e560p-8",
+   "rgb": "10cb71fbb444a234d501558b2feddcf6f3cc75a19299734209281b6f1368b827",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "1d7ef430b6a666721b5beca3cb3d7cab1a97b0830ad9ab52c39f8c5cc8cff48f",
+   "info": "2b126c2163241b5f2eb389d100376872679ffe561268fb30125f8af8aa8f7b5a",
+   "obs": "0c687d647308a342e7e74c8b86349efe24f237a9943172ec8ae1b2b626435cf6",
+   "reward": "0x1.1fb020c49ba60p-13",
+   "rgb": "4700b407b4b7ae7c5673e36d785d2882b48da7bf56849d876ead4e5d62aef4c9",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "db5bd9464e0ca0d7dd2258cec9bae42c7e2be9b5f159d9f4701aaf7760c3afdd",
+   "info": "ae26846c83fe89c28bce410b75085bd0e22dbe7f84535592780ccfa98fb151d3",
+   "obs": "2f98130c2601c9821792f7fcde8c3020f04a52fd170c094787114ab775f15404",
+   "reward": "0x1.8adf1a9fbe76dp-8",
+   "rgb": "0efe81e28a31b1850f0cebd3860de508ce71477ee33a8b7d359a257fbc622354",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "27cb20f5f90629c2274f8d1cde860542f270420a59db62b8a8b83d442cabab3c",
+   "info": "649ac143ab4f1c8877b806b34d49abcbcee3716e68a09dec9ffedac98536769a",
+   "obs": "29ff0d8a35ed7aab19c4ddc77002bd95357b84d96530ad1d29a1b5b7c1fe38ec",
+   "reward": "0x1.c279374bc6a80p-10",
+   "rgb": "53a311116fb42617cf46e8af66b0f11950aff19ba0b003f14d12476aa16ef352",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "6b47215a62490737e40b1374d1a3c7e9ab4d3f618d1a0c0d5fa68d03606c5c11",
+   "info": "c320593c0b662a6ef57c07a36a199238a312cfba6f66d9c66df510ab431f12d5",
+   "obs": "6111368493911662543203fe705bfc6dce70d61f04920ba1105758acd047007f",
+   "reward": "0x1.49b48b4395811p-8",
+   "rgb": "2125f58cea1f799979ce53c8de233c7dc6c4b8bb1bf7b8d9ac9fb49530a9cc40",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "dfa3732d82186ac45243c186b285cc109f74d90483a4b783edc86ca8586d1901",
+   "info": "1bfe45173f933e7b4037d577efe41c913ac6243400aa661c933b273b8990c849",
+   "obs": "a1f2331f6d03459988b6075de4845a418804f8c3e16c1cc2439b96605572c2cb",
+   "reward": "0x1.132845a1cac08p-7",
+   "rgb": "4fea63d4ae4dbb4b106619bf2b97d6fc2bc91c66daeceb57730605a6b6cb117a",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "2dd33a938a49860d0e9f3647e0633a4f0f74c77fb837bbd2cef8f387ed38871f",
+   "info": "a263e5914121d49ba776c27414d939a2fabc00568cb002d62c4930cdb157b4fc",
+   "obs": "b4e97284e920b8db4e645baba9c6a73d7ac05f242f88a140597d4f109822e4df",
+   "reward": "0x1.db413b645a1cap-7",
+   "rgb": "6a6e016c6b04f92ecdb815bc18ca213ca9cafaae7fc66b9fa4bb394964d96212",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "509ae9a696d28bf8f626493c32b13d867edb49be1abd62400daf53dc41ac88c5",
+   "info": "9455723537cf5d69d52ef86a77791d671b97f1586bd8b5b05dc4dc0ac89ac6ec",
+   "obs": "119dd7577eb45a18468fb50b742688ddbc8b949f0f67e2a0d344395bdc97894a",
+   "reward": "0x1.77b1fbe76c8b4p-8",
+   "rgb": "f6ede54584c82670fdcaf613a4688dd2a7cc5f3e52766bd367a36ebfed2fe0c6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "f40bb49ee3cc962a2f21cb5564f02e34a15bf27517e557d88864d3a49d01435b",
+   "info": "4cfbdd8ac48721aa7e956cdfff609ef6da82342b137acef537c4fe763274c903",
+   "obs": "c78e5f0fbf5ea34cf692203093e5cd962881093900b16c7c7a9bc09e06962dfe",
+   "reward": "-0x1.24a86a7ef9db2p-8",
+   "rgb": "58b0c13b0449351f68115a53022f7985091d002f7126737a2854484b7f27d8ac",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "f5973fea5ce659bf33ea49034e26f6208ff5d4bdc5b86fbaeecc7abb1828827a",
+   "info": "2f5eec418b5219511ee5c146f2c28bad04a7733734d0ff5e0a423f254adb0af0",
+   "obs": "e0560c594c2051dfae94386957c423aa17fcac388bbbac945cff1226a0484419",
+   "reward": "-0x1.2ad5fbe76c8b5p-6",
+   "rgb": "c3e992ffe1e9b8ab684673f5c2ac2b9499f0c8f8fb3bca2068574f6b5ffbd3e9",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "492d402a169605449e6235a827ce7bd917c751bceff587346969bffc34d3891d",
+   "info": "6a49f3451c258abbd46fe35ac040df716368e29a8f36da098ffc4ef654128c92",
+   "obs": "e5cbea3a6b0ed9a5ed02147ead49c9d701d9f264f8c4a3ab6f3bfdd25439140f",
+   "reward": "-0x1.f081374bc6a7fp-8",
+   "rgb": "0d0653560d91e8c410d6c4395ad2513b6223ff6156dcc74e9eb154a194ba5f3b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "9b642a4d21d43f11d227687ac1fed753ba254466f243200b6373378824ed382d",
+   "info": "3383d5785a104cadc6ddf4519f8b4e7bed7d7ce3c8e2681becfdf4a520c6e4ab",
+   "obs": "294df9c3eb676998aae5384865d40dc1bae3b3f06766ca294676f29fff4086a2",
+   "reward": "0x1.b8eb3b645a1cap-7",
+   "rgb": "7f7fc921d41b375a8c9968902d9feae047570389378368c28c89ccf1ce6de1d6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5a516ad636b8e1c54f7163a1c18b1fd06e3b06deca288447e5ed991b8fbff004",
+   "info": "bdf2c4926089c075145dd805c2a3340487f8bc504ceee1b06ec50f07f8772f36",
+   "obs": "3ee2dbb8f507a7f1093d1004490dc75ea4aa174a61fac50c420579d985a13afb",
+   "reward": "0x1.548bef9db22d1p-6",
+   "rgb": "3fda3874b2e1ae8be5d60eb5a45977f6c4656eaec8d02e86b926e31fa0b6efe8",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "b457b3a22252dd96a7920b0c418114397288a6df21d7d2416e4ec4739fa25710",
+   "info": "46d60a7de15145d8bed997ef62227c27b96b5d5dd199ae322c8b854f5843ba4c",
+   "obs": "36318f60f958df57cc3120d8a1d387db4b04da0b00f3b168fefeb1989c07a92b",
+   "reward": "0x1.1312189374bc7p-6",
+   "rgb": "e7cefdc628d707d329a79f32e0b70847f2039e8ec7f5b0e6ac0ba4019fcdd419",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "8460e3fa9eab4a9b35f1f19ae70844f0e868a9b07e7877fd328f6c97b5aad5bc",
+   "info": "760fd939090c9cd2613505177ce26202f0d72d225a96ddb10816e52111d4e3c3",
+   "obs": "d8863092a2c1360002bc122c5fab06608fe6ed5292b3887879bd5fa234e9bb33",
+   "reward": "0x1.3d323b645a1cap-7",
+   "rgb": "29edc98abea7bcc99497f36fa4163c2a37dd306749d35bb46d95edc1a8efb96f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "df642cc385c0f8239c44524347c41ad3cde27cca5c51f555552489eb924e474f",
+   "info": "af5ef90e7e214218431860a46045a5fc16bb3b8df9759a66a873dfde0c8fbc28",
+   "obs": "ac2330ae28270c2157486e6f42f8f33287430f5321f6b3380f096a245424671d",
+   "reward": "0x1.3694645a1cac0p-7",
+   "rgb": "5bce73b016e1578825540d1805962d3ff4427121c1e080ca24fc50ea3dd8baea",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "c3ca6e59eef4385503d0c54c848891ae2d752ab4c0eef2699e684ab1d089fc47",
+   "info": "ab413af27ffa9847c8c34d6f6b6957007700d20b339eb8dbc25acb3067e92b33",
+   "obs": "92cfccd2d42259d785a1ca163a80bdf9cdb213804426d8e0aca39f2c0c30b13a",
+   "reward": "0x1.e4152f1a9fbe7p-8",
+   "rgb": "985e5f62bd0461877003d0b239abba45b56c86d1be09018896eb86130ff7e549",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "529cc0b7f37e1a32f3dcc1ee98fa19d987662524d1a1f4c1d0a22aa23688ff9c",
+   "info": "d1e9a994150fb18d0cb11f4140312fdd15d925e5c9ff0e5b4ea8c57b19627388",
+   "obs": "a1faf1d70d951c291cec30aa1099bbd6f165216c193f140991e84559ee7cfc36",
+   "reward": "0x1.cd656e978d4fep-7",
+   "rgb": "d7674cee0428197922c8178af7dae8a672ee45dda968cae425b3a3dea6563e57",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "a283c21a00b0c0b5f3265fd64c8460f2a4f25e482348d3a26db15d5f0d106497",
+   "info": "8497b86f93b32d8de20a877843fbe15f30264d1bcd02579884c1ca136bf46ea8",
+   "obs": "d9f58bcb2765cfdc6a87fc73f7f6354546114cd3d1e73f2aea25d236356d9319",
+   "reward": "0x1.fef9db22d0e56p-2",
+   "rgb": "3b1635d5b0d17843cec87182ca0b151b12e9f26240bf2de1eab9f9a7b994b7cc",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "4e349434b02dd45c2f1ec7f71be330649f5a9a5b86c8e0e8d2c3d9da1bd15eac",
+   "info": "badf91b63bc380047262193d2cddb2a8b8046b1de7558bdb49401b5f5704ced5",
+   "obs": "205c0cb25d731e4772d385a91c0437d94adbb3b184166a08c82700f128b78b6b",
+   "reward": "0x1.4e52f1a9fbe77p-8",
+   "rgb": "8d667f0566ccc6efd04d78061c5b123d4e7dd40e4f7ecfa4042de1bdcdc93bfa",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "e7791d235684090c1dca91befdd2a6fc3861436674d975b762fa554cabad03f3",
+   "info": "6f6562157487990977a3fd9317d0b3990b580b81535a330a3e482304e0d6d1c4",
+   "obs": "b9319c05352e8044b4ee82ce7af868f0b6f3daffe2b8438a53bfb895a74c09eb",
+   "reward": "0x1.4b65a1cac0832p-7",
+   "rgb": "a2bcc8a418ceb042ddd5d9b7b270a65da8b5ebd6dc2a1d4d603fe359be9cc7e7",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "b6a14d188b77d8f28d3ed2cfcb9510a448e4805cbff26f8508d90f25cb2f0e41",
+   "info": "976b23aef9c767a378b5e22ddcee1ec62540a71d4f809712f6b20f7f5a9aac66",
+   "obs": "d13dcb5d2dfa2dfc3bd12256ffde4da5ddf5aefc1b589fec4d2caeb0a8c7200c",
+   "reward": "0x1.ecba1cac08312p-7",
+   "rgb": "b25ff09dfa1b6a63989b6a0379a241cb2b3a1f8109da5e1a932da2232b294b83",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "4e1b1aa95334c2b60546a2d7fac21146394f750d7819283ecca6baed846db7ca",
+   "info": "93c8de15940f5024badbe542497f0e4b551445297ae3a93a4afadd6c3d7b2ac1",
+   "obs": "26f84b4d775c8538463e0ab417f3c3e2e1e61d7b958b255de3fbe8f65dec1ad8",
+   "reward": "0x1.4194bc6a7ef9ep-6",
+   "rgb": "a49ad3a932398742ccb03912d8dd862223565191b0585c226ea36827ef71402e",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "0df5fb56114d00d7464675ae959637298bcac315df74f263bc19f8a41bebc514",
+   "info": "187a8ba2010e74155d58d0dc6c358abe0b5d0f27608de87bef46c88f8b9602be",
+   "obs": "313303a2fa6db81807f1daa4ad4301ad06812a10d858bf52979d91c6fd6ff8d9",
+   "reward": "0x1.0e0a7ef9db22dp-6",
+   "rgb": "f67a5efc70a64b6f2ae326582d9f53e84d25e41c4679ab6919e6d27f1ad84344",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "acef98bb4e9facd31eda037403cd58dfe2d791a5ae7df9d7e004535c667ea48d",
+   "info": "d570752f67a552535e00c20e1ee0d5ed8a7aad3b82839113e3e2574b0ac2bd14",
+   "obs": "96161cc4e901d100792a7449e601c291be76379dc5c1968aedb279f9b9f07b5d",
+   "reward": "0x1.22d9374bc6a7fp-6",
+   "rgb": "6ee1ef353aa13108dee86e2c212048ad9fdca0773b9e91f34a98c3058ba82fed",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "189c68d2142fe31abc0bd199409c1072c858d3eb222efed94928f9e5484ac760",
+   "info": "414d93a7ed0119a951d2685ccf8e6d1e0a6786cbfa142128ea3f20d80ecc0a34",
+   "obs": "c77093a09ce71ccc69fcd789c77c757c510526149c67a0f83657f0a53fcd09fb",
+   "reward": "0x1.81b53f7ced916p-9",
+   "rgb": "349716d8d34b0defc0f3aa19e88c0717bc833ba2a511db837713792222106f8a",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "df1d1081eb3cefaa900047c130aa704289734bc80312d74f097e6df82926dae7",
+   "info": "17ab72145bf747fa150ff8694b61cffa0f5fa34f09edf4804e0037ea1df753e1",
+   "obs": "aa5cfc2eea9a0a5c145eec76556c1a78935e9229cd300c389540f55d9e7e0dfd",
+   "reward": "0x1.7092f1a9fbe77p-8",
+   "rgb": "736cfa8baaac82d338ad5c73658bc3a3c0a857af212336069725a32464df0ea6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d48682a0f3e144c5536ff68579b381713d4f535f2b4f0212917cb393f87628e6",
+   "info": "68d446b85dded3c70687f2ca9e2675a971cba79387e57b2ada72098c6b55ebb4",
+   "obs": "43021623232610af274c795c4da8b852a7cfda7058afee2025652f72713883b4",
+   "reward": "0x1.f1d4fdf3b645ap-7",
+   "rgb": "540f00be776b6fe5a89b09798cbcbad8dc84c2dd3f1a92acc3411dc0af64e39f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "87f5db73121e584829f61f54b91dfdd5a8944ddd8cad75522a438272cedf6582",
+   "info": "e8f65281f1fbca54c111fb44ed936302ab301ea548e9428163bfc4553daa2110",
+   "obs": "428398144eec57a509443e90aec41b2cbd738bb5f44c57a5313189f1b6fbe51b",
+   "reward": "-0x1.68e5604189374p-12",
+   "rgb": "2ad4621ddde15416bd290e953a7f327b9050d57416d7c98bc33e78cb6e380107",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "58be7356a8802c8027f6c78fb2340768625f3cc6c16489e238d54e86f5f0b0b8",
+   "info": "a439aa88f54cc71f5489b4d026b0ce0256f7755c8d2241c6053871e86c0aaf0b",
+   "obs": "ac217d004983f355927dc36ac877d7c135a1bbe775dc276e411b477e1b606abf",
+   "reward": "-0x1.5cd916872b021p-11",
+   "rgb": "289f631e632cedc7b1a071a301b5b1cc5dd353ecf7e09626893096f48e4e0ea0",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "8066d03b99b72795ca0bf49fa72559dd07fd4a26b1266cf8fdd30b9304fb18b0",
+   "info": "c5a4f482a06f09af608450067781740b545f7a418b416d6a19d641183293f120",
+   "obs": "ca537b5b43e0d05ea0905e85f60e4d6873210eeaf35b3e6f1be70e812b01bf61",
+   "reward": "-0x1.bc353f7ced917p-11",
+   "rgb": "1f989777b0aeffcfa017508a45555eff2f26821a10b4ea526fb76790be943275",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "16dbfcf58b92e98f2af48884dcec47b828981eba0d1ec06fbe57d0b5c3229722",
+   "info": "22cc095492e7681a0bd1bea68b2cf761973367253971295cc08f69494955249b",
+   "obs": "d0bad063a2185affd64a1370a5df0bd05b12237480b6f31b1630e516a84e56ae",
+   "reward": "0x1.7a810624dd2f2p-8",
+   "rgb": "1bc2bfb3147818774dfd6b617d02fe9c9eae6512fc1694b59b0352340ef6be0b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "617832ad58d27e9d341e902afeb3f31a5c4fa6343d11668e7f33525b9d558407",
+   "info": "35f0298ca0df92f4bea256cb246147702c36f87fb60fc9cb3223450afa293545",
+   "obs": "54efabe5ae9c6decfe7eaa4f8fdb36ca76928f5a58462881bbc6680bf2bd5fa6",
+   "reward": "-0x1.346c8b4395810p-10",
+   "rgb": "0f2e1534ad8f7ae714f211c8a9b2caeead9519cef2b89489af0f5072b9cd2ccd",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "22a8a709e798be77fe384fa466dc5dfbdf4c8feccb6379c3a2bfb3698e961319",
+   "info": "d05b094be24e01f0ca2ba65cd3152c1c502c23ea0bd6e7d16ab4117366541f35",
+   "obs": "3d232f24e4470d79856533b329f89136bd4b41f06830ad59d0aa86e89fbb7e97",
+   "reward": "0x1.74fdf3b645a20p-15",
+   "rgb": "e14a2501ac6fd5d156e9cb0a3ec995e4ad216dd1c18afa12eb8640dc73c8957f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d4ab562189e68d482c5d0887d7cd230b31b8a30551012c4bf598068229a457c9",
+   "info": "7db14818092df38cb5749c10c59d2789c26375952c0c77def64a1765ae761142",
+   "obs": "a952882f045eca5ed6df01b058a17dcf03599cf3e5be063f549eb96d77525bb1",
+   "reward": "0x1.95d5810624dd3p-8",
+   "rgb": "bf0395d16cc214ef021e71796b72270234fea61951c8b2d4947428ceb748221a",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ce0c0d842774d8db609b42288a21e31ea79f8e9b1b5d37d20236830e98153299",
+   "info": "3bcfd87f7885b3cc72a287807d45bf231b512121224a85cfadfeaec6eaa11c48",
+   "obs": "a1684247549b84be4e2781cb2d04b49853de796967d30f03aeeda6f41f34e95c",
+   "reward": "-0x1.e8bc6a7ef9db2p-8",
+   "rgb": "2c20f48f43e58abb8b5eb93c08a26f9a7634795c51a898a9d32e9fcbd65ab66a",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "139e6a09e630edd4f0d86765fa3e2ae78d8845223ce8833d585833a6fa73ffe5",
+   "info": "bb1e86be298d14095bb96daf789f6743387395280d091aadd9532f340f291b1b",
+   "obs": "d88d95496a674dabf4665ee9f5f78e88212739a1adb79f314ec4f69fec5665d2",
+   "reward": "-0x1.c4fced916872cp-7",
+   "rgb": "6fd2f760abbb157f6330ad7eaae396cb4a514d5ca4bdc69f0e3e8e14b9fcdc04",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "bf7a760e78fddfb07e1d92a72f88a8e0ec86218253c1fd050368fecf8edc5a3d",
+   "info": "c8a1b0f177c0a81ad124300a4bc7fe06e8514c933a543fb967d14d55dfac67f5",
+   "obs": "e86b11a43a4c25511fe0c0ba4186df4d394b1c79cec0a157ad6e492ae9c16eee",
+   "reward": "-0x1.a4472b020c49cp-7",
+   "rgb": "38f29f0bb0bd26bb4855e9f7b37a139ad1d314de90014af0a845192565f67df4",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "30dc378db11cab54affc9570874261d784f16907e132c38e2a5efb0ceddbe673",
+   "info": "44496f8f8c5d7552e12ddafca796496c5ee8cdaca93764e671da3a93c7d689a9",
+   "obs": "4c5c6f7403f976cddcea88d8cf9820275de7b8e6ab28d1fa5f5e3d10d61bec83",
+   "reward": "-0x1.acb020c49ba5ep-7",
+   "rgb": "d54aaed8e1f23dc59583cd269ce39cce593009a865521b8ffc5bb87519504715",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "0f57a78e8c6e1f9086c38193b0c155c4d9d820f1c731f7c9ac5db4713ff9dbdf",
+   "info": "6c4ce8644c81e04acc5cd45e19f0d196f83c2d3d3edc241fa52b7a8ea3ddf172",
+   "obs": "9b18a8e9e15b7bc8d939fd226f2c04e7152ce67705c714a5d174ab6797797399",
+   "reward": "-0x1.7e9fbe76c8b44p-10",
+   "rgb": "700d01c3c090230501b45fd24c6b31fc2bb22cb596262582f5d7e4929ff5c274",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d441cbdbef39594f4aba8447feeb3041dedd769749f63f22e9fc60ebbe7d86ff",
+   "info": "ee5880e2bea93e3b3ad4870bef6408adbb2e0a3f2d2277d1f4dde41b6e201ee0",
+   "obs": "7f40a708f693488faa0e6464c76a62cb9e906237d1d24064ff86435d7a7ebccb",
+   "reward": "-0x1.096ed916872b0p-7",
+   "rgb": "c7bb3f782a25d5a5307d3205c4f8ea46a7065478373f9ba16ba69aad5402d0a1",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "7f42cb1b2ef25bfc797da4523ea621fee9691e7add73d1842d7026bb07e5f02a",
+   "info": "8416e8439c86f5c2d8b4ce09e97e7d2d1cc176438b995741a560e2e33ca2c55d",
+   "obs": "d1eb955701766aae8f37988f415af252b07d1257359fc4ea90362e79463ccb43",
+   "reward": "-0x1.2dbd2f1a9fbe8p-6",
+   "rgb": "2f7eaf40b3e1b929ccce1048fd11cdce2bf20d8c1cac2b57fe4fc69baec7275c",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "50d59815ab4d57d77958f52d1593dba26516bd631a93d371a4eea4d545233cae",
+   "info": "d966c1ef70a261a990ca86c09a14b0ae871401182b8b2b3334ac607fdb25fdd5",
+   "obs": "bf777f593c4227f0d631019a21a63a86d4c673f59b3df76dd7baf096242ba727",
+   "reward": "-0x1.44cd2f1a9fbe8p-6",
+   "rgb": "52b6fa5bcbc19e7a9f5a5cc62fe54526dffb3cc4fcba11643d61ac2c15986d51",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "7ecc5a2d0a5f0e33741f8c49e393732db87d547a28636800be07129efcecb224",
+   "info": "69b3762cb5483580b51e7fed4c746e575183da025d095f201200e71ae5b75239",
+   "obs": "158ce0bd2cc52e8f35fc178b8d242fe915e44c3de3e7c1e48fbf305e4d0d216c",
+   "reward": "-0x1.fb3b645a1cac1p-9",
+   "rgb": "700ab1ad61c95435d1c4771070bd1119c8c176a7566b214583c620f0fb1ec1b0",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d9c0235b7539ab3ccf79a071cc81bb1b5a6289947913246b691664c8b3e59185",
+   "info": "4137b1bb1384b9eb7cc52cbc92d3316e58148d0a38c9dcc158fa5d2c605bf40f",
+   "obs": "21dd16e17b848777ada684a398d9207b92b9ffc3906f5bcad97e806bbb34b468",
+   "reward": "0x1.9dc83126e978ep-7",
+   "rgb": "7a7be56e59c15e95da404a61f85239017a20a3b92687cdba0b537bfac836ff4b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "84ab8a2e4afba3f2914ba50b2dc80dc5bfcd8c8008aaee6ad16f96bf19771ec7",
+   "info": "7ad0e2e902bda5604aab6331df8dc8f8e625fd049338cb42c46ea67f20476d51",
+   "obs": "2314e68e424550086eccfc15f3ec2578e6a3c36348181b23d707f2d34dfdeca6",
+   "reward": "0x1.0d04189374bc7p-6",
+   "rgb": "7e3d224d23de3b8b7762a4a1dc028e03a3bedb3c415973d31ea13ec00492b138",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "339f85f4247b42b8653e6dce20f81fb05e847e830930d8aea4baf7bab7766122",
+   "info": "495fef87a364f950d9960de3e3f4c910db29434cd82ebb269c838bceab53c82f",
+   "obs": "0eecf670b65e9a18deb986bf538e5fbd57e224e653d28f63ce95c3a1507277db",
+   "reward": "0x1.943df3b645a1cp-7",
+   "rgb": "9dadc9e5fd815fac2abea7e99582365045b0d4c5ff022acdb40323b1595a2e54",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "f0866b38d19d6e0e3b6b76976e08f55e8c96644e626c3933fe9167d5d59870ef",
+   "info": "936ca7359e5a3f9787c71dc422165fe00b5e0c40062422f228de1994c714caca",
+   "obs": "4b172a6dc7e8b5d15c58eee0dfcf945391c12ebdd860cd1f77c5097840fc0f61",
+   "reward": "0x1.6490624dd2f1bp-8",
+   "rgb": "4bc178ad9666ae6937d3d8765b5df9b154c4ea66f4d33f343edd3c56ac41d86b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "1759bc67310fb75bd984c00ebfda7d322dfb902e7e3a4ef3afab9ed4cca9fae2",
+   "info": "745e42713f9822b571efc5817bbc77ebbe6f2edd542d5abab4a0769b790247c0",
+   "obs": "6547c92908b8ed8eeae650a3a411761eb56dbc0ea748b02aa387636949c51c5a",
+   "reward": "-0x1.7b9db22d0e560p-12",
+   "rgb": "755362fd5e5cd927f1b189d3935f8f1156486a20334f05bb8969c31af074ceda",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "affd249d93306d2ec7544963404f9950c3361472da69a1269e994fa683bfc8be",
+   "info": "069f8ed97156ea1cb2d30b197fefdc891e73e5bd0e855aa14be1197db2a3bba4",
+   "obs": "5ca826d37717851dffe95536cd2d7c58964b33267ea40c1f3880a1993db40ff6",
+   "reward": "0x1.9bbc6a7ef9db2p-10",
+   "rgb": "19259706d46e3f226ec123561e7d3979ad829684ae12188acf9617896d691393",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "cd2a21765603c9b7636cb580e6f7a69b33cebaa7632ff96a489508c4f02b4707",
+   "info": "e23b06fd7dc0c9af4ff78f23cf244e5c9e48232bd0e873b74a314e9a72bbbe83",
+   "obs": "9747c93429c9e3dbd2c4a229197365df6e7ccebcd0a7169c6e6978ac8364284b",
+   "reward": "0x1.2d1f3b645a1cap-7",
+   "rgb": "d7b24627ca36f8afaed33f990143fc5114e0de5b2bec9c89318c7b9166f6dd1e",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ca44fdbd4feef329711f3565007506a4a18a10f89e0cefcf4cab5394836e9be4",
+   "info": "24421f1d9f3d105e2b141d6421f08c0a10a37913fff309fb34d3f699b2c858e2",
+   "obs": "4a5ce5005f51d7baa616899871a2a547f86a806679379cd88a73d54c6cc0c76a",
+   "reward": "0x1.08c6a7ef9db23p-6",
+   "rgb": "f41c875e16ab3e0116ce68c5dc109a43c0a1e6aa1cdafb0fcd22fc5d9b69acb6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "0deac370654ea277dcf5953b0a61e2e2036e6395a45fcd3373a974439a897aec",
+   "info": "615b824f4018e2f49f0152b798fd5e8e8b56a84b1e164e93cd68f694ec4dea94",
+   "obs": "6ed6694f43e397a7f8d53beccb41911dd7b2f79b756e3efb096b7563adef880e",
+   "reward": "0x1.30a189374bc6ap-6",
+   "rgb": "dc338b421ae55a16dd27b2d281152b6fdff679d183a78bebd5cb71b47451cb0b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "54c22d3dd76a48f1e962b9e52d87232def135040a905641309e49ea7ad07843a",
+   "info": "d1b569d7b992b91d510b8828bf483f447ede2974ddfb5617a10aaddd1f00d342",
+   "obs": "fc313fd3d5f16ea9e561a36663ce8f9f53411a05360e31abfa8337e8e033b9ca",
+   "reward": "0x1.8d5f3b645a1cap-7",
+   "rgb": "e0567350e343c8146aeef17ba70e9f0066ec810da5d14697375e6a53cc8c5931",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "90dd52f276c030a98f6dde9795663b6850c4fee9bd7ca8e5be5e01ac35e67dd7",
+   "info": "d20c5266284da09120826e249a0f4ad978a05aae0d35fe9f4b8aba627f840135",
+   "obs": "0305214dc5e94abe73bde5543894f5ededd93a90e2f4a9368fb7b166ae2c57d3",
+   "reward": "0x1.3a4624dd2f1aap-8",
+   "rgb": "e8cd14bbe10c6d9ddc51bc31ea77d057cc37c0feb4c071e59fbf9f8242bd1979",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "e68239e4fb9e9296003cdd1e44f85fb92140f34150eaa1855876ee4088c1897a",
+   "info": "538ab953c469a68dcc043920c09d5c927ad841b5233487080e25f9deafd47d09",
+   "obs": "b5476e4a835ed7914c4f7711520ecba756fd19ea5e13f0ee90d19dab7cfc550f",
+   "reward": "-0x1.74f7ced916872p-7",
+   "rgb": "027bf336c72b5fb71946943e3f6cb4a3ef14aedb756bce8ab58bc9681eb2a0b9",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "b974bc34356b48900fa3a0e7177a8a6b85cef438e2267efb3fa78e495f5d3e0c",
+   "info": "11171d83bc6bc18a38e948e06b047c4fcc09781a33d11529669b0aade62334af",
+   "obs": "1b1f866f949972c22f9a75329d93309e19344aa20c1bd838ba85a9d95561d0bd",
+   "reward": "-0x1.d31ba5e353f7ep-7",
+   "rgb": "4685561ef85be39d3df2cec0a4e3fe9c588be9a4fe0efce6558ec0d2b50b5810",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "70b1a3c6d281dd60e14264a03bdd542a3bd8a91efe287370fe9adfdedc46d6a8",
+   "info": "3c810bb5790a1b5217aea5f2f4c4b871e5bd7ae12f4cc8b00bf86d70cd5eb760",
+   "obs": "a0eb6c30c6e403d69f1fa0e2af39e0d83e5f3eadd487d61394095ec600204a61",
+   "reward": "0x1.4df1a9fbe76c9p-8",
+   "rgb": "bb4c7c36a9b51d360704aec6a37020a6d531d8122c3b76eef773d685c5b212d9",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "7c632b7b6aed57110f30cb730fb8205dc117e7b21e83f24ce86f6284640f15fa",
+   "info": "af97083168080fb27f87522d4273d697110cfa13c00d7c6dc8bb07c15c1cdc77",
+   "obs": "155940d0b2f48bb5238cb97ff0400e58421a124e8abf1ab96bb1629fb49beaac",
+   "reward": "0x1.880d4fdf3b646p-7",
+   "rgb": "1427e06c422457bfd49a4c8ad183479427f9a1ce57aeb0fabd2ddda622b6d8bf",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "e6337e909023aa428c95a34d43a15806667fcc6f65767f8a78d881971c67d00a",
+   "info": "aaa720f9292097d3dc0ccd4cb5ee36feea9149aba230da1651f18e2f28a47a22",
+   "obs": "9bd5df820d4c81550d1eeb8c1946e5246f5e1a58762a0f550a9457d7c0201e54",
+   "reward": "0x1.a274fdf3b645ap-7",
+   "rgb": "3b1e31d991f658ebb9edd6bc62a9bdfcf3416bc5adb94e12c6b4aa3233f0c902",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "babb3f398b07f9550844b6da5dd0b7c4946abeebb5d609ad20cb59130d9748bb",
+   "info": "cebfdf1f8c6ac662cc0525a65f2b3061c132140e59ef2be75545a8053ca90f18",
+   "obs": "fbdb71b8c0df21641d599aaee806f0da26296ea1fd8aa7f67bfc72ee854c33cc",
+   "reward": "0x1.3cb645a1cac08p-7",
+   "rgb": "5f4b79eaf967d8c2f4a14eb00c85f415e8ad88732e8ceb30d10bde15faace36f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "833664d03744b0c129786e76395f5778e3d4d69c0d4f2be6157f34f753947d8f",
+   "info": "c5b376c33c44f068e1bd683c8c865fa5157e44835641ea27d5bba5ddb2a22943",
+   "obs": "f9423ac0e515596b62d63b69870a34865a46f74e5d634c932d3f2652a7e59463",
+   "reward": "-0x1.0b8d4fdf3b646p-9",
+   "rgb": "0372130ca20c6fb8224e3135399f047d777e559d1de5dc8208255282aefb423b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "a6e5b59a44a2d31ed08e44f0b89ec6615541aebeea565cac2b6b706df19b5277",
+   "info": "31cb379715201b5537d413c3bf3f07b3fbae70606ce2195f5a971ea99f0fe18b",
+   "obs": "919fae5bc6a197ea18bd7f2e57a32ea8671eea4cea2c2390bbee39c75f2dafb0",
+   "reward": "-0x1.5ce2d0e560419p-8",
+   "rgb": "2894c16eba5d591bfe437106d6d07c9b12e5514ffd7782dbe7f647eea363b55f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "1f95a28d8efd97296e81d2e2cdecb0409952546d4ba2d7858f0244d185b2da19",
+   "info": "a3af6e358ca0cf776ba604193adc93f336c1a50e3792623dcba0fc306452beeb",
+   "obs": "5ce352157cedddc182451000f2a0e8cca337becfb8471687baa40671966f8400",
+   "reward": "-0x1.a4083126e978dp-9",
+   "rgb": "6cd33e506cb0ba136509dccaf78fab3b1a4b0c9ae7f10e3cf332423983fea539",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "3ba8aee6adda1d50b4831841d963c1334ae411061368b799652c9080d5ebbd44",
+   "info": "62c6371581e9b85e78f9057e572cd4e3bfc9cc1eba2cb53e9dafca65e8d29291",
+   "obs": "7fbf81e3dc3f51e2f373ed0c6784508993b00b2637bab0674235e6d35c9c6b98",
+   "reward": "-0x1.49395810624ddp-10",
+   "rgb": "b7c0d054bec9f5dfc0435e4cc2b00f6cb36c3c0a09dab5d0c90f383fbff1a942",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "4561f8b7f850fc6b7622965cff7b8eb7a5fc44a4a957af270de4c5618110c6e9",
+   "info": "2bf68b962cc5c00a8bd27de0774345afcd77f3b222ee92aeee514594d45c29af",
+   "obs": "3657f7002a6f603c25ddd0f55368e1aeaeb8bff0e39b076e5ab2c138a791792f",
+   "reward": "-0x1.a8b4395810625p-10",
+   "rgb": "1d62f11113614c5d0bbedfe3441669f8b7b6a673bd60cd1001c1604904f0d8ff",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d3080dbb65f142b5a18c12e8e4cc4131e0ba3b7cb07e0418cf8e13c612b2884d",
+   "info": "d96024bfc9c886066a149975217970e347f33846dc1718f41727e04f5afa192e",
+   "obs": "c56d02fef2aca6dc3e64b8ac1c5482406195a5705488054c5fb5fb672ed5df0a",
+   "reward": "-0x1.f524dd2f1a9fcp-10",
+   "rgb": "93bc40e1d9d9db7245e9f9489dd42e0ca6a3b62291fa9c05f072ba0b92122621",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "3eeaabce3b66084aed602eb410edc050a6ad14b4e1aab8ef3cade2b7307b04a5",
+   "info": "4227bbda88b1d530227db5d85b899cf4f5a41d1b944c8aff3c86f0c495f4864f",
+   "obs": "cf06f1e9fd305ea4c1db461e5f2c4d7c9d66ea8177d1506e1178835f4261ac1d",
+   "reward": "-0x1.c410624dd2f1bp-10",
+   "rgb": "01562883c9700e48b0a75aa06dde37d7f4b63ab130c426eca708ba0473e13cf4",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "cc99cded1c23af6459d1be7a61768716da59950ba2f09f262e6c98dab086283c",
+   "info": "366e90ccfc6eb60f63ee615da080f4d2327c6f4217d74e1420860990f739b3ca",
+   "obs": "2b21c6e596a295272473b47682d26b6540ed03665782f58aa57a6d5527e9ebc9",
+   "reward": "-0x1.5de76c8b43958p-10",
+   "rgb": "ea3497e8fae3069820b82c6a1c65a189733e088df7e98fb98be779b244d84471",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "42704d11078c7b3075853c3db1bfa8bc7133560fc7a342e445fc3d14df76c18d",
+   "info": "ab2d017d879fcaa3ccff7ae85c3c829175e0029fe93dd11706b28f89a8fa0b94",
+   "obs": "0d711b05e31f1e8f4b1cf2c92dc7db5dad07683ca093924da729a95487c816eb",
+   "reward": "-0x1.11fc6a7ef9db2p-8",
+   "rgb": "68e06fc33af592773f122a2ef12b256f05468896b5b0690daac42a48a555e1c5",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ced17bd704425c010902d6b00392d6a56601e7da57be235a21a49cc999392112",
+   "info": "111a3137a5fb97106e6de21a9b9e44c60b375511f571b82cf6b6d3a4ad6d87e7",
+   "obs": "634b8b7f71d045485e98b99fe772fa9abb51dfa9f966c7587df5c099f0c24a2a",
+   "reward": "-0x1.ee26e978d4fdfp-9",
+   "rgb": "fe37a6931314c6c8dd640b7110c65307743d70218b3549780504cce3793b54af",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "08267538398d602248c8b48ae60ea5b5e4b26aea24cc6756bbf8f44c5fe167c4",
+   "info": "96343319fb4782f03391993156376088ef1bccb618eba420748d9d967dc3afc9",
+   "obs": "aecedad58cc1ec269179aa1460975bd1b90d405b960cb852bf8d728028215dba",
+   "reward": "-0x1.e5020c49ba5e4p-7",
+   "rgb": "fde2780e284a016277adf2e7fc8c6e2c5b24e6127f26417d0b70a7f9bd2b5429",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d90a47b6d62d4016176866ec8e1f3b443a36b92abc6cfbb8dd04faf41adcc7ba",
+   "info": "d50c9d6954a38d289889533f4ebd7cb5a59c19a15c91c84941203a2b5c9d133b",
+   "obs": "5da7b8bef058266dbb40f9d8bbdfb303ca5f3f72352acb0d0fdd647166299676",
+   "reward": "-0x1.962b020c49ba6p-7",
+   "rgb": "28f7676a3fa2c29e7ef30273492731b22bf0e401a87e2f6c25998164ab81996e",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "c08212b8360f00a0e566c393ccafcaee79279154619fa9e47d037d88b5138faf",
+   "info": "74dedf630a164117fff0e349a5097fda475c95eb91ec45647cef62e60f2f65fb",
+   "obs": "34b56b533a1db4db01b729e3070b63dfe63e9d1c320c07a8d896ee65059e0318",
+   "reward": "0x1.6c6c8b4395811p-8",
+   "rgb": "91b6651824d2ca74777e336112fcab8b225751d95f512f27bfd8028ccada306f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "db5c981b01c98bd70a70f74322401279770636ba11b42e79037545cd0b2286c8",
+   "info": "8aaff94d27169e1f87d6b9b77feccce18388601a5850d4167b0f24daf72da5e4",
+   "obs": "da081dee8106349debf31641b983b2b2aa83ff922664547da8b0acb25d447515",
+   "reward": "0x1.7b64189374bc7p-6",
+   "rgb": "27243e09ed97bfcbe759f397e1413a0fc6f1355875cec8fa31499bca7cc41391",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "0a1306ed0d786ac270e3f281a9b4056d59174667c4c7c9e32f4dcb5e0f0bc8fb",
+   "info": "dfc793d541fcf8b2cc1eb57f84dbddfa1330411d4797f99d7fa73d08f932b735",
+   "obs": "61abd1792e00feb1974f3cfd8ef007583f5cc82b08438180ccd173a6cea96a87",
+   "reward": "0x1.a00ac083126eap-7",
+   "rgb": "926b7fbb7991eded91eaf5c51ffce9229964c32813b6ac4f54412a5841d259a5",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "3f49aa74e29158f614599a2d9ddbf1f08c86f76ebf9cb65437e38d1cd59387cc",
+   "info": "a58986117d628723fd6482a87f7e424f3565f69b9c37d9079aa47374f3616545",
+   "obs": "1684446754e5c9d398640c96afa9728bb52cc31aedf56fdd05319f0cfa9028e5",
+   "reward": "0x1.2eab020c49ba6p-9",
+   "rgb": "ba4b8f74805c6c218fec0f57289e1df0c4807839c82b5c923a3ecbd6f05c3cbe",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "2c8338736e23dca3fa9d25c71a8e9e88a498086e5254f3a8c26c331e58c49fa7",
+   "info": "63e1acad4a106f0bad847f583b178d91761ea85ba7a8c130d7ca0456ade317bb",
+   "obs": "7a2e23d0025bbd04772610ecb27a6fd881fa59dc50085972ec8d4203840edc43",
+   "reward": "-0x1.faf3b645a1cacp-9",
+   "rgb": "bf2dd93805942267e5463477442e066897e883d53c76947b2829ff9a3ef0ec82",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "95466e31c6954bd2c6bd700acebb62186524b3d532a34f674a2fcde917f90734",
+   "info": "d64a93466126a5dc17dcabcf603784bd74508b2c5fc72ec6686474fee64f3842",
+   "obs": "d0513f87922581ffde02f25c745bab888a880f15331033c8f6140604363f3eb4",
+   "reward": "-0x1.9425604189375p-8",
+   "rgb": "d3fba31f11b376d4228ab48fa25e5cd6f028757b2755d2958100b7df5fd95baf",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "aeba2ab6b8a4864374e1cb6589716ab38acbe4be373733e7cbccc7a88f98abbd",
+   "info": "35dac085b0ab6f0ad1885bed1e20b7c0e7ce3cf9833f717f521d53563f918b3f",
+   "obs": "7af73cccaf259ead4d434acc578893fe4cb654807bbcb7e21a7b684229b3b23a",
+   "reward": "0x1.2f2ac083126eap-7",
+   "rgb": "8ef13fd5f886205163f4b09d3fd0d140ac7f621df4eb8125109001f9edc751d1",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "94f76f4bd20a42a84b65efb61fdf2b83dc3240563fe6951caf1f07d034ade876",
+   "info": "8fb4f82dab8deb4bf529fa463c408d15dc53b91cd65f7a584bc691d798a81f8b",
+   "obs": "e7333e0d440d677d5ac6bea5210a8d87e4f3620506781341df8c3a35699838fc",
+   "reward": "0x1.ab1a9fbe76c8cp-12",
+   "rgb": "9f60b0086af24421d9d81bf4a8ebeede996331facc17c84afab6b15dba48e601",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "66b8940de0d8146d9a735e1f53b1ceac9ec00bc3bc4081612985dea1edb1cbf6",
+   "info": "cee6bdea523935b6f7c812f23fad82f74d68865b27bdbf987eb0ce0b35b9fc2b",
+   "obs": "368f3cbfc272a7c18f2a5a7016070a0e7235881fefeaa50a9cf77d878cc44570",
+   "reward": "-0x1.e6f22d0e56042p-8",
+   "rgb": "3e05a8c47929ab6f924aead3e78c56cba9cd4ae6a1ef0c9ac24bfc813538608d",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "74374ea2b2ea92d92f287c9298e6f6825e42b231070862b084b6dabbb1a22df3",
+   "info": "0000a9abb575191c84e4548078465623402b831b6824cc80085881f21ae52eb3",
+   "obs": "a0fab36ef4cfb4e05045136eaaac6ec32ab91b29d37773b1d855ceb62f9a3e83",
+   "reward": "-0x1.03e7ef9db22d1p-8",
+   "rgb": "f582044b023a01a497f1d2a4fea60466076a81fd53ed289c155500d48eda76d7",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "09c77aa6b67358b49dab6578275fc1583ac448e180e91ffbc8561194cf83cfeb",
+   "info": "00915332d7fe4c0e14f7101042d8a0e7824201d901729ced1d5fcfee2bd0166f",
+   "obs": "e11dea4d6118e7e67f166d9d730eea4c4e2eba7a43052a5468785efd2cf66a61",
+   "reward": "0x1.02c8b43958108p-12",
+   "rgb": "632e28e5633e1adfa1a7c1c70488baed137c472831cc642da382825ac46f68ec",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ce17a04a9ebcf04a84119eaabac1cf1e04ca3902c6b4dd47bdcf20a46ba6bf3f",
+   "info": "f8b7726b507984dd73847c02a578e1e7ef8c91eb73f635a5a14d39af18e63e7c",
+   "obs": "06fc2c41134cd8b7b7ec732596cef5220d3f57e06ef81f316dff89a655bf7f3a",
+   "reward": "0x1.4215810624dd3p-8",
+   "rgb": "49ce06702c26ea533851af6c10db6e282baa697cb0198d8c01beb63df3fc5c59",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "50ad2ff55d115fdc84c6712e3c13d024973d796ffe3f5b2faa38acb2ba4101d9",
+   "info": "b45e9a1b9273e9fcae6ea4233916e699d7842e0152cfb276d0a735392cd41190",
+   "obs": "07e5551dc7cc5491c2da749e2214f4095af5e1ddb7836c44aff891429f162ac6",
+   "reward": "0x1.66b645a1cac08p-7",
+   "rgb": "ac9d9297dbcf290b61d8aaa84f1dd5e8b474ec3e270ecd4e517a69b126a8b844",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "580a9aa4f70ee9718274ba68f52c302483c33c2492872a33e7d1993bd3f1187b",
+   "info": "673efbe7d8d50d0bba93c1a81592fe56fc7fab4d7ef1321c2faf46ac6344ae17",
+   "obs": "b674eb0feccfcf086203e33205be81f21f4b770a8a73db69a96aa399a85aa398",
+   "reward": "0x1.a2c083126e978p-7",
+   "rgb": "02d5ebe28823aab85d9eb6a3a4bbc575f65e9ef8784441c3d90015f45f9c8296",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "a2243c1c35b2940d13802a58f221d0422674a0e0cd9165b93ab86d1b38997109",
+   "info": "51534159832a9aeb9b29670e66bba84aac0c534036be2e1bb0b1e4b52ccefb6a",
+   "obs": "e41352c0a682b536d356205ce064db0a553494c58ef10beb8b8e8fc19638ec16",
+   "reward": "0x1.12ac6a7ef9db2p-6",
+   "rgb": "8a1bf1506b926775a302dca4241d5918b2968b984ec8d1fe9666635ffbc26d0e",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "bdb279541263ba04b61d8766168d0aba72ea0eba2b7e4e591b4910f92447f60a",
+   "info": "c476d7effe60d6fea3544b8b2401ef795be8b9050a01784b99865ae65d124748",
+   "obs": "9baba52e41beff4cb8fa268e7bdb335b87eadd10fe01701a682c559523f33022",
+   "reward": "0x1.0c6bc6a7ef9dbp-6",
+   "rgb": "4f5072e3351efe752e3ea0af6494c9873d60751376041f0a8d8557f6435a913a",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "a39f68da623c4f48bfc4fcb37889e47a22c9c99c47f8996a3eae6240ccef6f27",
+   "info": "2dedaa8694089c3392e8a88b27c49c27919b267af75858cd88303ad23de05661",
+   "obs": "6eb509baea909fdf800a9cefd8bd27061bf14e8bdf4ba20a49865d61c194626d",
+   "reward": "0x1.0571a9fbe76c9p-8",
+   "rgb": "c7e2ea26b75639185950b7f3ffaf0b11b7085bf3ca131084e9a30e9a5ed8a2fc",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "7f05188d6dd66e8fdaec5be4fce1449fcf3401baef62fa4914a2ef416836e3a8",
+   "info": "95eecd17d8ccd5468d7573870cec287c5259b05cdf2e2bdbd271d4d3c123814f",
+   "obs": "1cb729f85fc837815482cbefb6d6584c9b4331d360888de476fb5979d6ade892",
+   "reward": "-0x1.04604189374bcp-8",
+   "rgb": "920eeabebd4d3e44fbabe3fee7f2397db8d91a6371886ba348b3309a7381af3e",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "4d1fe6456c741a6bdbca54ddada5600931b5ec45629a633ee444cdfd35de3f97",
+   "info": "9d906c7753927a1b163b7e66a3e58bb3188267b77e16aadb48d85150ceec4388",
+   "obs": "3396cfa7aef1663518ac46c5e8258129d5f9e25559d9e745e8d09e1cb87c51b0",
+   "reward": "0x1.8020c49ba5e36p-9",
+   "rgb": "9b1d6b230c9decb3e7014385ee4b6f0febf44633f3c683ed8450e1c8b7ef9db1",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "bb00f4c9c125134cd2e9091e552614d368c8e1f65123eae4674ef3e2534a1d91",
+   "info": "7312a2b2162bab746cf4601cfdd97c02ea0a618f7225007dbad6eec483de39bc",
+   "obs": "7c14d02ac3d110c31962a10849e5f7586bd005ee3745329cd1debd4aae28fe69",
+   "reward": "0x1.a92f1a9fbe76cp-12",
+   "rgb": "8b06bf62634127a0ce183b6d3eb61c2a7f519dbb9545495d4d9bd08b865b350f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "e5a2306c33f9902388296e6bb102faebe8f450633a73e0187aa46f56907f8fbe",
+   "info": "2fa2d9dee250f9438b836f283e37f37566f2f69dafdaf3bca66b30c23f47cbd4",
+   "obs": "32dffe6066bb537204704c37e32c5325be27f30839044b5436a176ad96962f95",
+   "reward": "0x1.363cac083126ep-7",
+   "rgb": "caebbb8ff15d74f39df78b6a9db2ca202818cc78102bdd57e1e7287855cc6393",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "20a2c6ec28044ffbf4c0df9d896fd639e2c9cc6814a34047fb00018b623c97a7",
+   "info": "9109d5097d24d46f78cc20793c2dcbd3efec3f281fef31e603f93be5144a242a",
+   "obs": "8bb9dfa9d8340c7fa8123a6056758762e60d7c14069dc4900b0008006f3c169c",
+   "reward": "0x1.2aed0e5604189p-6",
+   "rgb": "511837ab6a7663f678943e4d36da4d15873923aaf903de15f3eb36ad46e3afa4",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "88758557d34769ad35e6094618b861fe8b31a1332e5218fa7187d3460b1951e9",
+   "info": "10e71b0574fe38ff79d873c936871fa043fd837cf0d4bbd1400486e67ab5f397",
+   "obs": "e7078cebb5876d4f55d7547811c5c184ed7d76d38f2878e3ccef418bcf9476e0",
+   "reward": "0x1.e08978d4fdf3cp-7",
+   "rgb": "a811ac601d1fc52b516dae4bb7c576ff083b9ff0df7719e6cf29101b23562609",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "06ce2a56c9c60592088222ad1a051cc4f0a10df55cc4dcdd3484f944b811c585",
+   "info": "5e3d300e6018b7da45321195e11445dacb3e885caa8d9c625923fe85ef33d466",
+   "obs": "8961290a9a6b1615bcefd59a825902c6bdcee113de3ec6ab734b9aef6079ab21",
+   "reward": "0x1.9b8ac083126eap-7",
+   "rgb": "b24460dbc02ecee48ed3acf74954145c6992e690b1b4379eb809af08bdb7a229",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5bd66e2639700952fd7caa7af3343e34900d3fb331afd8979594054d0fbfc67d",
+   "info": "86a809c95c780ef60e9b7f38dbbe1e0c647d4525d72ff96ef1ce901e51c743f8",
+   "obs": "cdaebd73d051dbd46c526aeeb11a70bf4c356d50915f30b0b12f971031e4d561",
+   "reward": "0x1.f193b645a1cacp-7",
+   "rgb": "c922f07ea8139c9c0a3f13a9bb82081f0e164c53587f73ddad50c33c697a48c6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "7add6ce0a25211a504353fcccc46be059bbdc979bf1fa926a6066b65d20c88af",
+   "info": "ba5ce274f991b123eba3a795ce569a081f54b3c1902dfae6523ef20444d30a1f",
+   "obs": "bc69031ead2d85536a9c7a921d69e1bcccbfb960704af885ddad9ae81597a217",
+   "reward": "0x1.1a9bc6a7ef9dbp-6",
+   "rgb": "44d2c8902f40c0d6fabfda227ea633742653d82cd6a07a26e1e3a59d5766d3b0",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "673f8981aec8836ff5a8b6dadb9249f1210cfe875a9811ee4ca0911d70b7cc7f",
+   "info": "44f0f38ee853edb0e5a94ec0ed14add1a34c325875364605e3ba0fd1c14a277f",
+   "obs": "61867efa72ef00959df5206fc42b44294b1a186df3fd2ac959197e94f56a0ecf",
+   "reward": "0x1.08fdf3b645a1cp-7",
+   "rgb": "ac6941600f703ea9ef89083d137352ec282160c022757607274350c93c8134f3",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "0ae73ec5429f29a0e1e86f562e2066d1191f315e640513f27538e4df88ab5278",
+   "info": "43238927e850ee568c44e607b06fdc20d5b847fab660a6ed16637a6428cab6db",
+   "obs": "4c55eb14f4a080e76e3bf87656cffb7e4899d8987d5506df0f1c570617541e69",
+   "reward": "-0x1.ca7916872b020p-7",
+   "rgb": "6a8be06ebb52da8ed5e4031710fdffd0b675600a729d1a1cf3be77bef5e402c9",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "e4e42197155acef3374ecde8bb4590ba0d9e42eae9823cb539cecb64ef72f2b9",
+   "info": "04967758f4e5078fedab9999865f8aa4bb61e07943a3485c49435483dc25318c",
+   "obs": "bd09a91d924d1d8e39fe4092917b68adcc5ccb20f56573520bb91a7ed0654fd7",
+   "reward": "-0x1.1c5c8b4395811p-6",
+   "rgb": "1fc8d986ea1ba6a59f0abed5adaef12e8ba4775a98957d1fbaa9162f19a77b22",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "3df9b53e1f5f95fc9c4687245dcb7b1eaa040a1d09399efe53b5cb680cc235ed",
+   "info": "93b8d95ed83a4db1b778e667645a612237d4b7dfba188b8eff1619c77dacf647",
+   "obs": "a793664e4c3b3c91110604e47e89bc2210282206994f7cc3ea772651f3a339d4",
+   "reward": "-0x1.d8353f7ced916p-7",
+   "rgb": "cc0c8da14a2ff0917feb2295533fe9ccaca3b2919555f9e41972e628b2a6cd14",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "98a615d8f247731b7a64c2147381a8edf9ee05e014e526207ec838df2dac818a",
+   "info": "e16c4997a709a160b2f36c210dd2696cd3dcfbfd35b718fb3bc1fa32d67612ba",
+   "obs": "af5851d6628811a36240addad4e3e2d9cdedf4fff4853c97e4067943f21614ec",
+   "reward": "-0x1.c2e7ef9db22d1p-8",
+   "rgb": "ac75f954106e4f810c95f8d9f691af6400495c508b2e30c743acff2fcca8faaf",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5d51f79a93acefc5c75a9f14f6547f1b09fee1c158da90ad5b92913ef5ade258",
+   "info": "da2a3564404f60c200adad31e1152c947dfa185af3a588ae2694e6f46396cf49",
+   "obs": "57215afb141869b5130caebef31abbf75438b0b3942197472a75942be841cbfd",
+   "reward": "-0x1.9422d0e560419p-8",
+   "rgb": "77dc3881a8bc67ce34c72be38994915684c4fa46331cbbaf4042a9d8daa0313f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "e44642855e22af4a5d5a7d5e546ae28bb47e7dc0cd2b5bb32bd960755eda9fb6",
+   "info": "c7e86030d86e3a681338566af294b7f752807205a63880790bdd4a895edef67a",
+   "obs": "f760dee1caf9b1ea4b321843af45207a650412013ef71cc5df931e2258ec0759",
+   "reward": "-0x1.f973b645a1cacp-9",
+   "rgb": "4e74b4f9eaade6f6cf95c85e2e7bb1dfc7134ae993de33579578e42ba6f4e5bd",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "54b11b54300e447de358fc8b53bd0acfe706ef9ea3a35bf1fd1e0db59054b73b",
+   "info": "e4c389ae6e646522d4af3f9f051e77e09a390107ce7046bcd0c765cce17c43b3",
+   "obs": "225c1912b5ad8d45f85724e7ccb795c6341f979657004ae15b609464e371f399",
+   "reward": "-0x1.cbc4189374bc7p-8",
+   "rgb": "175d6e809ee077f527a3d9ce6b5dac288f4f2a46e285916dd46bc9a1adbabb91",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "7dd13f452b071687bbad9d0de88a0c799dddeddfd8249b7de1a0191523a3031b",
+   "info": "f8bba7beb7b04d32693aaa7dfa46463ff73c6d2cc033720a955b1da0ea9d17de",
+   "obs": "60320003070374802ceecd0af912ec3b638881ab0b4b4f8bcf230a9cdda31a6e",
+   "reward": "-0x1.549374bc6a7f0p-8",
+   "rgb": "75122cd6042d33bda2a5e7c57265b6890e5ecdccc0d105967b2587564f3062ef",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5fd69322e196dd8ad35325bdae9ee0aa742f5e9fb95f885115adb342dc4d990b",
+   "info": "166e3c1a046d600864532247d1c9eaf50cb30de2c1ce524f1ce45c3b40fa375c",
+   "obs": "bac975aa7f748ed8a5f190aa4a43a9f2b5a9f42c9c0771299bcca1c58748cea3",
+   "reward": "0x1.140c49ba5e354p-9",
+   "rgb": "73855b1ca7ee4779fe00cfea0fbd0ae8f8fd72350ee33437c73900dd65252bc3",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "caafad94b33a2bb13bd80602728a6fc5ce5c08c5c8f1c1cf3b63bf2c9ce3a454",
+   "info": "a7f3d6c689164ddf32c52791138c26aaea63e1a34d244e8dfb20beac13f7a012",
+   "obs": "e307af6d449eb971fcb76c3a51d1511322805545217feb0ed0a09779ff01b1a3",
+   "reward": "0x1.32116872b020cp-9",
+   "rgb": "97b5ad648164eb10b2ea30913bf9e5ce21c37e084b614624a15920a8a72e1ba8",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "d24598ed3da19c67349622f56e8b1f4bb522199b9b51e49f505e72c93c3a6b2a",
+   "info": "7ca4dc63517b53a5c23e52fdabeecc09a68a68072f36900546242a5fe9ed7016",
+   "obs": "2b10dc67d78e5d475bb7ef76ca7620f45cf024c0e5af07b3f63a4e3d249882a2",
+   "reward": "0x1.2c10624dd2f1cp-12",
+   "rgb": "5905a9cea05ab71a98bec747b407033ef4bbb1b1a9fe2182b0e3e5f7a3de7eaa",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "580a06674ee60a7495cd0d05206cc7514fe5ddbcd8213a432d30d33480ab4247",
+   "info": "21cc2fd9f7032305bb2e238376f80063b0a828c0524ca8ff13a6127f8fee248d",
+   "obs": "0ef0d31f21ff764d4f5ae049bb1de280d3b6fa4e2f6bbbbd06fc9c02cc17316e",
+   "reward": "0x1.7a43126e978d6p-7",
+   "rgb": "48dcf4e3675df8b2a9981f3cf951a61831a8923c9a975ab73fc1236d7b92d484",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ab4a978c923d94e60cc9ce764f4496e53f16059f34687d4255289fd3eb06c921",
+   "info": "9bd89128c705fdb0fc53c8cf2ce52b47c166d9eb0275e4a03b6a97c807c98f8f",
+   "obs": "ad024ad45239e4fdca76a9d0a9404d7e6593cb7a8133d94969b02078b56a197f",
+   "reward": "-0x1.3bf7ced916873p-11",
+   "rgb": "9fc3d5aaf040f3af734ea104444dd0bf9df1c0bcda5d00404f7ae0cd67fe6c68",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "bdbe842f321cbf377701a2220c4ce70b5adb05592e0facb727a8fd9bb9cd6b75",
+   "info": "8ffb744094ed5414d2830eefb898f8da38c0dd907e9e31d41cfbf2de890e6f35",
+   "obs": "2f1ad55508af00a29803cb3b12532e9f7bd18c1943c4bf9b9f62620e933235d1",
+   "reward": "-0x1.ff83126e978d5p-9",
+   "rgb": "715e133f2ae595a38b5e24e3eed6d1ac7844a7b1e2ad55b74b65a407d9430c10",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "3a39c7ab1f5aa9c1239769410d9d0a3e46693a3bd1991b26daf57691110285d8",
+   "info": "beda7c97d91581e21c75f506fe617696c6a85cf4698b022a62a3002a4d851e91",
+   "obs": "bb4a54465d11395bb58366a0a472f8847037eebbdd3001e1b3f6c4171c5c33c2",
+   "reward": "0x1.f0a24dd2f1a9fp-8",
+   "rgb": "6dfda6928aa816392c9072040efd288d5d524c3eda9f5fe29b75e9717a109dd3",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "1e00700a516396f22b400d6dfda82c792c0e0f3c1efb0376f2ed8d7d681eb4fa",
+   "info": "f4734f7eec5642b6e4cfeea1255f83fb7aa6494e979535cf69e3d682eb990326",
+   "obs": "16b606df62cab387a9454a72f85d60b56cc1abc2ed1a880792cd313e509a561e",
+   "reward": "0x1.24e872b020c4ap-9",
+   "rgb": "057ee5f9e3cf9596508ce6dc49b346e92ac87a05961be28f7485dbcd7ced74c5",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "37f9d8b3e8cbbdd0c5e1ebfa0d3044404d2f341acb60f17731ff0aa9a63f24b7",
+   "info": "ee1646a914e23abf0c215e8875a254f4e41d6bb61a08d06aa63c6bb13348cf45",
+   "obs": "a904ff037bbbe3e17fb093d49717b08e1c2ab2ae251c7121a69ff675c6d17f20",
+   "reward": "0x1.6a7ef9db22d00p-18",
+   "rgb": "59afdf2aafd26145b13475e263e7d57e2cc5f1b635deb33e1f7c569e93a0a772",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ef39b49bb3496382e61b3efebbc1c381dd453d0138fc2c50027f5f3e161f3f28",
+   "info": "7b1099fc7e6e45a9cb6a930fbed654ab334469b3c8ec0625401ec18d02cd21bb",
+   "obs": "04eb9ae61341d3fc4dc8d4e9df68326c123fde8fc39b7d6e64401f52e0c0edb6",
+   "reward": "-0x1.1626e978d4fe0p-9",
+   "rgb": "549f367693ce4accfa446d6f0da56e5daf4a6a78b0f60dce7f4c54442860ef85",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "39f97e49618b0994bedafe94b825a92bf55f3bd3675bb0295644f89fcbf0a79c",
+   "info": "30bed1c92ac159baae18059f6c487ec1f9f4ce9b6fa620fdc7f34ffee3bfd7ba",
+   "obs": "09cd5d79d6f24ebd6af47f6f22e28f65b1c4761d6a91a4390ab361ed7a37fe7e",
+   "reward": "-0x1.4a37ced916872p-7",
+   "rgb": "343c2a35bf11eb2b3a704102ac0a9b77c16e2bc34f5847e4d1f8982b3417c6e6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ec6ec04e3d6977733ac6bf381a7aa0dc88b6c6857007e830322b5a5fe148e08e",
+   "info": "c1f4e68473f0e01ea25b7112bcbd5759eab221458fd1bb96e81231ea0dfc4a6b",
+   "obs": "d4ff8c2f210df402065aae83095831ad08d81ebb48078966b981089ff9162963",
+   "reward": "-0x1.cc1f7ced91688p-7",
+   "rgb": "4eeff057d0903561962477b8a33bb2f18e58c88f8912dba0dcb2920d5de7a40b",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "291837557cd97f285e28600d5a037a56c965c6f571c56ddc67f0d8611d8fcf97",
+   "info": "9b21a0a402ee76462d2409b2063b6fbc105cfdcfc3cb2440f81772226c08369f",
+   "obs": "1c8cd39e2976ca2eb90903cb3f745d699a1f9ff52dea97258b34b3d2c5379c85",
+   "reward": "-0x1.86a0c49ba5e36p-7",
+   "rgb": "518269a62e62f24ce5efab9c67157821257903886fefc2bcd8d09751d8497723",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "ffc111dbb31b883f4ef940ba0a724cfb8d2840ac22ac9516c5872c700e5e39d8",
+   "info": "44615175fb4874495c96592d00ea0be1e1851cfc9f3685c21381c919637ddb53",
+   "obs": "c31d015afc603b542a4858904e8474c1ce855e3fd10fc9de48045cdff3330226",
+   "reward": "-0x1.e93126e978d50p-9",
+   "rgb": "304145721503ed8dbed01f5cafd1df75a9aa3f014d6428db314a4bf249377d56",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "1da52dbd1da67ae4838bfc04c69ed12359fd813b5837b01491699c5ef7c2ea1b",
+   "info": "0cade70057097d6d0aa57d0a1ca8897062d07eba5d72cbd98d1a305a70e83e9e",
+   "obs": "57b11e129edac8c94740d16fabf968ba1305ac3ea4e764a29452ef5d9680a320",
+   "reward": "-0x1.f28189374bc6bp-8",
+   "rgb": "2ffcbbf3f3ef309545dc1222452ff9d1a2528a800790981b2a0855ef995d3192",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "c8530327f4fe3be2d5678d946b7985c79c5b827203147add50c40512d5ec8d65",
+   "info": "3c2a86d490eedad492110c600ee20e7bf1389ecb69d948f3e226f97e74902119",
+   "obs": "d38812d2fbe19c81136746c62551127863ab2b6cdcb7da6f4506947459838fbb",
+   "reward": "-0x1.48f1a9fbe76c9p-6",
+   "rgb": "24c9ae6e430aac7351b30a2db412624de1ef25f694392d33651b2934cc98b25f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "58332c2661b07a0085c61aa58886745dfcd962fa17497b7257853f63dd12d31b",
+   "info": "3a752618f869810303dac9019ed1de8bbcdc9399ef13745cb0bb80fba98c5c20",
+   "obs": "b362641d55dbe291aa7039e01f7c69b2de79f65aaf54b56b90cd68a85ea4291d",
+   "reward": "-0x1.0ae9ba5e353f8p-7",
+   "rgb": "82e2248eaeadff22130c26e656447ca7bac763319d89fc98cb727ce8c8e199a5",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "c8b850db846507de0abcc72e85ee1ae5936a1fa987c94c789dd10749a412cb66",
+   "info": "f66728b52498f818077f0405b3d9b9dafc0b77ddeaf86e9d4f73d2ba04e51122",
+   "obs": "19d8bb1226c3e83f00621d3a8da4b2d387072932778b48018b02c98dc0812464",
+   "reward": "0x1.59374bc6a7f00p-14",
+   "rgb": "d7b2a2a376ee352f1c2402ac9b4d356a50c3f888dc2941effe16a7a4e0de9873",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "034d313df6ea7854d8d44498b18d93dd0bd707d94aeb99feb4dd7edc313e98c4",
+   "info": "3f43da07da95a4b527f5834d035eef153f2e0a4cb7e5622f3053bb5be99a45f9",
+   "obs": "7f79f52969748de97483e2b10cd08900f8aebcc11c0a4828b6f776673eaec549",
+   "reward": "0x1.d01b645a1cac0p-7",
+   "rgb": "30bfa5d6f5c2372cd950dacaf0bd271ecf243b910c56e3ce413da177f69caba6",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "3c27c2e90bfb5de30acc9824f1721074f44eaba96b8c9766b7085fd7fe71f438",
+   "info": "4da4e09a359975b55312e13e71c11c1e9c27458031850e60bd3f32b032812825",
+   "obs": "9cd9dbbe7da86501362a1f9e4d187fd308bb6300109f22c621e472302dcfd592",
+   "reward": "0x1.e4ad4fdf3b646p-7",
+   "rgb": "ff3667c12e02e5e5b45e94db020b1ecfa795f09e8b02b8a497b8ae2e75319042",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "2b0b847b52dd99cc3c4bbda72581b8312ad7331182cb60e8758b39dc5bff5b8b",
+   "info": "d8208e2bd62332f9c1daef64f5ae9ddfaf897bc6692fdad8281f08d6cc0c75fd",
+   "obs": "297285885e7761879112dfe16aa24b12390dafe3be9a1becd19444a3472d720c",
+   "reward": "-0x1.227ef9db22d0ep-8",
+   "rgb": "14e323b2a7958b9f11420b431e3c2905f95c019b9ba85ce33b0c61848fec80f2",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "aadf49a33b8a4e2cd61f24d784905b8a7143b01a97d166132044dc08737fd8c9",
+   "info": "3c857e18f31e7800e598292a6b6a4599af1a2780a40683a004aceafb18bca979",
+   "obs": "504ec7e03fc7769b0ed57ff5e238ec5a695e67221e5880aa9c8ec81847c70825",
+   "reward": "-0x1.b203126e978d5p-9",
+   "rgb": "14ca6bd63773b2b6a7873d88e71e158c84928a87cd9b357e98a5985aacb2a19e",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "024dbf5985b1f5f8cee9c37e0f05dafc96b612c8d05a9abef1171a790499c24b",
+   "info": "3e0046da038505c245861d190b5c2854f825bb2135ae636bb45dbbced436e5a3",
+   "obs": "624603677fdcdebfc6cdc3f1a3eee1078c627ab681869b88717c088cce04e448",
+   "reward": "0x1.eabdf3b645a1cp-7",
+   "rgb": "492b57db686b47730392b1772cf39fb4dbe012394098014ebd171f9cb2c3667f",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "b02b9e7e3a9fb8871ec3ba619a32625c70a982be862cce71a9140f3d02301954",
+   "info": "f055725164d3df8db1ebb6158a3ee496866c3408de3917591d7eb13fe6d84cd4",
+   "obs": "c28573482df54e487662051d1ce6fc14da4d45e67428beea8507da9e503ad731",
+   "reward": "0x1.27cac083126eap-7",
+   "rgb": "d77e68f82692f4d9c0187fc6ef9e713c20fd3dc20e62f74945aa7e1fb7b0edda",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "443e23781b080f2a1bad9c0a75a2ca6086658e1cb1010fb480882c8eff1ebb40",
+   "info": "d373357e2a18f2c793b49f29cd80e951f7ae0b20ec4af92ab95fbcc39d22c9ba",
+   "obs": "5b24a5c313058b8a0329950d37e4cb76b1cba77867df4d49da9a2225e2846bed",
+   "reward": "0x1.7df9db22d0e56p-10",
+   "rgb": "997dc15b4f3763ce9c03bdc5a1e372a5000bcbf3a3791f25e00ff44662a77cfc",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "698bf95697f55c6c5c8e5638c38be1602da5cfad2f7e4e763cb1425b54d9ba42",
+   "info": "0d96f5281ebad987bf9a79ba97308f90f55970d94c21f61906d74e8f40d351d0",
+   "obs": "ae56143ac3ae6ff65d4bc16b54194a92ca76158303f46db289f6270401f4d4ae",
+   "reward": "-0x1.345f7ced91688p-7",
+   "rgb": "71075f73a73f248562d1acc892f74998d2112f1a7cfc71f9fa830a72da608f53",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "c899485b6215a2530fdea238c653fe5a02f528bef0306f906ae4521d0409023a",
+   "info": "b9d40fa247f532604eae2961f013283cb8ca893dc7190572b19dc8be12f8b51c",
+   "obs": "9b2a7e8120f077343dcfd45ef329aaf1186c5b30d0e88f320e529f1ee3ac9c0e",
+   "reward": "-0x1.6eafbe76c8b44p-6",
+   "rgb": "a04f15ad0ddde854a8fd95043133c3e5fbefaf7b97c3b552006987cf920ea2a1",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "9d8b5d418eb5e6127848246887a2446aaaa7cd9d3fed9a4dc1bf43d03c77c7ef",
+   "info": "8ff194dd63d4d99ef87b93f5f9d4f74fd02888e523681c8f265dd4f84dc817cc",
+   "obs": "ea2bb23d9a6db3c27c1b79002aff65a70a4ee49aff58acdd07e2de6f9f11070b",
+   "reward": "-0x1.306624dd2f1aap-6",
+   "rgb": "59f56344c0a179fb0192a707ecbad6f4393644a469e3509cc04d32515973e369",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "de3d9008e77ba8e0e16ebab22b320ba49c170dcb8d0278176005201b874041b9",
+   "info": "7098d7f9fcf16d028f58f94f1183e5046e7a99c11d170726fae6c1b232005a5b",
+   "obs": "61614e86b8f28dca7a2f011d5cd0ecd5d0d924b95eb18fe4ce4ef80c04e6103e",
+   "reward": "-0x1.9bddb22d0e560p-8",
+   "rgb": "45841d9ea2016eff0f15b35cf0c96cc8ae8b0fdd1025d103c664f7c59b50a5b5",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "851247280f1b7ee1947c1510c706347cccf729d0652fe2d0e11c062981ee3563",
+   "info": "686688d1c45bdcd598aebaf63d184fb18c6a7aaef25d2ccca1393b821ed6ebd9",
+   "obs": "ae6e86a8c98b387d92071f4052824ec024d5a649256d0eaa323cc8a3c207ab03",
+   "reward": "-0x1.17aa7ef9db22dp-8",
+   "rgb": "7aafe93d10f2f2163f844bc30f3eb5d65eb76b976e9fe3b529477eec383269ee",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "b6253927514e4aad751730a1b0e8683326954107baa91b4f6929b5d349a744f0",
+   "info": "0c6ffd9af26ea079498b182e22d5bb9b8d8ba6694d8f271b36c12d27cd67ba85",
+   "obs": "d1b7e86b5a2e1bdb7f96bac6ab46d784ee30cded95109ada689eabbd6ead381d",
+   "reward": "-0x1.2c40c49ba5e36p-7",
+   "rgb": "d4bc98bbbf11be292b6240c627397e6a32921fcf9a9dc8a35de59a9051818caa",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "5e5c0b3d022670d1fdc9062541867a5cc71e8c706e729256a573edf4f6d11d94",
+   "info": "2846e44cbb78907a508754ba3340af1140c320564ccaf98f0e86f14b27e0f9c0",
+   "obs": "d513d77f08df73c051bfdeb6b9e24605956aecba7e9720c5a2c7b3d08c4fceb1",
+   "reward": "-0x1.6fa2d0e560419p-8",
+   "rgb": "8b502d3a5ab6a64ccb5165770f8b5926acaf04bf40b20a77bf58c5c588fffded",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "cfd280f8b1127c78dcf891a1af7fa2223f8008fd18282440813387bf300989bb",
+   "info": "67d81f9ba4c3cc07143cb39a83b567b9217388452dbdea94f01945ff16fff6c3",
+   "obs": "c434aa7076bd2da206918bfcae90fdd69149fab6ca45e00261b32cc182caf51e",
+   "reward": "0x1.c03126e978d50p-11",
+   "rgb": "881b3c4138e1e787978435d2f71013d12058fa392a03bd1fb8c77451c1647f91",
+   "terminated": false,
+   "truncated": false
+  },
+  {
+   "action": "05e6b739d988f05ae1b06924445188b4a72202cd3dfc00e45304c08740fb2362",
+   "info": "cfad5d4c9983314cf8a9c48f95a237ecec01838e41d814f0bd31625a71c8fd29",
+   "obs": "5aa79d178fbda0ab14ab0d4c0a6dc47f9f4eb824f708b5efa1f4ee29f4975a96",
+   "reward": "-0x1.1ef9db22d0e56p-12",
+   "rgb": "b0fac997aa784473bf7c503762d88965f1d20ca0dddeddec088f312eadc7a7bb",
+   "terminated": false,
+   "truncated": true
+  }
+ ]
+}
