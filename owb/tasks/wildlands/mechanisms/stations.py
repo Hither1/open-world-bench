@@ -16,6 +16,13 @@ from .base import Mechanism, fail
 class Calibration(Mechanism):
     kinds = ('calibrate',)
 
+    def place(self, hooks, m, rng, rules):
+        x, z = m.site
+        y = super().place(hooks, m, rng, rules)
+        hooks.target(m, 'install', (x+.5, y+1, z+.5))
+        for k in range(3): hooks.target(m, f'mark{k}', (x-2+k*2, y+1, z+2))
+        m.state['selected'] = None
+
     def operate(self, env, m, role, obj):
         s = m.state
         if role.startswith('mark'): s['selected'] = int(role[-1]); return [dict(type='calibration_selected', value=s['selected'])]

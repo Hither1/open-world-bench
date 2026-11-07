@@ -1,6 +1,7 @@
 """Mechanism protocol shared by the Wildlands reference-course state machines.
 
-A mechanism is stateless. It reads and writes the milestone's ``state`` dict (which
+A mechanism is stateless. At reset it places its fixture (:meth:`Mechanism.place`);
+afterwards it reads and writes the milestone's ``state`` dict (which
 ``state_digest`` serialises) and the env's world/body/satchel handles, and reports what
 happened as native-style event dicts. ``env`` is the hosting ``WildlandsReferenceEnv``;
 the course ledger (:mod:`owb.tasks.wildlands.course`) decides completion from
@@ -30,6 +31,20 @@ def fail(reason, **kw):
 
 class Mechanism:
     kinds: tuple = ()
+
+    def place(self, hooks, m, rng, rules):
+        """Initialise ``m.state`` and place the fixture's controls and blocks at ``m.site``.
+
+        Called by the course setup (:mod:`owb.tasks.wildlands.setup`) in course order;
+        ``rng`` is the course RNG. The default is a single console: an ``inspect`` board
+        for clues, an ``interact`` control otherwise (raised onto the gallery deck for the
+        elevated service consoles A11/B15).
+        """
+        x, z = m.site
+        elevated = m.id in ('A11', 'B15')
+        y = Y+4 if elevated else Y
+        hooks.target(m, 'inspect' if m.kind == 'clue' else 'interact', (x+.5, y+1, z+.5))
+        return y
 
     def install_blocked(self, env, m):
         """Reason why parts cannot be installed yet (``None`` when the socket is ready)."""

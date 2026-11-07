@@ -10,12 +10,25 @@ alone is open with the inlet still isolated.
 from __future__ import annotations
 
 from . import register
-from .base import Mechanism, fail, family_roles
+from .base import Y, Mechanism, fail, family_roles
 
 
 @register
 class FlowNetwork(Mechanism):
     kinds = ('flow',)
+
+    def place(self, hooks, m, rng, rules):
+        x, z = m.site; y = Y
+        m.state.update(outlets=[False]*3, inlet=False, stable=0., temperature=90., trips=0)
+        m.state['expected'] = self.expected_outlet(rng, rules)
+        hooks.target(m, 'inlet', (x-3, y+1, z-3))
+        for k in range(3): hooks.target(m, f'outlet{k}', (x-2+k*2, y+1, z-3))
+        hooks.target(m, 'inspect', (x, y+1, z-4))
+        hooks.target(m, 'install', (x+3, y+1, z-3))
+
+    def expected_outlet(self, rng, rules):
+        """A locally requested outlet, drawn from the course RNG."""
+        return int(rng.integers(3))
 
     def operate(self, env, m, role, obj):
         s = m.state
@@ -65,6 +78,10 @@ class CoolingBypass(FlowNetwork):
 @register
 class OutletPreparation(FlowNetwork):
     kinds = ('prepare',)
+
+    def expected_outlet(self, rng, rules):
+        """The outlet whose basin is the commission's authorized basin (no draw)."""
+        return rules['basin_map'].index(rules['authorized'])
 
     def clue(self, env, m):
         return 'Three outlet symbols. Consult the previously surveyed basin map and commission authorization.'

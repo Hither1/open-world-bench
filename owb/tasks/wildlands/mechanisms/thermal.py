@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from owb.sims.voxel.core import blocks as B
+
 from . import register
 from .base import Y, Mechanism, fail, family_roles
 
@@ -34,6 +36,24 @@ def install_updraft(env):
 @register
 class Thermal(Mechanism):
     kinds = ('thermal',)
+
+    def place(self, hooks, m, rng, rules):
+        x, z = m.site; y = Y
+        m.state.update(vent=False, heat=False, updraft_seen=False, landed=False,
+                       hot=m.id == 'B18', safe=m.id != 'B18', launch_seen=False)
+        hooks.target(m, 'vent', (x-2, y+1, z+3))
+        hooks.target(m, 'heat', (x, y+1, z+3))
+        hooks.target(m, 'exposed_heat', (x+2, y+1, z+3))
+        hooks.target(m, 'inspect', (x-2, y+1, z-3))
+        m.state['landing'] = (x+10.5, Y+4.01, z+.5)
+        w = hooks.world
+        w.fill_box((x+8, 29, z-3), (x+13, 32, z+3), B.MOSS_STONE)
+        w.fill_box((x+8, 32, z-3), (x+13, 32, z+3), B.BRICK)
+        # A raised, sheltered source sits beside (not in) the flight path.
+        w.fill_box((x+1, 28, z+3), (x+3, 28, z+5), B.BRICK)
+        w.set_block(x+2, 29, z+4, B.CAMPFIRE)
+        w.fill_box((x-1, 35, z+3), (x+4, 35, z+5), B.PLANK)
+        if m.consumes: hooks.target(m, 'install', (x+11, 34, z))
 
     def install_blocked(self, env, m):
         return None if m.state['landed'] else 'reach service deck first'

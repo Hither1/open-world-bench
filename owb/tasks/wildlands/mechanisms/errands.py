@@ -59,6 +59,15 @@ class Exchange(Mechanism):
 class Cook(Mechanism):
     kinds = ('cook',)
 
+    def place(self, hooks, m, rng, rules):
+        x, z = m.site
+        super().place(hooks, m, rng, rules)
+        hooks.world.set_block(x, 29, z+2, B.COOKPOT)
+        hooks.world.set_block(x-2, 29, z+2, B.CAMPFIRE)
+        hooks.add_plants([dict(pos=(x+.5, 29, z-.5), item='spicy_pepper', count=2),
+                          dict(pos=(x+1.5, 29, z-.5), item='chillshroom', count=2)])
+        m.state['cooked'] = []
+
     def update(self, env, m, events, kinds, dt):
         s = m.state; x, z = m.site
         for e in events:

@@ -25,6 +25,25 @@ def valid_load(env, m):
 class Counterweight(Mechanism):
     kinds = ('balance',)
 
+    def place(self, hooks, m, rng, rules):
+        x, z = m.site; y = Y
+        count = 1 if m.id in ('A02', 'B02') else 2
+        m.state.update(braked=False, released=False, stable=0., count=count, load=0., bodies=[], lift_level=0)
+        # Controls move between fixtures; symbols retain family meaning.
+        hooks.target(m, 'brake', (x-1, y+1, z-2))
+        hooks.target(m, 'release', (x+1, y+1, z-2))
+        hooks.target(m, 'install', (x, y+1, z-2))
+        hooks.target(m, 'inspect', (x, y+1, z-3))
+        m.state['slots'] = [(x+3., y+.501, z+2.), (x+3., y+.501, z+3.5)]
+        for k in range(count):
+            bid = hooks.add_body('metal_slab', (x-2.+k*1.4, y+.501, z+2.))
+            m.state['bodies'].append(bid)
+            hooks.target(m, f'weight{k}', hooks.body(bid).pos)
+        hooks.world.fill_box((x+3, 28, z+1), (x+4, 28, z+4), B.MOSS_STONE)
+        hooks.world.fill_box((x+6, 29, z-2), (x+6, 32, z+2), B.PLANK)
+        if m.id in ('A02', 'B02'):
+            hooks.world.fill_box((x+7, 29, z-2), (x+10, 29, z+2), B.BRICK)
+
     def install_blocked(self, env, m):
         return None if m.state['released'] else 'support lock before installation'
 
