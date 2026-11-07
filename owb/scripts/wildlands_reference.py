@@ -15,6 +15,8 @@ from owb.render.video import H264Writer
 
 ROOT=Path(__file__).resolve().parents[2]
 SOURCES=('owb/sims/voxel/env/wildlands_reference.py','owb/agents/oracle/wildlands_reference.py',
+         'owb/tasks/wildlands/course.py','owb/tasks/wildlands/setup.py',
+         *sorted(str(p.relative_to(ROOT)) for p in (ROOT/'owb/tasks/wildlands/mechanisms').glob('*.py')),
          'owb/scripts/wildlands_reference.py','owb/sims/voxel/env/wildlands.py','owb/sims/voxel/physics/character.py',
          'owb/sims/voxel/physics/bodies.py','owb/sims/voxel/physics/elements.py','owb/render/scene_export.py',
          'owb/render/blender_scene.py','owb/render/presentation.py','owb/render/video.py')

@@ -387,6 +387,8 @@ def verify_recording(directory):
         assert env.quests.all_complete and env.course.verify()["success"]
         root=Path(__file__).resolve().parents[2]
         sources=["owb/sims/teyvat/reference_tasks.py","owb/agents/oracle/teyvat_reference.py",
+                 "owb/tasks/teyvat/course.py","owb/tasks/teyvat/setup.py",
+                 *sorted(str(p.relative_to(root)) for p in (root/"owb/tasks/teyvat/mechanisms").glob("*.py")),
                  "owb/sims/teyvat/architecture.py","owb/sims/teyvat/render/architecture.py",
                  "owb/sims/teyvat/camera.py",
                  "owb/sims/teyvat/env.py","owb/sims/teyvat/world.py","owb/sims/teyvat/character.py",
