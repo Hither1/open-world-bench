@@ -9,9 +9,8 @@ from pathlib import Path
 import numpy as np
 
 from ..core import SCHEMA_VERSION, event_type, jsonable
-from .framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, neutral_action
-from ..sims.voxel.env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
-from ..sims.voxel.sim.construction import PART_COLUMNS, BUILD_STATE_NAMES
+from .framework import BUTTONS, COMMANDS, neutral_action, schema_vocabularies
+from ..sims.voxel.env import INVENTORY_COLUMNS, ITEM_IDS
 
 
 class RandomPolicy:
@@ -107,12 +106,10 @@ class EpisodeRecorder:
         self.directory.mkdir(parents=True, exist_ok=False)
         config = dict(schema_version=SCHEMA_VERSION, environment=env.name, seed=seed,
                       benchmark=asdict(env.config), native=asdict(env.native.cfg),
-                      schema=dict(buttons=BUTTONS, commands=COMMANDS, modalities=MODALITIES,
-                                  proprio=PROPRIO_NAMES, inventory=INVENTORY_COLUMNS,
-                                  item_ids=ITEM_IDS, survival=SURVIVAL_NAMES),
+                      schema=(env.schema_vocabularies() if hasattr(env, "schema_vocabularies")
+                              else schema_vocabularies()),
                       video=video, decision_seconds=env.config.decision_seconds,
                       presentation=self.presentation.metadata if self.presentation else None)
-        config["schema"].update(construction=PART_COLUMNS, build_state=BUILD_STATE_NAMES)
         try:
             self._write_json("config.json", config)
             self.log = (self.directory / "trajectory.jsonl").open("w")
