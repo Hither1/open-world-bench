@@ -22,6 +22,9 @@ video = ["imageio>=2.31", "imageio-ffmpeg>=0.4", "Pillow>=9"]
 fast = ["numba>=0.58"]
 dev = ["pytest>=7"]
 
+[project.scripts]
+owb = "owb.cli.main:main"
+
 [tool.setuptools.packages.find]
 include = ["open_world_bench*", "owb*"]
 
