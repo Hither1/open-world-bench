@@ -56,7 +56,8 @@ class CourseWorld(World):
         if not op or e.id not in op.entities:
             return []
         # Sentinels hold an authored arena position; ordinary camp enemies pursue.
-        if op.kind=="sentinel":
+        mechanism=self.course.mechanism(op)
+        if mechanism is not None and mechanism.holds_position:
             return []
         return super()._update_enemy(e,char,dt)
 

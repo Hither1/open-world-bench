@@ -70,6 +70,10 @@ class Course:
     def op(self):
         return self.current.operations[self.operation_index] if self.current else None
 
+    def mechanism(self, op):
+        """The state machine that runs ``op`` (``None`` while a kind is still inline)."""
+        return MECHANISMS.get(op.kind)
+
     def emit(self, event_type, **payload):
         self.events.append(Event(event_type, payload))
 
@@ -328,51 +332,15 @@ class Course:
         op=self.op
         if op is None or enemy.id not in op.entities:
             return []
-        if op.kind!="sentinel":
-            return None
-        s=op.state
-        if s["phase"]=="shield" and element==self.guard_elements[0]:
-            s.update(phase="exposed",timer=0.0)
-            enemy.elemental.shield=0.0
-            self.emit("sentinel_exposed",operation=op.id)
-        elif s["phase"]=="windup" and element==self.guard_elements[1]:
-            if s.get("reform") and not s["reformed"]:
-                s.update(phase="shield",timer=0.0,reformed=True)
-                enemy.elemental.shield=50.0
-                self.emit("sentinel_reformed",operation=op.id)
-            else:
-                s.update(phase="vulnerable",timer=0.0)
-                self.emit("sentinel_interrupted",operation=op.id)
-        elif s["phase"]=="vulnerable" and element==Element.NONE:
-            enemy.hp=max(0.0,enemy.hp-damage)
-            self.emit("enemy_hit",entity=enemy.id,damage=damage,hp=enemy.hp)
-            if enemy.hp==0:
-                enemy.alive=False
-                self.emit("defeat",entity=enemy.id)
-        else:
-            self.emit("sentinel_blocked",operation=op.id,phase=s["phase"])
-        return []
+        return MECHANISMS[op.kind].hit(self,op,enemy,damage,element) if op.kind in MECHANISMS else None
 
     def tick(self,char,dt):
         op=self.op
         if op is None:
             return
         s=op.state
-        if op.kind in ("sentinel","fight"):
-            e=self.world.get(op.entities[0])
-            if not e.alive:
-                self.finish_operation()
-            elif op.kind=="sentinel":
-                s["timer"]+=dt
-                if s["phase"]=="exposed":
-                    e.elemental.shield=0
-                    if s["timer"]>=0.8:
-                        s.update(phase="windup",timer=0.0)
-                        self.emit("sentinel_windup",operation=op.id)
-                elif s["phase"]=="windup" and s["timer"]>=18:
-                    s.update(phase="shield",timer=0.0)
-                    e.elemental.shield=50
-                    self.emit("sentinel_reset",operation=op.id)
+        if op.kind in MECHANISMS:
+            MECHANISMS[op.kind].tick(self,op,char,dt)
         elif op.kind=="crossing":
             leg=s["leg"]
             start=self.world.get(op.entities[leg]).pos
@@ -425,8 +393,6 @@ class Course:
                     failures.append(f"{m.id}: {op.id} incomplete")
                 if op.kind in MECHANISMS:
                     failures.extend(MECHANISMS[op.kind].verify(self,m,op))
-                if op.kind in ("fight","sentinel") and self.world.get(op.entities[0]).alive:
-                    failures.append(f"{m.id}: enemy alive")
                 if op.kind=="crossing" and (op.state["landings"]!=2 or op.state["glide_legs"]!=2):
                     failures.append(f"{m.id}: two demonstrated vent/glide landings not verified")
         if len(self.completed)!=len(self.milestones):
