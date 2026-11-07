@@ -213,3 +213,41 @@ PYTHONDONTWRITEBYTECODE=1 python -m pytest -q -p no:cacheprovider \
   tests/test_openai_policy.py tests/test_codex_policy.py tests/test_claude_policy.py \
   tests/test_gemini_policy.py tests/test_framework.py
 ```
+
+## Agent layer
+
+The model baselines are built from `owb.agents`, which separates what the agent
+sees and does from the runtime that runs the model:
+
+- `Perception` turns an observation into input parts: a JSON text part with
+  `{step, decision_seconds, observation, memory, recent_history}`, then the RGB
+  frame as a base64 PNG part. `describe_observation` lives in `owb.agents.perception`.
+- `ActionDecoder` (`action_schema`/`decode_action`) builds the masked JSON schema and
+  rejects malformed or unsupported controls before the simulator advances.
+- A harness (`owb.agents.harness`) runs one decision:
+  `decide(system, parts, schema) -> Decision`. `OpenAIResponsesHarness` calls the
+  Responses API (`store=False`). `ClaudeCLIHarness`, `CodexCLIHarness` and
+  `GeminiCLIHarness` start a fresh, tool-restricted CLI process for each decision.
+  Each harness reports `caps` (`HarnessCaps`: profile, isolation, session/workspace
+  persistence, tools, MCP tools, network, turns per decision, privileged).
+- `LLMPolicy(harness, config=LLMPolicyConfig(...))` owns memory notes, recent
+  history, the control guide and per-episode `Budgets` (`max_calls`, plus an
+  optional `max_total_tokens` that stops the episode once reached). It also
+  records `last_decision`. Its `metadata()` contains `privileged=False`, the
+  harness metadata and the caps.
+
+```python
+from owb.agents import Budgets, LLMPolicy, LLMPolicyConfig
+from owb.agents.harness import CodexCLIHarness
+
+harness = CodexCLIHarness("~/.codex-bench", model="gpt-6-astra", reasoning_effort="low")
+policy = LLMPolicy(harness, config=LLMPolicyConfig(budgets=Budgets(max_calls=60, max_total_tokens=2_000_000)))
+```
+
+`OpenAIPolicy`, `CodexPolicy`, `ClaudePolicy` and `GeminiPolicy` in
+`owb.bench.baselines` are thin `LLMPolicy` subclasses. They keep their old
+constructors, `OpenAIPolicyConfig`, `metadata()` records, exceptions and error
+codes. `CodexClient`, `ClaudeClient` and `GeminiClient` are deprecated adapters
+that still accept Responses-style `create(**request)` calls; the Teyvat and
+Wildlands model scripts use `CodexClient`. Privileged reference policies will
+move to `owb.agents.oracle` in a later step.

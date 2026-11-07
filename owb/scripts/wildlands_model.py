@@ -52,7 +52,8 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
     obs,_=env.reset(seed=seed)
     policy=WildlandsModelPolicy(client,model=model,effort=effort,memory_chars=memory_chars,max_calls=max_calls)
     sources={p:sha(ROOT/p) for p in SOURCES}
-    for p in ('owb/bench/baselines/wildlands_model.py','owb/scripts/wildlands_model.py','owb/bench/baselines/codex_policy.py'):
+    for p in ('owb/bench/baselines/wildlands_model.py','owb/scripts/wildlands_model.py','owb/bench/baselines/codex_policy.py',
+              'owb/bench/baselines/_responses_shim.py','owb/agents/harness/codex_cli.py','owb/agents/harness/cli.py'):
         sources[p]=sha(ROOT/p)
     config=dict(task=task,seed=seed,model=model,transport=transport,reasoning_effort=effort,
                 max_model_decisions=max_calls,max_primitive_actions=max_actions,max_wall_seconds=wall_seconds,
