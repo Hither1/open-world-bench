@@ -28,6 +28,10 @@ from ..spaces.builtin import (
 register_builtins(owb_spaces.REGISTRY)
 #: built-in modalities in canonical ``modality_mask`` order; later registrations append
 MODALITIES = tuple(m.name for m in MODALITY_SPECS)
+#: info fields copied into ``info["episode"]`` (and run summaries) when an episode ends
+EPISODE_KEYS = ("environment", "seed", "steps", "simulated_seconds", "episode_return", "success",
+                "task_progress", "success_defined", "task_progress_defined",
+                "terminated", "truncated", "termination_reason")
 
 
 @dataclass(frozen=True)
@@ -484,10 +488,7 @@ class BenchmarkEnv(gym.Env):
                     terminated=terminated, truncated=truncated, termination_reason=reason,
                     events=jsonable(events), metrics=jsonable(metrics), native=jsonable(native_info))
         if terminated or truncated:
-            info["episode"] = {key: info[key] for key in (
-                "environment", "seed", "steps", "simulated_seconds", "episode_return", "success",
-                "task_progress", "success_defined", "task_progress_defined",
-                "terminated", "truncated", "termination_reason")}
+            info["episode"] = {key: info[key] for key in EPISODE_KEYS}
         return info
 
     def schema_vocabularies(self):
