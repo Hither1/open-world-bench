@@ -15,7 +15,7 @@ import numpy as np
 
 
 def _presentation_batch():
-    from open_world_bench.render.meshes import MeshBatch
+    from owb.sims.teyvat.render.meshes import MeshBatch
 
     class PresentationBatch(MeshBatch):
         """Spend more triangles on the same shapes for offline presentation."""
@@ -131,7 +131,7 @@ def _isosurface(density, level=0.5):
 
 def _voxel_faces(voxels, occupied):
     """Exposed faces only, retaining architecture and water boundaries."""
-    from open_world_bench.render.meshes import _CUBE_V, _CUBE_F
+    from owb.sims.teyvat.render.meshes import _CUBE_V, _CUBE_F
     output, blocks = [], []
     for axis, sign, face in ((2, -1, 0), (2, 1, 1), (0, -1, 2),
                              (0, 1, 3), (1, 1, 4), (1, -1, 5)):
@@ -169,7 +169,7 @@ def _add_batch(scene, batch):
             triangles[start:end][flip] = part[flip][:, [0, 2, 1]]
             normals[start:end][flip] = normals[start:end][flip][:, [0, 2, 1]]
             start = end
-        from open_world_bench.render.meshes import MATERIAL_NAMES
+        from owb.sims.teyvat.render.meshes import MATERIAL_NAMES
         material_ids=np.concatenate(batch.material_ids)
         for material_id in np.unique(material_ids):
             mask=material_ids==material_id
@@ -179,10 +179,10 @@ def _add_batch(scene, batch):
 
 
 def _teyvat(native, size):
-    from open_world_bench.render.soft_renderer import SoftRenderer
-    from open_world_bench.render.style import BIOME_ALBEDO, sky_keys_at
-    from open_world_bench.terrain import MEADOW, FOREST, CLIFF, SNOW, BEACH
-    from open_world_bench.math3d import smoothstep
+    from owb.sims.teyvat.render.soft_renderer import SoftRenderer
+    from owb.sims.teyvat.render.style import BIOME_ALBEDO, sky_keys_at
+    from owb.sims.teyvat.terrain import MEADOW, FOREST, CLIFF, SNOW, BEACH
+    from owb.sims.teyvat.math3d import smoothstep
 
     world, terrain = native.world, native.world.terrain
     eye, target = native.cam.eye.copy(), native.cam.pivot.copy()
@@ -222,10 +222,10 @@ def _teyvat(native, size):
 
 
 def _wildlands(native, size):
-    from .landscape import LandscapeRenderer, _NATURAL
-    from .camera import Camera, resolve_third_person
-    from . import palette as P
-    from ..core import blocks as B
+    from ..sims.voxel.render.landscape import LandscapeRenderer, _NATURAL
+    from ..sims.voxel.render.camera import Camera, resolve_third_person
+    from ..sims.voxel.render import palette as P
+    from ..sims.voxel.core import blocks as B
 
     world, cfg, agent = native.world, native.cfg, native.agent
     settings = replace(cfg.render_cfg, width=size[0], height=size[1], quality="high")
@@ -284,8 +284,8 @@ def capture_scene(env, *, width=960, height=540):
     This is a camera-specific presentation snapshot, not a complete savegame.
     It doesn't advance physics or replace the renderer used for observations.
     """
-    from open_world_bench.env import OpenWorldEnv
-    from ..env.wildlands import WildlandsEnv
+    from owb.sims.teyvat.env import OpenWorldEnv
+    from ..sims.voxel.env.wildlands import WildlandsEnv
 
     if not isinstance(width, int) or not isinstance(height, int) or min(width, height) <= 0:
         raise ValueError("width and height must be positive integers")
@@ -296,7 +296,7 @@ def capture_scene(env, *, width=960, height=540):
     if isinstance(native, OpenWorldEnv):
         return _teyvat(native, (width, height))
     # Deliberately exclude subclasses with extra scene content until adapted.
-    from ..env.wildlands_reference import WildlandsReferenceEnv
+    from ..sims.voxel.env.wildlands_reference import WildlandsReferenceEnv
     if type(native) in (WildlandsEnv, WildlandsReferenceEnv):
         return _wildlands(native, (width, height))
     raise ValueError("scene export currently supports teyvat and wildlands")

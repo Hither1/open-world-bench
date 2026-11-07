@@ -49,7 +49,7 @@ class WorldConfig:
 
     #: generate the big set-piece landmarks (towers, trial chambers, camps...)
     landmarks: bool = True
-    #: name of a preset in :mod:`owb.world.presets`, applied before the fields above
+    #: name of a preset in :mod:`owb.sims.voxel.world.presets`, applied before the fields above
     preset: str = "wildlands"
 
 

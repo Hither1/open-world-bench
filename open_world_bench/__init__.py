@@ -1,47 +1,26 @@
-"""open-world-bench: an anime-styled 3D open world for long-horizon agents."""
-from __future__ import annotations
+"""Deprecated alias for :mod:`owb.sims.teyvat`.
 
-__version__ = "0.1.0"
+``open_world_bench`` and every submodule (``open_world_bench.env``,
+``open_world_bench.render.meshes`` ...) resolve to the same module objects under
+``owb.sims.teyvat``.  Importing this package still registers the gym ids.
+"""
+from owb import _compat
 
-from .camera import CameraConfig, CameraState, OrbitCamera
-from .character import CharacterConfig, CharacterController, CharacterState, Command, MoveState
-from .env import EnvConfig, OpenWorldEnv, RewardConfig, make_env
-from .events import Event
-from .elements import Element, ElementalStatus, Reaction
-from .party import Party, PartyConfig, ROSTER
-from .quests import QuestEngine, QuestGraph, build_questline
-from .render import RenderSettings, make_renderer
-from .terrain import Terrain, TerrainConfig
-from .world import Entity, EntityKind, World, WorldConfig
+_compat.install()
+_compat.warn_once("open_world_bench", "owb.sims.teyvat")
 
-__all__ = [
-    "CameraConfig", "CameraState", "OrbitCamera",
-    "CharacterConfig", "CharacterController", "CharacterState", "Command", "MoveState",
-    "EnvConfig", "OpenWorldEnv", "RewardConfig", "make_env", "Event",
-    "QuestEngine", "QuestGraph", "build_questline",
-    "RenderSettings", "make_renderer", "Terrain", "TerrainConfig",
-    "Entity", "EntityKind", "World", "WorldConfig", "register_envs",
-    "Element", "ElementalStatus", "Reaction", "Party", "PartyConfig", "ROSTER",
-]
+from owb.sims.teyvat import *  # noqa: E402,F401,F403
+from owb.sims.teyvat import __all__, __version__  # noqa: E402,F401
 
 
-def register_envs() -> None:
-    """Register the gymnasium ids: OpenWorldBench/Genshin-v0 and -Small-v0."""
-    from gymnasium.envs.registration import register, registry
-
-    if "OpenWorldBench/Genshin-v0" in registry:
-        return
-    register(id="OpenWorldBench/Genshin-v0", entry_point="open_world_bench.env:OpenWorldEnv",
-             max_episode_steps=None)
-    register(id="OpenWorldBench/Genshin-Small-v0",
-             entry_point="open_world_bench.env:_make_small", max_episode_steps=None)
-
-
-def _unused() -> None:  # pragma: no cover
-    pass
-
-
-try:  # registering on import keeps `gym.make` working without ceremony
-    register_envs()
-except Exception:  # pragma: no cover - gymnasium missing or already registered
-    pass
+def __getattr__(name):
+    # submodules were attributes of the old package because its __init__ imported them
+    if name.startswith("_"):
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    import importlib
+    try:
+        return importlib.import_module(f"{__name__}.{name}")
+    except ModuleNotFoundError as exc:
+        if exc.name != f"{__name__}.{name}":
+            raise
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

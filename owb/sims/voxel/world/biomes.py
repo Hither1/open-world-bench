@@ -2,7 +2,7 @@
 
 A biome bundles the surface materials, flora, fauna and climate feel of a
 region.  Biomes are assigned from (temperature, moisture, elevation, slope) in
-:mod:`owb.world.worldgen` and drive both generation and gameplay (cold damage
+:mod:`owb.sims.voxel.world.worldgen` and drive both generation and gameplay (cold damage
 in the snowfield, heat damage in the volcanic waste, which ingredients grow
 where, which monsters camp there).
 """

@@ -13,7 +13,7 @@ Pipeline (all vectorised over the whole map):
    veins injected, ground cover / trees / ingredient plants scattered.
 
 Set-piece landmarks (towers, villages, monster camps, trial chambers, forges)
-are added afterwards by :mod:`owb.world.structures`.
+are added afterwards by :mod:`owb.sims.voxel.world.structures`.
 """
 
 from __future__ import annotations

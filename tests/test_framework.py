@@ -17,7 +17,7 @@ from owb.bench.rollout import DemoPolicy, RandomPolicy, run_episode
 
 def native_config(name):
     if name == "teyvat":
-        from open_world_bench import EnvConfig, RenderSettings, TerrainConfig, WorldConfig
+        from owb.sims.teyvat import EnvConfig, RenderSettings, TerrainConfig, WorldConfig
         return EnvConfig(world=WorldConfig(terrain=TerrainConfig(size=512, resolution=65), prop_density=0),
                          render=RenderSettings(march_steps=16, shadow_steps=0, draw_props=False))
     return owb.EnvConfig(
@@ -50,7 +50,7 @@ def flatten(env):
         native.char = native.controller.spawn(0, 0)
         native.cam = native.camera_rig.reset(native.char)
     else:
-        from owb.core import blocks as B
+        from owb.sims.voxel.core import blocks as B
         native.world.fill_box((0, 0, 0), (31, 39, 31), B.AIR)
         native.world.fill_box((0, 0, 0), (31, 7, 31), B.STONE)
         native.agent.pos = np.array((12.5, 8.001, 12.5), np.float32)
@@ -315,7 +315,7 @@ def test_presentation_renderer_preserves_gameplay_and_observation_contract():
 
 
 def test_terrain_occludes_buried_meshes_in_the_same_depth_space():
-    from open_world_bench import Entity, EntityKind
+    from owb.sims.teyvat import Entity, EntityKind
     with build("teyvat") as env:
         env.reset(seed=7)
         flatten(env)
@@ -331,7 +331,7 @@ def test_terrain_occludes_buried_meshes_in_the_same_depth_space():
 
 
 def test_smooth_triangle_colors_interpolate_inside_the_triangle():
-    from open_world_bench.render.raster import draw_triangles
+    from owb.sims.teyvat.render.raster import draw_triangles
     screen = np.array([[[0, 0], [4, 0], [0, 4]]], np.float32)
     color = np.zeros((4, 4, 3), np.float32)
     depth = np.full((4, 4), np.inf, np.float32)

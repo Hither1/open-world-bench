@@ -11,11 +11,11 @@ from pathlib import Path
 import imageio.v3 as iio
 import numpy as np
 
-from open_world_bench import make_env
+from owb.sims.teyvat import make_env
 
-from ..core.config import EnvConfig, RenderConfig
-from ..env.wildlands import WildlandsEnv
-from ..env.skylands import SkylandsEnv, default_config as skylands_config
+from ..sims.voxel.core.config import EnvConfig, RenderConfig
+from ..sims.voxel.env.wildlands import WildlandsEnv
+from ..sims.voxel.env.skylands import SkylandsEnv, default_config as skylands_config
 from ..render.presentation import PresentationRenderer, add_render_arguments
 
 

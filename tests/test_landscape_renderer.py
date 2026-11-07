@@ -3,10 +3,10 @@ import numpy as np
 import pytest
 
 from owb import EnvConfig, RenderConfig, WildlandsEnv, WorldConfig
-from owb.core import blocks as B
-from owb.render import make_renderer
-from owb.render.landscape import LandscapeRenderer
-from owb.world.voxel import VoxelWorld
+from owb.sims.voxel.core import blocks as B
+from owb.sims.voxel.render import make_renderer
+from owb.sims.voxel.render.landscape import LandscapeRenderer
+from owb.sims.voxel.world.voxel import VoxelWorld
 
 
 def world():
@@ -97,7 +97,7 @@ def test_rendering_is_independent_of_simulation_rng():
 
 
 def test_voxel_style_remains_available_and_style_is_validated():
-    from owb.render.raycast import Renderer
+    from owb.sims.voxel.render.raycast import Renderer
     assert type(make_renderer(RenderConfig(style="voxel"))) is Renderer
     assert isinstance(make_renderer(RenderConfig()), LandscapeRenderer)
     with pytest.raises(ValueError, match="style"):
@@ -107,7 +107,7 @@ def test_voxel_style_remains_available_and_style_is_validated():
 
 
 def test_mesh_shadow_direction_filter_and_map_boundaries():
-    from owb.render.shadows import MeshShadowMap
+    from owb.sims.voxel.render.shadows import MeshShadowMap
     roof = np.array([[[-1, 2, -1], [1, 2, -1], [1, 2, 1]],
                      [[-1, 2, -1], [1, 2, 1], [-1, 2, 1]]], np.float32)
     shadow = MeshShadowMap(roof, (0, 1, 0), (0, 0, 0), extent=4, resolution=64)

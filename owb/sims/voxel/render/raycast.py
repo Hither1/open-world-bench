@@ -25,7 +25,7 @@ _INF = np.float32(1e9)
 
 
 class Renderer:
-    """Renders :class:`~owb.world.voxel.VoxelWorld` views for an agent."""
+    """Renders :class:`~owb.sims.voxel.world.voxel.VoxelWorld` views for an agent."""
 
     def __init__(self, cfg: RenderConfig | None = None):
         self.cfg = cfg or RenderConfig()

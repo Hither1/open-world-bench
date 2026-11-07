@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 
 from .framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, SCHEMA_VERSION, jsonable, neutral_action
-from ..env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
-from ..sim.construction import PART_COLUMNS, BUILD_STATE_NAMES
+from ..sims.voxel.env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
+from ..sims.voxel.sim.construction import PART_COLUMNS, BUILD_STATE_NAMES
 
 
 class RandomPolicy:

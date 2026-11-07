@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pytest
 
-from open_world_bench.render.meshes import MeshBatch, add_prop, add_entity, MATERIAL_NAMES
+from owb.sims.teyvat.render.meshes import MeshBatch, add_prop, add_entity, MATERIAL_NAMES
 from owb.render.scene_export import SceneSnapshot, _add_batch, _presentation_batch
 
 

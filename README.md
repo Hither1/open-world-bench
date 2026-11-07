@@ -93,7 +93,7 @@ new output directory for each recording.
 ```python
 from owb import make_env
 from owb.bench import DemoPolicy, run_episode
-from owb.env.skylands import default_config
+from owb.sims.voxel.env.skylands import default_config
 
 cfg = default_config(small=True)
 cfg.render_cfg.third_person = True
@@ -127,9 +127,9 @@ and detours that are only solvable with the right recollection), not on reward a
 
 ## Status
 
-Early and under active construction. Wildlands (`owb/`) now connects voxel terrain,
+Early and under active construction. Wildlands (`owb/sims/voxel/`) now connects voxel terrain,
 rendering, traversal, weather, gathering, cooking, and survival in a runnable
-Gymnasium environment. The anime-styled world lives in `open_world_bench/`.
+Gymnasium environment. The anime-styled world lives in `owb/sims/teyvat/`.
 Skylands adds a runnable layered construction course on the Wildlands simulator.
 Task suites and baseline agents are still being filled in. APIs will change
 without notice until a tagged release.
@@ -221,8 +221,8 @@ swapped out. Basic attacks are physical; skills and bursts apply elements.
 ```python
 import gymnasium as gym
 import numpy as np
-import open_world_bench  # registers the Gymnasium environments
-from open_world_bench import PartyConfig
+import owb  # registers the Gymnasium environments
+from owb.sims.teyvat import PartyConfig
 
 env = gym.make(
     "OpenWorldBench/Genshin-Small-v0",

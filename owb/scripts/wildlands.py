@@ -5,8 +5,8 @@ import argparse
 import json
 from pathlib import Path
 
-from ..env import DISCRETE_ACTIONS, make_small
-from ..core.config import RenderConfig
+from ..sims.voxel.env import DISCRETE_ACTIONS, make_small
+from ..sims.voxel.core.config import RenderConfig
 from ..render.presentation import PresentationRenderer
 
 

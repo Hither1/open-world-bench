@@ -443,7 +443,7 @@ interlock.
 
 ## Implementation fit and first build
 
-Nothing here is implemented. `mobile_robot` is a README row: `owb/env/` holds
+Nothing here is implemented. `mobile_robot` is a README row: `owb/sims/voxel/env/` holds
 only `wildlands.py` and `skylands.py`, `owb/bench/framework.py` registers only
 `teyvat`, `wildlands`, and `skylands`, and `owb/bench/tasks/` is empty.
 

@@ -4,7 +4,7 @@ forges, beacons, ruins and blastable caves.
 Landmarks are what turn procedural terrain into a *game*: they are the
 destinations quests point at, the stations crafting needs (cooking pot, forge),
 and the physics set-ups the puzzle tasks are built on.  Each one registers a
-:class:`~owb.world.worldgen.Landmark` so tasks and the text observation can
+:class:`~owb.sims.voxel.world.worldgen.Landmark` so tasks and the text observation can
 refer to it by name.
 """
 

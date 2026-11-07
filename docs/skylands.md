@@ -53,7 +53,7 @@ with owb.make_env("skylands", seed=7) as env:
 
 Native IDs are `OpenWorldBench/Skylands-v0` and
 `OpenWorldBench/Skylands-Small-v0`. Native configuration is `owb.EnvConfig`.
-Native commands are exported by `owb.env.skylands.COMMANDS`; their indices differ
+Native commands are exported by `owb.sims.voxel.env.skylands.COMMANDS`; their indices differ
 from the common schema. Skylands supports only the native `multi` action mode.
 `obs_rgb=False` disables automatic rendering in native rollouts.
 World generation uses dimensions and seed; Wildlands terrain presets and density
@@ -96,7 +96,7 @@ The held part remains observable as manipulation state.
 
 `build_state` contains six floats: held part ID (0 if empty), held anchor offset
 from the agent's feet (x/y/z), placement validity, and altitude layer (0 depths,
-1 surface, 2 sky). Field names are exported from `owb.sim.construction`.
+1 surface, 2 sky). Field names are exported from `owb.sims.voxel.sim.construction`.
 Each layer has independent visited-cell memory; `minimap` shows only the current
 layer. Changing altitude does not reveal cells in another layer.
 

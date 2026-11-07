@@ -5,10 +5,10 @@ import numpy as np
 import pytest
 
 import owb
-from owb.core import blocks as B, items as I
-from owb.env import COMMANDS
-from owb.physics import collide
-from owb.world.worldgen import Landmark
+from owb.sims.voxel.core import blocks as B, items as I
+from owb.sims.voxel.env import COMMANDS
+from owb.sims.voxel.physics import collide
+from owb.sims.voxel.world.worldgen import Landmark
 
 
 def config(**kwargs):

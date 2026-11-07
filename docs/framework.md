@@ -35,7 +35,7 @@ two Wildlands ticks. `decision_seconds` must be a positive integer multiple of
 the native physics timestep. Death can end a decision early. Native movement
 speeds, camera rates, and gameplay remain different.
 
-Advanced settings use `native_config=open_world_bench.EnvConfig(...)` for Teyvat
+Advanced settings use `native_config=owb.sims.teyvat.EnvConfig(...)` for Teyvat
 or `native_config=owb.EnvConfig(...)` for Wildlands/Skylands. The factory copies it; common
 seed, resolution, horizon, timing, and required interface modes take precedence.
 The variant selects defaults only without a native configuration. `env.native`
@@ -81,8 +81,8 @@ simultaneous-button combinations.
 | `proprio` | `(12,)`: forward/right/up velocity in m/s, health/stamina fractions, grounded/airborne/swimming/climbing/gliding flags, time-of-day sine/cosine. |
 | `instruction` | Up to 1024 printable characters: quest or local survival description. |
 | `party` | `(30,)` Teyvat party state; see README for layout. |
-| `inventory` | `(32, 16)` Wildlands stacks; `owb.env.INVENTORY_COLUMNS` and `ITEM_IDS` define the vocabulary. |
-| `survival` | `(8,)` Wildlands weather/time state; names in `owb.env.SURVIVAL_NAMES`. |
+| `inventory` | `(32, 16)` Wildlands stacks; `owb.sims.voxel.env.INVENTORY_COLUMNS` and `ITEM_IDS` define the vocabulary. |
+| `survival` | `(8,)` Wildlands weather/time state; names in `owb.sims.voxel.env.SURVIVAL_NAMES`. |
 | `minimap` | `(32, 32)` Wildlands visited-cell map. |
 | `goal` | `(15,)` Teyvat native objective vector; disabled by default. |
 | `construction`, `build_state` | `(8,9)` locally observable parts and `(6,)` held cursor/layer state in Skylands. |
@@ -189,6 +189,25 @@ Logs are action/event traces, not full observation datasets or simulator
 checkpoints. Reconstruct omitted tensors with the same code/dependency versions,
 configuration, seed, and actions. GIF is intended for short previews; use MP4 with
 the video extra for longer recordings.
+
+## Package layout
+
+| Package | Contents |
+| --- | --- |
+| `owb.sims.teyvat` | Teyvat simulator: terrain, world, party, elements, character, camera, quests, sensor renderers (`render/`), `env.OpenWorldEnv`, reference course and privileged reference policy. |
+| `owb.sims.voxel` | Voxel simulator behind Wildlands and Skylands: `core`, `world`, `physics`, `sim`, `entities`, `env` (`WildlandsEnv`, `SkylandsEnv`, `WildlandsReferenceEnv`) and the observation renderers in `render/` (`make_renderer`, raycast, landscape, shadows). |
+| `owb.bench` | Common `BenchmarkEnv`, adapters, rollout and baselines. |
+| `owb.tasks` | Evaluator-side task definitions. |
+| `owb.render` | Presentation only: scene export, Blender Cycles, video encoding. |
+| `owb.scripts` | `python -m owb.scripts.*` entry points. |
+
+The old import paths still work but are deprecated: `open_world_bench` and its
+submodules alias `owb.sims.teyvat`; `owb.core`, `owb.world`, `owb.physics`,
+`owb.sim`, `owb.entities`, `owb.env` and the moved `owb.render.*` sensor modules
+alias `owb.sims.voxel.*`. `owb/_compat.py` registers the canonical module objects
+under the old names (so `open_world_bench.env.OpenWorldEnv is
+owb.sims.teyvat.env.OpenWorldEnv`) and issues one `DeprecationWarning` per old
+prefix. Gymnasium ids are unchanged; their entry points name the canonical modules.
 
 ## Adding another environment
 

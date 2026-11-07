@@ -3,8 +3,8 @@ from __future__ import annotations
 import heapq
 import math
 import numpy as np
-from ...core import blocks as B
-from ...env.wildlands_reference import COMMANDS, Y
+from ...sims.voxel.core import blocks as B
+from ...sims.voxel.env.wildlands_reference import COMMANDS, Y
 
 
 def neutral():

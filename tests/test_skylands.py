@@ -8,8 +8,8 @@ import pytest
 
 import owb
 from owb.bench import DemoPolicy, run_episode
-from owb.core import blocks as B
-from owb.env.skylands import COMMANDS, SkylandsEnv, default_config
+from owb.sims.voxel.core import blocks as B
+from owb.sims.voxel.env.skylands import COMMANDS, SkylandsEnv, default_config
 
 
 def action(command="none", *, part=0, delta=(0, 0, 0)):

@@ -15,8 +15,8 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 
-from ..env import INVENTORY_COLUMNS, SURVIVAL_NAMES
-from ..sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS
+from ..sims.voxel.env import INVENTORY_COLUMNS, SURVIVAL_NAMES
+from ..sims.voxel.sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS
 
 SCHEMA_VERSION = 2
 BUTTONS = ("jump", "sprint", "climb", "glide", "dive", "crouch")
@@ -122,7 +122,7 @@ class TeyvatAdapter(NativeAdapter):
         self.modalities = (("party",) if native.party else ()) + (("goal",) if config.include_goal_hint else ())
 
     def translate(self, action):
-        from open_world_bench.character import MoveState
+        from owb.sims.teyvat.character import MoveState
 
         command = COMMANDS[int(action["command"])]
         jump, sprint, climb, glide, dive, _ = action["buttons"]
@@ -140,7 +140,7 @@ class TeyvatAdapter(NativeAdapter):
         return out
 
     def state(self):
-        from open_world_bench.character import MoveState
+        from owb.sims.teyvat.character import MoveState
 
         env, ch = self.native, self.native.char
         yaw = env.cam.yaw
@@ -182,7 +182,7 @@ class WildlandsAdapter(NativeAdapter):
     modalities = ("inventory", "survival", "minimap")
 
     def translate(self, action):
-        from ..env import COMMANDS as NATIVE_COMMANDS
+        from ..sims.voxel.env import COMMANDS as NATIVE_COMMANDS
 
         jump, sprint, climb, glide, dive, crouch = action["buttons"]
         return dict(move=np.asarray(action["move"]).copy(), look=np.asarray(action["look"]).copy(),
@@ -216,7 +216,7 @@ class SkylandsAdapter(WildlandsAdapter):
     modalities = WildlandsAdapter.modalities + ("construction", "build_state")
 
     def translate(self, action):
-        from ..env.skylands import COMMANDS as NATIVE_COMMANDS
+        from ..sims.voxel.env.skylands import COMMANDS as NATIVE_COMMANDS
 
         # Translate the common movement fields using the existing survival adapter.
         base = dict(action, command=0)
@@ -236,10 +236,10 @@ class SkylandsAdapter(WildlandsAdapter):
 
 
 def _teyvat(config, native_config):
-    from open_world_bench import EnvConfig, OpenWorldEnv, TerrainConfig, WorldConfig, RenderSettings
+    from owb.sims.teyvat import EnvConfig, OpenWorldEnv, TerrainConfig, WorldConfig, RenderSettings
 
     if native_config is not None and not isinstance(native_config, EnvConfig):
-        raise TypeError("teyvat native_config must be open_world_bench.EnvConfig")
+        raise TypeError("teyvat native_config must be owb.sims.teyvat.EnvConfig")
     cfg = deepcopy(native_config) if native_config is not None else EnvConfig()
     if native_config is None and config.variant == "small":
         cfg.world = WorldConfig(terrain=TerrainConfig(size=512, resolution=257, max_height=150), prop_density=1.6)
@@ -255,8 +255,8 @@ def _teyvat(config, native_config):
 
 
 def _wildlands(config, native_config):
-    from ..core.config import EnvConfig, WorldConfig, RenderConfig
-    from ..env import WildlandsEnv
+    from ..sims.voxel.core.config import EnvConfig, WorldConfig, RenderConfig
+    from ..sims.voxel.env import WildlandsEnv
 
     if native_config is not None and not isinstance(native_config, EnvConfig):
         raise TypeError("wildlands native_config must be owb.EnvConfig")
@@ -277,8 +277,8 @@ def _wildlands(config, native_config):
 
 
 def _skylands(config, native_config):
-    from ..core.config import EnvConfig
-    from ..env.skylands import SkylandsEnv, default_config
+    from ..sims.voxel.core.config import EnvConfig
+    from ..sims.voxel.env.skylands import SkylandsEnv, default_config
 
     if native_config is not None and not isinstance(native_config, EnvConfig):
         raise TypeError("skylands native_config must be owb.EnvConfig")

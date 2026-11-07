@@ -329,7 +329,7 @@ that memory improved reusable skill learning.
 
 | Area | Existing foundation | Required addition |
 | --- | --- | --- |
-| Task graph | Quest, Stage, and prerequisites in open_world_bench/quests/schema.py. | Task selection, milestone IDs, compound state predicates, phase annotations, and acquisition/transfer metrics. |
+| Task graph | Quest, Stage, and prerequisites in owb/sims/teyvat/quests/schema.py. | Task selection, milestone IDs, compound state predicates, phase annotations, and acquisition/transfer metrics. |
 | Relays | Party swaps and elemental skills. | Targetable receivers, seeded role bindings, visible faults/progress, reusable interactions, and versioned rules. |
 | Sentinels | Enemies and elemental shields. | Core exposure, interruption, shield reformation, readable phases, and family-rule assignments. |
 | Traversal | Climbing, gliding, swimming, stamina, and terrain. | Vent forces, charge/pulse cues, safe shelves, recovery paths, and feasibility validation. |

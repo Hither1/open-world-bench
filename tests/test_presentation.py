@@ -113,7 +113,7 @@ def test_failed_cycles_render_is_reported(monkeypatch):
 def test_recorder_defaults_to_cycles_and_preserves_policy_rgb(monkeypatch, tmp_path):
     pytest.importorskip("imageio")
     Image = pytest.importorskip("PIL.Image")
-    from open_world_bench import EnvConfig, WorldConfig, TerrainConfig, RenderSettings
+    from owb.sims.teyvat import EnvConfig, WorldConfig, TerrainConfig, RenderSettings
     from owb import make_env
     from owb.bench.rollout import run_episode
     seen = []

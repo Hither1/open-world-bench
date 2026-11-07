@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from open_world_bench.render import raster
+from owb.sims.teyvat.render import raster
 
 from ..core import blocks as B, noise as N
 from ..world.biomes import BIOMES

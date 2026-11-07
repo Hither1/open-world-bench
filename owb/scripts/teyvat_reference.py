@@ -25,8 +25,8 @@ import numpy as np
 
 os.environ.setdefault("MPLCONFIGDIR",str(Path(tempfile.gettempdir())/"owb-reference-matplotlib"))
 
-from open_world_bench.reference_tasks import ReferenceTaskEnv
-from open_world_bench.reference_policy import ReferencePolicy
+from owb.sims.teyvat.reference_tasks import ReferenceTaskEnv
+from owb.sims.teyvat.reference_policy import ReferencePolicy
 from owb.render.presentation import PresentationRenderer, add_render_arguments
 
 
@@ -149,7 +149,7 @@ def frame_plan(rows,stride,fps):
     Both recording paths use this plan. Holds repeat real simulator frames;
     they do not interpolate, change actions, or invent a swap animation.
     """
-    from open_world_bench.party import DEFAULT_PARTY
+    from owb.sims.teyvat.party import DEFAULT_PARTY
     important={"relay_application","relay_interrupted","relay_active","sentinel_exposed",
                "sentinel_interrupted","sentinel_reformed","vent_launch","vent_landed",
                "milestone_complete","item_acquired","lift_arrived","talk","party_swap"}
@@ -206,7 +206,7 @@ class Overlay:
 
     def frame(self,env,row,chapter=False,transition=None):
         from PIL import Image,ImageDraw
-        from open_world_bench import math3d
+        from owb.sims.teyvat import math3d
         image=Image.new("RGB",(1280,720),(18,43,53))
         draw=ImageDraw.Draw(image)
         accent=(222,193,129)
@@ -275,7 +275,7 @@ class Overlay:
         for value in state_lines:
             draw.text((x,y),value,font=self.fonts[18],fill=(227,235,229));y+=23
         if transition:
-            from open_world_bench.party import ROSTER
+            from owb.sims.teyvat.party import ROSTER
             old,new=ROSTER[transition["from"]],ROSTER[transition["to"]]
             prefix="NEXT SWAP" if transition["phase"]=="before" else "PARTY SWAP"
             draw.rounded_rectangle((40,510,870,569),7,fill=(23,55,63),outline=accent,width=2)
@@ -377,9 +377,9 @@ def verify_recording(directory):
         assert env.state_digest()==manifest["final_digest"]
         assert env.quests.all_complete and env.course.verify()["success"]
         root=Path(__file__).resolve().parents[2]
-        sources=["open_world_bench/reference_tasks.py","open_world_bench/reference_policy.py",
-                 "open_world_bench/env.py","open_world_bench/world.py","open_world_bench/character.py",
-                 "open_world_bench/party.py","open_world_bench/terrain.py","owb/scripts/teyvat_reference.py",
+        sources=["owb/sims/teyvat/reference_tasks.py","owb/sims/teyvat/reference_policy.py",
+                 "owb/sims/teyvat/env.py","owb/sims/teyvat/world.py","owb/sims/teyvat/character.py",
+                 "owb/sims/teyvat/party.py","owb/sims/teyvat/terrain.py","owb/scripts/teyvat_reference.py",
                  "owb/render/presentation.py","owb/render/scene_export.py",
                  "owb/render/blender_scene.py","owb/render/video.py"]
         result={"success":True,"checked_actions":len(rows),"checked_events":True,

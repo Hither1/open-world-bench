@@ -154,8 +154,8 @@ activemq-data/
 .envrc
 .venv
 env/
-!owb/env/
-!owb/env/*.py
+!owb/sims/voxel/env/
+!owb/sims/voxel/env/*.py
 venv/
 ENV/
 env.bak/

@@ -33,7 +33,7 @@ On a quota-constrained cluster, use `PYTHONDONTWRITEBYTECODE=1` and
 import gymnasium as gym
 import numpy as np
 import owb  # registers both Wildlands environments
-from owb.env import COMMANDS
+from owb.sims.voxel.env import COMMANDS
 
 env = gym.make("OpenWorldBench/Wildlands-Small-v0")
 obs, info = env.reset(seed=7)
@@ -84,9 +84,9 @@ Slots shift when a stack is consumed; read the next observation before selecting
 | --- | --- |
 | `rgb` | optional uint8 H x W x 3 view |
 | `depth`, `semantic` | optional float32 distance in metres / uint8 class IDs |
-| `proprio` | 25 body values; names in `owb.entities.agent.PROPRIO_NAMES` |
+| `proprio` | 25 body values; names in `owb.sims.voxel.entities.agent.PROPRIO_NAMES` |
 | `survival` | time, day, weather index, wind x/z, ambient temperature, elapsed seconds, selected slot |
-| `inventory` | 32 stack rows, columns in `owb.env.INVENTORY_COLUMNS`; item ID is one-based in `ITEM_IDS`, 0 is empty |
+| `inventory` | 32 stack rows, columns in `owb.sims.voxel.env.INVENTORY_COLUMNS`; item ID is one-based in `ITEM_IDS`, 0 is empty |
 | `minimap` | north-up, agent-centred visited-cell map: 0 unknown, biome ID + 1 visited, 255 agent |
 | `text` | optional local weather, vitals and inventory description |
 

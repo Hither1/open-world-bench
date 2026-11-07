@@ -5,16 +5,16 @@ import numpy as np
 import pytest
 from gymnasium.utils.env_checker import check_env, data_equivalence
 
-from open_world_bench import (
+from owb.sims.teyvat import (
     CharacterConfig, CharacterController, Element, Entity, EntityKind, EnvConfig,
     OpenWorldEnv, Party, PartyConfig, RenderSettings, Terrain, TerrainConfig, World, WorldConfig,
 )
-from open_world_bench.character import MoveState
-from open_world_bench.elements import Aura
-from open_world_bench.party import MAX_ENERGY
-from open_world_bench.quests import QuestEngine
-from open_world_bench.quests.schema import ObjKind, Objective, Quest, QuestGraph, Stage
-from open_world_bench.scatter import BOULDER, PropField
+from owb.sims.teyvat.character import MoveState
+from owb.sims.teyvat.elements import Aura
+from owb.sims.teyvat.party import MAX_ENERGY
+from owb.sims.teyvat.quests import QuestEngine
+from owb.sims.teyvat.quests.schema import ObjKind, Objective, Quest, QuestGraph, Stage
+from owb.sims.teyvat.scatter import BOULDER, PropField
 
 
 @pytest.fixture

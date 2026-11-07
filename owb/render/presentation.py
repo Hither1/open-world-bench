@@ -87,9 +87,9 @@ class PresentationRenderer:
         return frame
 
     def _cpu_frame(self, native):
-        from open_world_bench.env import OpenWorldEnv
+        from owb.sims.teyvat.env import OpenWorldEnv
         if isinstance(native, OpenWorldEnv):
-            from open_world_bench.render import make_renderer
+            from owb.sims.teyvat.render import make_renderer
             settings = replace(native.cfg.render, width=self.width, height=self.height)
             renderer = make_renderer(settings, native.cfg.backend)
             try:

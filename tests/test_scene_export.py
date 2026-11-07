@@ -47,7 +47,7 @@ def test_voxel_architecture_omits_internal_faces():
 
 
 def test_export_repairs_inward_primitives_without_changing_native_meshes():
-    from open_world_bench.render.meshes import MeshBatch
+    from owb.sims.teyvat.render.meshes import MeshBatch
     batch = MeshBatch()
     batch.ellipsoid((0, 0, 0), (1, 2, 1), (0.4, 0.6, 0.2))
     original = batch.finish()[0].copy()
@@ -63,7 +63,7 @@ def test_export_repairs_inward_primitives_without_changing_native_meshes():
 @pytest.fixture(params=("teyvat", "wildlands"))
 def env(request):
     if request.param == "teyvat":
-        from open_world_bench import EnvConfig, WorldConfig, TerrainConfig, RenderSettings
+        from owb.sims.teyvat import EnvConfig, WorldConfig, TerrainConfig, RenderSettings
         cfg = EnvConfig(world=WorldConfig(terrain=TerrainConfig(size=512, resolution=33), prop_density=0),
                         render=RenderSettings(march_steps=16, shadow_steps=0, draw_props=False))
     else:
@@ -119,7 +119,7 @@ def test_camera_uses_native_fov_convention(env):
 
 
 def test_requires_reset_and_valid_resolution():
-    with owb.env.WildlandsEnv() as env:
+    with owb.sims.voxel.env.WildlandsEnv() as env:
         with pytest.raises(gym.error.ResetNeeded):
             capture_scene(env)
         with pytest.raises(ValueError, match="positive integers"):

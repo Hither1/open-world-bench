@@ -12,8 +12,8 @@ import time
 import numpy as np
 
 from ..framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, jsonable, neutral_action
-from ...env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
-from ...sim.construction import BUILD_STATE_NAMES, PART_COLUMNS
+from ...sims.voxel.env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
+from ...sims.voxel.sim.construction import BUILD_STATE_NAMES, PART_COLUMNS
 
 
 @dataclass(frozen=True)

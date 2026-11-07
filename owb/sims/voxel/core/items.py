@@ -1,7 +1,7 @@
 """Item registry: materials, food, tools, weapons, armour and rune gadgets.
 
 Items are referenced by string id.  A concrete carried item is an
-:class:`~owb.sim.inventory.ItemStack`, which may carry instance data (remaining
+:class:`~owb.sims.voxel.sim.inventory.ItemStack`, which may carry instance data (remaining
 durability, cooked-dish effects, ...).
 """
 

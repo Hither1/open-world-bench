@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from owb.env.wildlands_reference import WildlandsReferenceEnv, COMMANDS
+from owb.sims.voxel.env.wildlands_reference import WildlandsReferenceEnv, COMMANDS
 from owb.bench.baselines.wildlands_reference import neutral
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from open_world_bench.render.meshes import MeshBatch
+from owb.sims.teyvat.render.meshes import MeshBatch
 
 from ..core import blocks as B
 from ..core import noise as N

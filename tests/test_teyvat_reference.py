@@ -2,10 +2,10 @@
 import numpy as np
 import pytest
 
-from open_world_bench.character import MoveState
-from open_world_bench.elements import Element
-from open_world_bench.reference_tasks import ReferenceTaskEnv
-from open_world_bench.reference_policy import ReferencePolicy
+from owb.sims.teyvat.character import MoveState
+from owb.sims.teyvat.elements import Element
+from owb.sims.teyvat.reference_tasks import ReferenceTaskEnv
+from owb.sims.teyvat.reference_policy import ReferencePolicy
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 """Named world presets.
 
-A preset is a bundle of :class:`~owb.core.config.WorldConfig` overrides.  Tasks
+A preset is a bundle of :class:`~owb.sims.voxel.core.config.WorldConfig` overrides.  Tasks
 reference presets by name so a benchmark definition stays short and readable.
 """
 
