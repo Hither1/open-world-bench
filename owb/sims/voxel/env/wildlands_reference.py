@@ -337,18 +337,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 s['installed']=True
                 return [dict(type='parts_installed',milestone=m.id,parts=list(m.consumes))]
             if m.kind in MECHANISMS: return MECHANISMS[m.kind].operate(self,m,role,obj)
-            if m.kind in ('flow','cool','prepare'):
-                if role.startswith('outlet'):
-                    if s['inlet']: return self._fail('isolate inlet before rerouting')
-                    i=int(role[-1]); s['outlets'][i]=not s['outlets'][i]
-                elif role=='inlet':
-                    if s['inlet']: s['inlet']=False
-                    elif s['outlets']!=[k==s['expected'] for k in range(3)]:
-                        s['trips']+=1; s['stable']=0
-                        return [dict(type='pressure_trip',milestone=m.id)]
-                    else: s['inlet']=True
-                else: return self._fail('not a flow control')
-                return [dict(type='flow_control',milestone=m.id,control=role,value=s['inlet'] if role=='inlet' else s['outlets'][int(role[-1])])]
             if m.kind=='calibrate':
                 if role.startswith('mark'): s['selected']=int(role[-1]); return [dict(type='calibration_selected',value=s['selected'])]
                 if not s['installed']: return self._fail('install both repair parts first')
@@ -383,10 +371,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
         if m.id=='B19': return 'Storm report v2: wooden causeway bridge is closed. Use the north stone detour to the same reserve depot.'
         if m.kind in MECHANISMS: return MECHANISMS[m.kind].clue(self,m)
         roles={self.targets[v]['symbol']:k for k,v in m.targets.items() if k in ('brake','release','vent','heat','inlet')}
-        if m.kind in ('flow','cool','prepare'):
-            if m.kind=='prepare': return 'Three outlet symbols. Consult the previously surveyed basin map and commission authorization.'
-            hint=f'Family flow: {roles}. Isolate inlet, open authorized outlet, then feed. ' if m.id=='B06' else ''
-            return hint+f'Local requested outlet: {m.state["expected"]+1}. Temperature: {m.state["temperature"]:.1f} C.'
         return m.title
 
     def _valid_load(self,m):
@@ -398,10 +382,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
             s=m.state; x,z=m.site
             if m.kind in MECHANISMS:
                 MECHANISMS[m.kind].update(self,m,events,kinds,dt); continue
-            if m.kind in ('flow','cool','prepare'):
-                valid=s['inlet'] and s['outlets']==[k==s['expected'] for k in range(3)]
-                s['stable']=s['stable']+dt if valid else 0.
-                if m.kind=='cool' and valid: s['temperature']=max(35.,s['temperature']-8*dt)
             if m.kind=='cook':
                 for e in events:
                     if e['type']=='cook': s['cooked'].extend(k for k in e['effects'] if k in ('cold_resist','heat_resist'))
