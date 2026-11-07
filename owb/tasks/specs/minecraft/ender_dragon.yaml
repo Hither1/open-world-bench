@@ -1,0 +1,134 @@
+# Ender Dragon: taken unchanged from MCU-AgentBeats as used by the MFM paper.
+# One milestone per entry of `milestone_reward_cfg` in
+# MCU/MCU_benchmark/task_configs/tasks/ender_dragon/*.yaml, same order, same objects.
+# Scoring: owb.tasks.evaluator (stat_increase = MineStudio RewardsCallback rule).
+id: ender_dragon
+version: 1
+sim: minecraft
+title: Ender Dragon
+instruction: "Starting from nothing, defeat the Ender Dragon by gathering resources, exploring the Nether, finding a stronghold, and conquering The End."
+budget:
+  steps: 36000   # one life, MFM scripts/run-arm.sh
+setup_params:
+  world_seed: 0
+milestones:
+- id: mine_log
+  title: Mine log
+  stage: wood and tools
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [log, oak_log, birch_log, spruce_log, jungle_log, acacia_log, dark_oak_log]}
+- id: crafting_table
+  title: Craft crafting table
+  stage: wood and tools
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [crafting_table]}
+- id: wooden_pickaxe
+  title: Craft wooden pickaxe
+  stage: wood and tools
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [wooden_pickaxe]}
+- id: mine_cobblestone
+  title: Mine cobblestone
+  stage: stone age
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [cobblestone]}
+- id: stone_pickaxe
+  title: Craft stone pickaxe
+  stage: stone age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [stone_pickaxe]}
+- id: mine_iron_ore
+  title: Mine iron ore
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [iron_ore, deepslate_iron_ore]}
+- id: furnace
+  title: Craft furnace
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [furnace]}
+- id: iron_ingot
+  title: Pick up iron ingot
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [iron_ingot]}
+- id: iron_pickaxe
+  title: Craft iron pickaxe
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [iron_pickaxe]}
+- id: mine_diamond_ore
+  title: Mine diamond ore
+  stage: diamond age
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [diamond_ore, deepslate_diamond_ore]}
+- id: diamond
+  title: Pick up diamond
+  stage: diamond age
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [diamond]}
+- id: diamond_pickaxe
+  title: Craft diamond pickaxe
+  stage: diamond age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [diamond_pickaxe]}
+- id: diamond_sword
+  title: Craft diamond sword
+  stage: diamond age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [diamond_sword]}
+- id: mine_obsidian
+  title: Mine obsidian
+  stage: nether preparation
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [obsidian]}
+- id: flint_and_steel
+  title: Craft flint and steel
+  stage: nether preparation
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [flint_and_steel]}
+- id: netherrack
+  title: Pick up netherrack
+  stage: nether
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [netherrack]}
+- id: kill_blaze
+  title: Kill blaze
+  stage: nether
+  reward: 1.0
+  done: {kind: stat_increase, stat: kill_entity, objects: [blaze]}
+- id: blaze_rod
+  title: Pick up blaze rod
+  stage: nether
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [blaze_rod]}
+- id: kill_enderman
+  title: Kill enderman
+  stage: nether
+  reward: 1.0
+  done: {kind: stat_increase, stat: kill_entity, objects: [enderman]}
+- id: ender_pearl
+  title: Pick up ender pearl
+  stage: nether
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [ender_pearl]}
+- id: blaze_powder
+  title: Craft blaze powder
+  stage: eye of ender
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [blaze_powder]}
+- id: eye_of_ender
+  title: Craft eye of ender
+  stage: eye of ender
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [ender_eye]}
+- id: end_stone
+  title: Pick up end stone
+  stage: the end
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [end_stone]}
+- id: kill_ender_dragon
+  title: Kill ender dragon
+  stage: the end
+  reward: 1.0
+  done: {kind: stat_increase, stat: kill_entity, objects: [ender_dragon]}

@@ -12,6 +12,7 @@ license = { text = "MIT" }
 dependencies = [
     "numpy>=1.24",
     "gymnasium>=0.29",
+    "pyyaml>=6",
 ]
 
 [project.optional-dependencies]
@@ -23,6 +24,9 @@ dev = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
 include = ["open_world_bench*", "owb*"]
+
+[tool.setuptools.package-data]
+"owb.tasks" = ["specs/**/*.yaml", "specs/**/*.yml", "specs/**/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

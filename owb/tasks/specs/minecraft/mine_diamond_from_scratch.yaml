@@ -1,0 +1,64 @@
+# Mine Diamond from Scratch: taken unchanged from MCU-AgentBeats as used by the MFM paper.
+# One milestone per entry of `milestone_reward_cfg` in
+# MCU/MCU_benchmark/task_configs/tasks/mine_diamond_from_scratch/*.yaml, same order, same objects.
+# Scoring: owb.tasks.evaluator (stat_increase = MineStudio RewardsCallback rule).
+id: mine_diamond_from_scratch
+version: 1
+sim: minecraft
+title: Mine Diamond from Scratch
+instruction: "Starting with nothing, obtain a diamond by gathering wood, crafting tools, mining ores, and smelting iron."
+budget:
+  steps: 12000   # one life, MFM scripts/run-arm.sh
+setup_params:
+  world_seed: 0
+milestones:
+- id: mine_log
+  title: Mine log
+  stage: basic survival
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [log, oak_log, birch_log, spruce_log]}
+- id: crafting_table
+  title: Craft crafting table
+  stage: basic survival
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [crafting_table]}
+- id: wooden_pickaxe
+  title: Craft wooden pickaxe
+  stage: stone age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [wooden_pickaxe]}
+- id: mine_cobblestone
+  title: Mine cobblestone
+  stage: stone age
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [cobblestone]}
+- id: stone_pickaxe
+  title: Craft stone pickaxe
+  stage: stone age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [stone_pickaxe]}
+- id: mine_iron_ore
+  title: Mine iron ore
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: mine_block, objects: [iron_ore, deepslate_iron_ore]}
+- id: furnace
+  title: Craft furnace
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [furnace]}
+- id: iron_ingot
+  title: Pick up iron ingot
+  stage: iron age
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [iron_ingot]}
+- id: iron_pickaxe
+  title: Craft iron pickaxe
+  stage: diamond
+  reward: 1.0
+  done: {kind: stat_increase, stat: craft_item, objects: [iron_pickaxe]}
+- id: diamond
+  title: Pick up diamond
+  stage: diamond
+  reward: 1.0
+  done: {kind: stat_increase, stat: pickup, objects: [diamond]}
