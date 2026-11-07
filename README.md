@@ -24,6 +24,21 @@ game assets or code are redistributed.
 | `skylands` | The Legend of Zelda: Tears of the Kingdom | Vertical, three-layer worlds plus construction: combining parts into contraptions, reusing recipes discovered much earlier, sky/surface/depths cross-referencing. |
 | `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. |
 
+[Skylands long-horizon task designs](docs/skylands-long-horizon-tasks.md) outline
+two campaigns with 15 and 24 milestones. The
+[full-scale reference campaigns](docs/skylands-campaign-demos.md) now execute
+57.9- and 124.4-minute journeys with independently verified action traces and a
+[chaptered GPU Cycles video player](assets/demos/skylands-campaign/index.html).
+Download the [15-milestone walkthrough](videos/skylands-15-milestones.mp4) or
+[24-milestone walkthrough](videos/skylands-24-milestones.mp4), both with labeled
+travel timelapse. A separate
+[compact mechanics testbed](docs/skylands-reference-demos.md) supports regression checks.
+
+[Silence the Tempest Engine](docs/skylands-tempest.md) adds an original
+objective-driven Skylands campaign with open and extended goals, optional regional
+preparation, three shutdown methods, persistent replay checkpoints, and 50 detailed
+industrial buildings across ten architectural families.
+
 ## Evaluation results
 
 Planned task success rates (%) for each model and environment. **—** means results

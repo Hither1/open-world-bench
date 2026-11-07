@@ -1,0 +1,109 @@
+{
+  "note": "Observed reference-trajectory intervals, not evidence of an agent memory benefit.",
+  "tasks": {
+    "a": [
+      {
+        "binding": "chosen return raft",
+        "source_step": 3905,
+        "reuse_step": 16677,
+        "decisions_between": 12772,
+        "simulated_minutes_between": 42.573,
+        "source_event": {
+          "type": "raft_staged",
+          "raft": "A06_dock1",
+          "position": [
+            121.0,
+            48.0,
+            784.0
+          ]
+        },
+        "reuse_event": {
+          "type": "cargo_loaded",
+          "cargo": "core",
+          "raft": "A06_dock1",
+          "mass": 240
+        }
+      },
+      {
+        "binding": "survey calibration",
+        "source_step": 5957,
+        "reuse_step": 17348,
+        "decisions_between": 11391,
+        "simulated_minutes_between": 37.97,
+        "source_event": {
+          "type": "clue_exposed",
+          "site": "A07",
+          "text": "Vault: north crystal arch. Receiver calibration 0. Freight route through the lit dock."
+        },
+        "reuse_event": {
+          "type": "core_installed",
+          "calibration": 0
+        }
+      }
+    ],
+    "b": [
+      {
+        "binding": "depths lamp cache",
+        "source_step": 8796,
+        "reuse_step": 15156,
+        "decisions_between": 6360,
+        "simulated_minutes_between": 21.2,
+        "source_event": {
+          "type": "reserves_cached",
+          "cache": 1,
+          "item": "lamp_kit",
+          "layer": 0
+        },
+        "reuse_event": {
+          "type": "cache_retrieved",
+          "cache": 1,
+          "items": [
+            "lamp_kit"
+          ]
+        }
+      },
+      {
+        "binding": "surface coupling cache",
+        "source_step": 9432,
+        "reuse_step": 34410,
+        "decisions_between": 24978,
+        "simulated_minutes_between": 83.26,
+        "source_event": {
+          "type": "reserves_cached",
+          "cache": 5,
+          "item": "lock_coupling",
+          "layer": 1
+        },
+        "reuse_event": {
+          "type": "cache_retrieved",
+          "cache": 5,
+          "items": [
+            "lock_coupling"
+          ]
+        }
+      },
+      {
+        "binding": "commissioned refuge",
+        "source_step": 1,
+        "reuse_step": 37321,
+        "decisions_between": 37320,
+        "simulated_minutes_between": 124.4,
+        "source_event": {
+          "type": "clue_exposed",
+          "site": "B01",
+          "text": "Relief shipment destination: refuge 0. Restore depths, surface and sky station outputs."
+        },
+        "reuse_event": {
+          "type": "cargo_delivered",
+          "cargo": "relief",
+          "raft": "B23",
+          "receiver": [
+            1020.0,
+            48.0,
+            1169.0
+          ]
+        }
+      }
+    ]
+  }
+}

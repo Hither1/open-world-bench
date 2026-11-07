@@ -1,0 +1,197 @@
+{
+  "task": "b",
+  "seed": 7,
+  "initial_digest": "b33206c5cb2786ac037706dca0c5ff45bbaaa7c14d17f0c53f76245dcfd982ac",
+  "final_digest": "31c6be22f814ca4a5b09c62b8992a6f21df4904661c5e6e30425204fae6b25bf",
+  "decisions": 37321,
+  "simulated_seconds": 7464.200000009623,
+  "milestones": [
+    {
+      "id": "B01",
+      "step": 1,
+      "seconds": 0.2
+    },
+    {
+      "id": "B02",
+      "step": 1208,
+      "seconds": 241.6
+    },
+    {
+      "id": "B03",
+      "step": 2028,
+      "seconds": 405.6
+    },
+    {
+      "id": "B04",
+      "step": 2233,
+      "seconds": 446.6
+    },
+    {
+      "id": "B05",
+      "step": 2663,
+      "seconds": 532.6
+    },
+    {
+      "id": "B06",
+      "step": 3693,
+      "seconds": 738.6
+    },
+    {
+      "id": "B07",
+      "step": 4893,
+      "seconds": 978.6
+    },
+    {
+      "id": "B08",
+      "step": 7033,
+      "seconds": 1406.6
+    },
+    {
+      "id": "B09",
+      "step": 9432,
+      "seconds": 1886.4
+    },
+    {
+      "id": "B10",
+      "step": 11377,
+      "seconds": 2275.4
+    },
+    {
+      "id": "B11",
+      "step": 13895,
+      "seconds": 2779.0
+    },
+    {
+      "id": "B12",
+      "step": 16206,
+      "seconds": 3241.2
+    },
+    {
+      "id": "B13",
+      "step": 17416,
+      "seconds": 3483.2
+    },
+    {
+      "id": "B14",
+      "step": 17674,
+      "seconds": 3534.8
+    },
+    {
+      "id": "B15",
+      "step": 18304,
+      "seconds": 3660.8
+    },
+    {
+      "id": "B16",
+      "step": 24721,
+      "seconds": 4944.2
+    },
+    {
+      "id": "B17",
+      "step": 25374,
+      "seconds": 5074.8
+    },
+    {
+      "id": "B18",
+      "step": 28989,
+      "seconds": 5797.8
+    },
+    {
+      "id": "B19",
+      "step": 29311,
+      "seconds": 5862.2
+    },
+    {
+      "id": "B20",
+      "step": 32973,
+      "seconds": 6594.6
+    },
+    {
+      "id": "B21",
+      "step": 35986,
+      "seconds": 7197.2
+    },
+    {
+      "id": "B22",
+      "step": 36274,
+      "seconds": 7254.8
+    },
+    {
+      "id": "B23",
+      "step": 36932,
+      "seconds": 7386.4
+    },
+    {
+      "id": "B24",
+      "step": 37321,
+      "seconds": 7464.2
+    }
+  ],
+  "required": 24,
+  "success": true,
+  "health": 24.0,
+  "events": {
+    "clue_exposed": 3,
+    "milestone_complete": 24,
+    "part_picked": 20,
+    "part_mounted": 20,
+    "cargo_loaded": 5,
+    "craft_moved": 1427,
+    "cargo_delivered": 5,
+    "ascended": 15,
+    "gallery_serviced": 3,
+    "land": 9,
+    "reversal_started": 4,
+    "platform_reversed": 112,
+    "reversal_cancelled": 4,
+    "platform_landing_reached": 4,
+    "new_day": 6,
+    "layer_changed": 8,
+    "reserves_cached": 2,
+    "service_part_recovered": 2,
+    "cache_retrieved": 2,
+    "outpost_opened": 1,
+    "cargo_towed": 5,
+    "station_engaged": 3,
+    "maintenance_bridge_closed": 1,
+    "lock_coupling_installed": 1,
+    "cargo_berth_opened": 1
+  },
+  "limitations": [
+    "Privileged scripted action-only oracle; demonstrates executability, not learned skills or memory performance.",
+    "Rated four-mount cargo craft and collision-backed grid-stepped actuators; no general rigid-body vehicle or fluid solver.",
+    "Cargo uses a grounded roller-cradle position ledger; it cannot follow the agent through Ascend.",
+    "Authored regional campaign geometry; the scene is not Nintendo game footage.",
+    "Standard cold-weather clothing and paraglider supplied at reset.",
+    "This reference itinerary does not validate every recovery, alternative construction, branch order, or held-out geometry in the research design."
+  ],
+  "world_shape": [
+    1280,
+    144,
+    1408
+  ],
+  "walked_metres": 25568.59875170586,
+  "return_dock": null,
+  "cache_bindings": {
+    "lamp_kit": 1,
+    "lock_coupling": 5
+  },
+  "controller": "privileged action-only full-campaign reference policy",
+  "sources": {
+    "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+    "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
+    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+    "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
+    "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80"
+  },
+  "actions_sha256": "a634f169bde7418dd32728ddb3e14a8a04975fd19e8560db8c8a534d10a37034"
+}

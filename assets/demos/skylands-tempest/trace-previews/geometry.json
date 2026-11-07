@@ -1,0 +1,516 @@
+{
+  "method": "lossless coplanar voxel face merging",
+  "exposed_face_area": 8056266,
+  "world_shape": [
+    1280,
+    144,
+    1408
+  ],
+  "spatial_culling": false,
+  "tree_detail": 2,
+  "ground_cover_repeats": 4,
+  "architecture": [
+    {
+      "id": "B01-archive-0",
+      "kind": "archive",
+      "pos": [
+        215,
+        48,
+        180
+      ],
+      "appearance": 2377577986
+    },
+    {
+      "id": "B01-shelter-1",
+      "kind": "shelter",
+      "pos": [
+        145,
+        48,
+        180
+      ],
+      "appearance": 3010388919
+    },
+    {
+      "id": "B02-boathouse-0",
+      "kind": "boathouse",
+      "pos": [
+        358,
+        48,
+        230
+      ],
+      "appearance": 3816761656
+    },
+    {
+      "id": "B02-workshop-1",
+      "kind": "workshop",
+      "pos": [
+        358,
+        48,
+        170
+      ],
+      "appearance": 907904361
+    },
+    {
+      "id": "B03-boathouse-0",
+      "kind": "boathouse",
+      "pos": [
+        618,
+        48,
+        290
+      ],
+      "appearance": 2212149028
+    },
+    {
+      "id": "B03-gantry-1",
+      "kind": "gantry",
+      "pos": [
+        618,
+        48,
+        230
+      ],
+      "appearance": 1538609320
+    },
+    {
+      "id": "B04-workshop-0",
+      "kind": "workshop",
+      "pos": [
+        835,
+        48,
+        340
+      ],
+      "appearance": 1467771441
+    },
+    {
+      "id": "B04-signal_tower-1",
+      "kind": "signal_tower",
+      "pos": [
+        782,
+        48,
+        310
+      ],
+      "appearance": 1521027578
+    },
+    {
+      "id": "B05-archive-0",
+      "kind": "archive",
+      "pos": [
+        995,
+        48,
+        480
+      ],
+      "appearance": 2606879068
+    },
+    {
+      "id": "B05-shelter-1",
+      "kind": "shelter",
+      "pos": [
+        925,
+        48,
+        480
+      ],
+      "appearance": 484535461
+    },
+    {
+      "id": "B06-gantry-0",
+      "kind": "gantry",
+      "pos": [
+        618,
+        48,
+        630
+      ],
+      "appearance": 42183028
+    },
+    {
+      "id": "B06-workshop-1",
+      "kind": "workshop",
+      "pos": [
+        618,
+        48,
+        570
+      ],
+      "appearance": 2213600286
+    },
+    {
+      "id": "B07-signal_tower-0",
+      "kind": "signal_tower",
+      "pos": [
+        318,
+        48,
+        690
+      ],
+      "appearance": 2752668199
+    },
+    {
+      "id": "B07-archive-1",
+      "kind": "archive",
+      "pos": [
+        270,
+        48,
+        678
+      ],
+      "appearance": 959880824
+    },
+    {
+      "id": "B08-observatory-0",
+      "kind": "observatory",
+      "pos": [
+        835,
+        112,
+        200
+      ],
+      "appearance": 3061829094
+    },
+    {
+      "id": "B08-archive-1",
+      "kind": "archive",
+      "pos": [
+        770,
+        112,
+        218
+      ],
+      "appearance": 3023497935
+    },
+    {
+      "id": "B09-shelter-0",
+      "kind": "shelter",
+      "pos": [
+        198,
+        48,
+        270
+      ],
+      "appearance": 1568061142
+    },
+    {
+      "id": "B09-workshop-1",
+      "kind": "workshop",
+      "pos": [
+        198,
+        48,
+        210
+      ],
+      "appearance": 2897206267
+    },
+    {
+      "id": "B10-foundry-0",
+      "kind": "foundry",
+      "pos": [
+        995,
+        48,
+        880
+      ],
+      "appearance": 3355104473
+    },
+    {
+      "id": "B10-gantry-1",
+      "kind": "gantry",
+      "pos": [
+        978,
+        48,
+        850
+      ],
+      "appearance": 315425989
+    },
+    {
+      "id": "B11-foundry-0",
+      "kind": "foundry",
+      "pos": [
+        175,
+        48,
+        860
+      ],
+      "appearance": 2002085234
+    },
+    {
+      "id": "B11-cistern-1",
+      "kind": "cistern",
+      "pos": [
+        110,
+        48,
+        878
+      ],
+      "appearance": 438043214
+    },
+    {
+      "id": "B12-pump_house-0",
+      "kind": "pump_house",
+      "pos": [
+        235,
+        8,
+        1000
+      ],
+      "appearance": 2750651365
+    },
+    {
+      "id": "B12-shelter-1",
+      "kind": "shelter",
+      "pos": [
+        170,
+        8,
+        1018
+      ],
+      "appearance": 909935110
+    },
+    {
+      "id": "B13-boathouse-0",
+      "kind": "boathouse",
+      "pos": [
+        318,
+        8,
+        1030
+      ],
+      "appearance": 4128127333
+    },
+    {
+      "id": "B13-gantry-1",
+      "kind": "gantry",
+      "pos": [
+        318,
+        8,
+        970
+      ],
+      "appearance": 2809901562
+    },
+    {
+      "id": "B14-pump_house-0",
+      "kind": "pump_house",
+      "pos": [
+        895,
+        8,
+        940
+      ],
+      "appearance": 3494507144
+    },
+    {
+      "id": "B14-archive-1",
+      "kind": "archive",
+      "pos": [
+        830,
+        8,
+        958
+      ],
+      "appearance": 1337354203
+    },
+    {
+      "id": "B15-pump_house-0",
+      "kind": "pump_house",
+      "pos": [
+        975,
+        8,
+        940
+      ],
+      "appearance": 3048154864
+    },
+    {
+      "id": "B15-cistern-1",
+      "kind": "cistern",
+      "pos": [
+        958,
+        8,
+        910
+      ],
+      "appearance": 1574674022
+    },
+    {
+      "id": "B16-boathouse-0",
+      "kind": "boathouse",
+      "pos": [
+        618,
+        48,
+        750
+      ],
+      "appearance": 2885729002
+    },
+    {
+      "id": "B16-cistern-1",
+      "kind": "cistern",
+      "pos": [
+        618,
+        48,
+        690
+      ],
+      "appearance": 2650616144
+    },
+    {
+      "id": "B17-foundry-0",
+      "kind": "foundry",
+      "pos": [
+        995,
+        48,
+        720
+      ],
+      "appearance": 2388048049
+    },
+    {
+      "id": "B17-gantry-1",
+      "kind": "gantry",
+      "pos": [
+        978,
+        48,
+        690
+      ],
+      "appearance": 2224321733
+    },
+    {
+      "id": "B18-signal_tower-0",
+      "kind": "signal_tower",
+      "pos": [
+        918,
+        112,
+        750
+      ],
+      "appearance": 2435783675
+    },
+    {
+      "id": "B18-workshop-1",
+      "kind": "workshop",
+      "pos": [
+        918,
+        112,
+        690
+      ],
+      "appearance": 309998086
+    },
+    {
+      "id": "B19-observatory-0",
+      "kind": "observatory",
+      "pos": [
+        918,
+        112,
+        930
+      ],
+      "appearance": 3261202754
+    },
+    {
+      "id": "B19-archive-1",
+      "kind": "archive",
+      "pos": [
+        918,
+        112,
+        870
+      ],
+      "appearance": 4257545706
+    },
+    {
+      "id": "B20-signal_tower-0",
+      "kind": "signal_tower",
+      "pos": [
+        435,
+        48,
+        1080
+      ],
+      "appearance": 2514365096
+    },
+    {
+      "id": "B20-shelter-1",
+      "kind": "shelter",
+      "pos": [
+        370,
+        48,
+        1098
+      ],
+      "appearance": 4013943441
+    },
+    {
+      "id": "B21-foundry-0",
+      "kind": "foundry",
+      "pos": [
+        535,
+        48,
+        1080
+      ],
+      "appearance": 4012340962
+    },
+    {
+      "id": "B21-workshop-1",
+      "kind": "workshop",
+      "pos": [
+        470,
+        48,
+        1098
+      ],
+      "appearance": 2190792026
+    },
+    {
+      "id": "B22-gantry-0",
+      "kind": "gantry",
+      "pos": [
+        598,
+        48,
+        1110
+      ],
+      "appearance": 3904505305
+    },
+    {
+      "id": "B22-signal_tower-1",
+      "kind": "signal_tower",
+      "pos": [
+        598,
+        48,
+        1050
+      ],
+      "appearance": 2567723358
+    },
+    {
+      "id": "B23-boathouse-0",
+      "kind": "boathouse",
+      "pos": [
+        718,
+        48,
+        1110
+      ],
+      "appearance": 464681999
+    },
+    {
+      "id": "B23-workshop-1",
+      "kind": "workshop",
+      "pos": [
+        718,
+        48,
+        1050
+      ],
+      "appearance": 120022650
+    },
+    {
+      "id": "B24-shelter-0",
+      "kind": "shelter",
+      "pos": [
+        675,
+        48,
+        1037
+      ],
+      "appearance": 2463450718
+    },
+    {
+      "id": "B24-archive-1",
+      "kind": "archive",
+      "pos": [
+        743,
+        48,
+        1055
+      ],
+      "appearance": 2757679675
+    },
+    {
+      "id": "sky-salvage-foundry",
+      "kind": "foundry",
+      "pos": [
+        855,
+        112,
+        1190
+      ],
+      "appearance": 3470047542
+    },
+    {
+      "id": "engine-service-gantry",
+      "kind": "gantry",
+      "pos": [
+        1143,
+        112,
+        1210
+      ],
+      "appearance": 742753028
+    }
+  ],
+  "trees": 306,
+  "grass_instances": 6163988
+}

@@ -1,0 +1,14 @@
+{
+  "method": "lossless coplanar voxel face merging",
+  "exposed_face_area": 7842773,
+  "world_shape": [
+    1280,
+    144,
+    1408
+  ],
+  "spatial_culling": false,
+  "tree_detail": 2,
+  "ground_cover_repeats": 4,
+  "trees": 308,
+  "grass_instances": 6208588
+}

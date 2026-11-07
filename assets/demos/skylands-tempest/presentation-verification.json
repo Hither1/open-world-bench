@@ -1,0 +1,194 @@
+{
+  "format": "owb-tempest-presentation-verification-v1",
+  "checked_at": "2026-11-06T21:18:07.303005+00:00",
+  "success": true,
+  "sets": [
+    {
+      "directory": "showcase",
+      "source_trace": "open-capacitors-seed-7",
+      "scene_cache": ".cache/skylands-tempest/showcase-final-scenes",
+      "description": "Reset-state architecture stills. Camera moves only; no agent actions or simulation edits.",
+      "source_hashes_match": true,
+      "static_and_scene_hashes_match": true,
+      "image_hashes_match": true,
+      "images_decoded": true,
+      "renderer": {
+        "blender_version": "4.5.4 LTS",
+        "accelerators": [
+          "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+        ],
+        "device": "OPTIX GPU",
+        "samples": 64,
+        "width": 1280,
+        "height": 720,
+        "denoising": true,
+        "max_bounces": 6,
+        "render_sources": {
+          "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+          "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+          "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+        },
+        "ground_cover": {
+          "method": "fixed native meshes in one collection instance",
+          "source_instances": 6163988,
+          "triangles": 123279760,
+          "vertices": 246559520,
+          "stored_faces": 68828453,
+          "prototype_triangulation_verified": true,
+          "full_geometry": true,
+          "distance_culling": false
+        }
+      },
+      "images": [
+        {
+          "image": "000000.png",
+          "step": 0,
+          "title": "Shipwrights and cargo works",
+          "image_sha256": "010afa8289fae39b92e7a9afd82031cd59de09d534e6e632ca030fdf47327e37",
+          "scene_sha256": "0a3753dace9418e9194627ff3c2f1389c26fec6517d5cce92aa057d55e717060",
+          "state_digest": "ff2399c85c7cda3b2229a1425495c0d6abfff783ae63e3f338e0c0b81e6ad17d"
+        },
+        {
+          "image": "000001.png",
+          "step": 0,
+          "title": "Deep cooling works",
+          "image_sha256": "55fccc8655fe35670607fff1ce1128ec7c98266ed8d9852161a2f37011f5a5d5",
+          "scene_sha256": "3306a0f753b5a24f1148fb616c73ea61f08afd4e4817d2af3adb9620972600df",
+          "state_digest": "ff2399c85c7cda3b2229a1425495c0d6abfff783ae63e3f338e0c0b81e6ad17d"
+        },
+        {
+          "image": "000002.png",
+          "step": 0,
+          "title": "Anchor foundry",
+          "image_sha256": "ce60dc8e40e7472c8c2ac0cf7a69debd4206a7cf70dfd3f84dd144d8284aa000",
+          "scene_sha256": "66ce7294b46efa927b59d1a2508693a14b85ac4856c446b657cfd3430b8cea40",
+          "state_digest": "ff2399c85c7cda3b2229a1425495c0d6abfff783ae63e3f338e0c0b81e6ad17d"
+        },
+        {
+          "image": "000003.png",
+          "step": 0,
+          "title": "Sky monitoring observatory",
+          "image_sha256": "2f04b84b1faa610d033c9f05d74180b237c2040ab6b60c71affe519e5c124723",
+          "scene_sha256": "778cb5573c0ffdfb314b36c1b4284e541b0bb213b97e5e7d81893efd23f21dbc",
+          "state_digest": "ff2399c85c7cda3b2229a1425495c0d6abfff783ae63e3f338e0c0b81e6ad17d"
+        },
+        {
+          "image": "000004.png",
+          "step": 0,
+          "title": "Tempest Engine",
+          "image_sha256": "9753104f07a0defb48c286d9e0c9d7b619591495e017eac9fe0c4eaf53f3d50f",
+          "scene_sha256": "e4cd32666104c3c837391f318bc1e074e7a7b61a5752e0385989eb1bb6b09f84",
+          "state_digest": "ff2399c85c7cda3b2229a1425495c0d6abfff783ae63e3f338e0c0b81e6ad17d"
+        }
+      ]
+    },
+    {
+      "directory": "trace-previews",
+      "source_trace": "extended-seed-7",
+      "scene_cache": ".cache/skylands-tempest/verified-trace-scenes",
+      "description": "Still previews of verified campaign states; not a continuous recording.",
+      "source_hashes_match": true,
+      "static_and_scene_hashes_match": true,
+      "image_hashes_match": true,
+      "images_decoded": true,
+      "renderer": {
+        "blender_version": "4.5.4 LTS",
+        "accelerators": [
+          "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+        ],
+        "device": "OPTIX GPU",
+        "samples": 64,
+        "width": 1280,
+        "height": 720,
+        "denoising": true,
+        "max_bounces": 6,
+        "render_sources": {
+          "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+          "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+          "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+        },
+        "ground_cover": {
+          "method": "fixed native meshes in one collection instance",
+          "source_instances": 6163988,
+          "triangles": 123279760,
+          "vertices": 246559520,
+          "stored_faces": 68828453,
+          "prototype_triangulation_verified": true,
+          "full_geometry": true,
+          "distance_culling": false
+        }
+      },
+      "images": [
+        {
+          "image": "000000.png",
+          "step": 634,
+          "title": "B02",
+          "image_sha256": "0ea00f0be0abcb2e4b0e2ba87b2b74acdadcfbf7481cacb4b3ffb5e9b24d02c8",
+          "scene_sha256": "c9450926038f4d5faabe65132a44b10fdf813a6bd79f745352eb596c1a67e846",
+          "state_digest": "170645754a30bfb30cdad81a5323015d8f35629b8dfdb96bba8732d4cb61e04e"
+        },
+        {
+          "image": "000001.png",
+          "step": 16875,
+          "title": "B19",
+          "image_sha256": "9c206568106f56b89b7fac2bc853ab1e165632ff22b05a40967df3e0f7f886f2",
+          "scene_sha256": "dfef116073919916e6b7704a0bf1fddea73bedad9f635755cfec5f336a99ebac",
+          "state_digest": "576fdc7838de53e4ceb1dc1d537b7a15b9ec5920741f2868b0da407708d00c84"
+        },
+        {
+          "image": "000002.png",
+          "step": 23985,
+          "title": "B17",
+          "image_sha256": "54062d3b5ced7bc155cffd7064df70eaa64dcf6a3716cb0d1a0ee8836e769c65",
+          "scene_sha256": "62e2b2ae9c304306d7c9f6ecf0666a17a63a2b6a7067fb66c87c073cea8106fa",
+          "state_digest": "9c33a771c0c204a3dc12d9266eff6f2368a9997f2f826c27dbf123bda92480b2"
+        },
+        {
+          "image": "000003.png",
+          "step": 27283,
+          "title": "B12",
+          "image_sha256": "3d8f652ab282374f5f3cdd026459c1ad2f3d7a474b1c2a2114b872aea5381a46",
+          "scene_sha256": "d5a4bf90a0acb1089301342d6cbdc1010b4d726c7ecf52164d13a8269b5b4f9d",
+          "state_digest": "76f2e791c98571a87ad6a2ec29d13ac81b11c37f78a372104d8c189e18f30c76"
+        },
+        {
+          "image": "000004.png",
+          "step": 29370,
+          "title": "B15",
+          "image_sha256": "b87831fb405473803db0c79849badc4381885470ef0ec4a743759491f3df0585",
+          "scene_sha256": "bf5bc4bd7c960f1a376fb7a8c6690b56d712acf2d7426c446162ca0b9a400fd9",
+          "state_digest": "58729d0680d52d46b842812aa75f98575b45534b0a8f56de4e6f69605e581c9e"
+        },
+        {
+          "image": "000005.png",
+          "step": 37049,
+          "title": "B24",
+          "image_sha256": "3534acc08c20329c4e116befcce22c881dd94c347d4fde4174e3009d403524a9",
+          "scene_sha256": "d23468f7524a3daa307d729f073f1757694d39be7106f7e93f2dcb324001b546",
+          "state_digest": "d173504b2a9a0b1dc8289dbbfdd90620987b2fe0ed74fc6cfbe692e68648f8d3"
+        },
+        {
+          "image": "000006.png",
+          "step": 42563,
+          "title": "lock_0",
+          "image_sha256": "8b813b7f994505b5d5cd5a1308466d9015bfb33dc60ff292a18a3185d521e75b",
+          "scene_sha256": "ca4be7ee1546dc4a2d2cc99de0d441fceda1aca6ad7579adf98ed88ee2033bae",
+          "state_digest": "4a5aef7ca7d8967ba4d9b2809d2d45c5dc60dae3c203868ddf3520c470607866"
+        },
+        {
+          "image": "000007.png",
+          "step": 42795,
+          "title": "stabilize",
+          "image_sha256": "ee6a9aec6e7cc637ea27018f3da00a3e209a8dd60e6cb887f9dbaf116c8f2d55",
+          "scene_sha256": "82090466739981e0f8ec21ae7f0195cb31301c076168de87b037c44a1cee279b",
+          "state_digest": "c1fc2201dd92778fab033552ce782b9884055024c67960b36f03c27db0ed6d6f"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Architecture showcase contains camera-only views of the exact seed-7 open-objective reset state.",
+    "Trace previews contain selected states from the verified extended reference. Neither set is a continuous video.",
+    "Detailed decorative meshes do not replace the voxel collision model."
+  ]
+}

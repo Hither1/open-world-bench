@@ -11,6 +11,8 @@ def register_envs():
                         ("OpenWorldBench/Wildlands-Small-v0", "owb.env:make_small"),
                         ("OpenWorldBench/Skylands-v0", "owb.env:SkylandsEnv"),
                         ("OpenWorldBench/Skylands-Small-v0", "owb.env.skylands:make_small"),
+                        ("OpenWorldBench/Skylands-Tempest-v0", "owb.env.skylands_tempest:SkylandsTempestEnv"),
+                        ("OpenWorldBench/Skylands-Tempest-Extended-v0", "owb.env.skylands_tempest:make_extended"),
                         ("OpenWorldBench/Genshin-v0", "open_world_bench.env:OpenWorldEnv"),
                         ("OpenWorldBench/Genshin-Small-v0", "open_world_bench.env:_make_small")):
         if name not in registry:

@@ -1,0 +1,1106 @@
+{
+  "a": {
+    "manifest": {
+      "task": "a",
+      "seed": 7,
+      "initial_digest": "6185a42e915822d6ca5ddd621b10c5aff97e547703bb904f9a0ab789ff25fecd",
+      "final_digest": "68b0a33f4be6dbd5c3f642d28679b234ac55c64f88fce23186f0f0cd4c1f255c",
+      "decisions": 17372,
+      "simulated_seconds": 3474.3999999979355,
+      "milestones": [
+        {
+          "id": "A01",
+          "step": 1,
+          "seconds": 0.2
+        },
+        {
+          "id": "A02",
+          "step": 632,
+          "seconds": 126.4
+        },
+        {
+          "id": "A03",
+          "step": 1402,
+          "seconds": 280.4
+        },
+        {
+          "id": "A04",
+          "step": 1544,
+          "seconds": 308.8
+        },
+        {
+          "id": "A05",
+          "step": 1871,
+          "seconds": 374.2
+        },
+        {
+          "id": "A06",
+          "step": 3905,
+          "seconds": 781.0
+        },
+        {
+          "id": "A07",
+          "step": 5957,
+          "seconds": 1191.4
+        },
+        {
+          "id": "A08",
+          "step": 8931,
+          "seconds": 1786.2
+        },
+        {
+          "id": "A09",
+          "step": 9680,
+          "seconds": 1936.0
+        },
+        {
+          "id": "A10",
+          "step": 9814,
+          "seconds": 1962.8
+        },
+        {
+          "id": "A11",
+          "step": 10884,
+          "seconds": 2176.8
+        },
+        {
+          "id": "A12",
+          "step": 11046,
+          "seconds": 2209.2
+        },
+        {
+          "id": "A13",
+          "step": 17240,
+          "seconds": 3448.0
+        },
+        {
+          "id": "A14",
+          "step": 17344,
+          "seconds": 3468.8
+        },
+        {
+          "id": "A15",
+          "step": 17372,
+          "seconds": 3474.4
+        }
+      ],
+      "required": 15,
+      "success": true,
+      "health": 24.0,
+      "events": {
+        "clue_exposed": 2,
+        "milestone_complete": 15,
+        "part_picked": 16,
+        "part_mounted": 16,
+        "cargo_loaded": 5,
+        "craft_moved": 1173,
+        "cargo_delivered": 5,
+        "ascended": 7,
+        "gallery_serviced": 3,
+        "land": 4,
+        "new_day": 3,
+        "raft_staged": 1,
+        "layer_changed": 3,
+        "dock_lit": 1,
+        "vault_door_opened": 1,
+        "core_extracted": 1,
+        "cargo_towed": 4,
+        "freight_loaded": 2,
+        "lift_arrived": 2,
+        "hoist_started": 1,
+        "core_installed": 1
+      },
+      "limitations": [
+        "Privileged scripted action-only oracle; demonstrates executability, not learned skills or memory performance.",
+        "Rated four-mount cargo craft and collision-backed grid-stepped actuators; no general rigid-body vehicle or fluid solver.",
+        "Cargo uses a grounded roller-cradle position ledger; it cannot follow the agent through Ascend.",
+        "Authored regional campaign geometry; the scene is not Nintendo game footage.",
+        "Standard cold-weather clothing and paraglider supplied at reset.",
+        "This reference itinerary does not validate every recovery, alternative construction, branch order, or held-out geometry in the research design."
+      ],
+      "world_shape": [
+        960,
+        144,
+        1056
+      ],
+      "walked_metres": 11380.881289485204,
+      "return_dock": "A06_dock1",
+      "cache_bindings": {},
+      "controller": "privileged action-only full-campaign reference policy",
+      "sources": {
+        "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+        "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+        "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+        "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+        "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+        "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+        "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+        "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
+        "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+        "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+        "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+        "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
+        "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80"
+      },
+      "actions_sha256": "8709ce858a4d89d927bd28729d24889ebe1c768783be3221de590c905d7268e9"
+    },
+    "movie": {
+      "renderer": {
+        "engine": "Blender Cycles",
+        "device": "OPTIX GPU",
+        "width": 1280,
+        "height": 720,
+        "samples": 64,
+        "denoising": true,
+        "max_bounces": 6,
+        "upscaling": false,
+        "geometry": "exact full-world surfaces",
+        "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+        "blender_version": "4.5.4 LTS",
+        "accelerators": [
+          "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+        ],
+        "render_sources": {
+          "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+          "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+          "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+        },
+        "ground_cover": {
+          "method": "fixed native meshes in one collection instance",
+          "source_instances": 3506380,
+          "triangles": 70127600,
+          "vertices": 140255200,
+          "stored_faces": 39153782,
+          "prototype_triangulation_verified": true,
+          "full_geometry": true,
+          "distance_culling": false
+        },
+        "chunks": [
+          {
+            "directory": ".cache/skylands-campaign/final-frames-a-0",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 3506380,
+                "triangles": 70127600,
+                "vertices": 140255200,
+                "stored_faces": 39153782,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          },
+          {
+            "directory": ".cache/skylands-campaign/final-frames-a-1",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 3506380,
+                "triangles": 70127600,
+                "vertices": 140255200,
+                "stored_faces": 39153782,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          },
+          {
+            "directory": ".cache/skylands-campaign/camera-frames-a",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 3506380,
+                "triangles": 70127600,
+                "vertices": 140255200,
+                "stored_faces": 39153782,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          }
+        ]
+      },
+      "playback": "Complete journey sampled with labeled 16x walking / 8x craft travel; 1x mechanisms; annotation pauses, including time to read full clues.",
+      "duration_seconds": 479.30000000000064,
+      "frames": 4793,
+      "rendered_states": 557,
+      "source_seconds": 3474.3999999979355,
+      "trace_sha256": "8709ce858a4d89d927bd28729d24889ebe1c768783be3221de590c905d7268e9",
+      "video_sha256": "330730b4983ee6be16098046cc01f732d061a9004dd5682a78e0b5c0e11828a5",
+      "encoded_size": [
+        1600,
+        900
+      ],
+      "source_render_size": [
+        1280,
+        720
+      ],
+      "encoded_fps": 10,
+      "upscaling": false,
+      "assembly_sources": {
+        "owb/scripts/skylands_campaign_video.py": "205229b9899ffa319ac814c9de68acdafbc75b6faba343a4e19b22faf665f730",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+      }
+    },
+    "chapters": [
+      {
+        "id": "A01",
+        "title": "Take the observatory commission",
+        "video_seconds": 0,
+        "source_seconds": 0.2,
+        "step": 1,
+        "instruction": "Inspect the commission or survey board. Retain its destination, landmark correspondence, or calibration for later use.",
+        "observed_clues": [
+          "Take the observatory commission"
+        ],
+        "end_seconds": 3.0
+      },
+      {
+        "id": "A02",
+        "title": "Restore the workshop cargo raft",
+        "video_seconds": 3.0,
+        "source_seconds": 8.199999999999987,
+        "step": 41,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 45.4
+      },
+      {
+        "id": "A03",
+        "title": "Deliver the practice load",
+        "video_seconds": 45.4,
+        "source_seconds": 134.39999999999665,
+        "step": 672,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 89.8
+      },
+      {
+        "id": "A04",
+        "title": "Open the ascent workshop",
+        "video_seconds": 89.8,
+        "source_seconds": 288.3999999999971,
+        "step": 1442,
+        "instruction": "Reach the supported launch point beneath the service ceiling, use Ascend, and operate the upper-gallery control.",
+        "observed_clues": [],
+        "end_seconds": 96.7
+      },
+      {
+        "id": "A05",
+        "title": "Recover the survey instrument",
+        "video_seconds": 96.7,
+        "source_seconds": 316.80000000000354,
+        "step": 1584,
+        "instruction": "Reach the supported launch point beneath the service ceiling, use Ascend, and operate the upper-gallery control.",
+        "observed_clues": [],
+        "end_seconds": 103.1
+      },
+      {
+        "id": "A06",
+        "title": "Stage the surface return raft",
+        "video_seconds": 103.1,
+        "source_seconds": 382.2000000000184,
+        "step": 1911,
+        "instruction": "Choose a return dock. Assemble and load its raft, perform an outward-and-return trial, then moor the charged craft there.",
+        "observed_clues": [],
+        "end_seconds": 158.6
+      },
+      {
+        "id": "A07",
+        "title": "Survey the buried works",
+        "video_seconds": 158.6,
+        "source_seconds": 789.0000000001108,
+        "step": 3945,
+        "instruction": "Inspect the commission or survey board. Retain its destination, landmark correspondence, or calibration for later use.",
+        "observed_clues": [
+          "Vault: north crystal arch. Receiver calibration 0. Freight route through the lit dock."
+        ],
+        "end_seconds": 188.5
+      },
+      {
+        "id": "A08",
+        "title": "Establish the depths staging dock",
+        "video_seconds": 188.5,
+        "source_seconds": 1199.4000000000046,
+        "step": 5997,
+        "instruction": "Use the service authorization and issued lamp at the depths staging dock.",
+        "observed_clues": [],
+        "end_seconds": 243.3
+      },
+      {
+        "id": "A09",
+        "title": "Open the vault service entrance",
+        "video_seconds": 243.3,
+        "source_seconds": 1794.1999999994637,
+        "step": 8971,
+        "instruction": "Reach the supported launch point beneath the service ceiling, use Ascend, and operate the upper-gallery control.",
+        "observed_clues": [],
+        "end_seconds": 259.1
+      },
+      {
+        "id": "A10",
+        "title": "Extract and secure the navigation core",
+        "video_seconds": 259.1,
+        "source_seconds": 1943.9999999993274,
+        "step": 9720,
+        "instruction": "Open the vault through its service gallery, release the unique core, and tow it on its transport cradle.",
+        "observed_clues": [],
+        "end_seconds": 263.4
+      },
+      {
+        "id": "A11",
+        "title": "Ferry the core through the flooded gallery",
+        "video_seconds": 263.4,
+        "source_seconds": 1970.799999999303,
+        "step": 9854,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 329.4
+      },
+      {
+        "id": "A12",
+        "title": "Raise the core to the surface",
+        "video_seconds": 329.4,
+        "source_seconds": 2178.3999999991142,
+        "step": 10892,
+        "instruction": "Bring the original core to the loading deck, board the freight lift, secure the core, and ride to the surface receiving bay.",
+        "observed_clues": [],
+        "end_seconds": 347.4
+      },
+      {
+        "id": "A13",
+        "title": "Recover the staged raft and ferry the core",
+        "video_seconds": 347.4,
+        "source_seconds": 2217.199999999079,
+        "step": 11086,
+        "instruction": "Recover the same staged raft, exchange its ballast for the original navigation core, and follow the surface waterway to the hoist berth.",
+        "observed_clues": [],
+        "end_seconds": 446.3
+      },
+      {
+        "id": "A14",
+        "title": "Raise the core to the observatory",
+        "video_seconds": 446.3,
+        "source_seconds": 3449.599999997958,
+        "step": 17248,
+        "instruction": "Load the core onto the sky hoist. Ascend into the control gallery and engage the lift; the core travels separately from the traveler.",
+        "observed_clues": [],
+        "end_seconds": 469.1
+      },
+      {
+        "id": "A15",
+        "title": "Restore navigation service",
+        "video_seconds": 469.1,
+        "source_seconds": 3468.9999999979404,
+        "step": 17345,
+        "instruction": "Ascend through the observatory service shaft, install the original core, select the surveyed calibration, and verify five seconds of correct output.",
+        "observed_clues": [],
+        "end_seconds": 479.30000000000064
+      }
+    ],
+    "video": "task-a-seed-7/walkthrough.mp4"
+  },
+  "b": {
+    "manifest": {
+      "task": "b",
+      "seed": 7,
+      "initial_digest": "b33206c5cb2786ac037706dca0c5ff45bbaaa7c14d17f0c53f76245dcfd982ac",
+      "final_digest": "31c6be22f814ca4a5b09c62b8992a6f21df4904661c5e6e30425204fae6b25bf",
+      "decisions": 37321,
+      "simulated_seconds": 7464.200000009623,
+      "milestones": [
+        {
+          "id": "B01",
+          "step": 1,
+          "seconds": 0.2
+        },
+        {
+          "id": "B02",
+          "step": 1208,
+          "seconds": 241.6
+        },
+        {
+          "id": "B03",
+          "step": 2028,
+          "seconds": 405.6
+        },
+        {
+          "id": "B04",
+          "step": 2233,
+          "seconds": 446.6
+        },
+        {
+          "id": "B05",
+          "step": 2663,
+          "seconds": 532.6
+        },
+        {
+          "id": "B06",
+          "step": 3693,
+          "seconds": 738.6
+        },
+        {
+          "id": "B07",
+          "step": 4893,
+          "seconds": 978.6
+        },
+        {
+          "id": "B08",
+          "step": 7033,
+          "seconds": 1406.6
+        },
+        {
+          "id": "B09",
+          "step": 9432,
+          "seconds": 1886.4
+        },
+        {
+          "id": "B10",
+          "step": 11377,
+          "seconds": 2275.4
+        },
+        {
+          "id": "B11",
+          "step": 13895,
+          "seconds": 2779.0
+        },
+        {
+          "id": "B12",
+          "step": 16206,
+          "seconds": 3241.2
+        },
+        {
+          "id": "B13",
+          "step": 17416,
+          "seconds": 3483.2
+        },
+        {
+          "id": "B14",
+          "step": 17674,
+          "seconds": 3534.8
+        },
+        {
+          "id": "B15",
+          "step": 18304,
+          "seconds": 3660.8
+        },
+        {
+          "id": "B16",
+          "step": 24721,
+          "seconds": 4944.2
+        },
+        {
+          "id": "B17",
+          "step": 25374,
+          "seconds": 5074.8
+        },
+        {
+          "id": "B18",
+          "step": 28989,
+          "seconds": 5797.8
+        },
+        {
+          "id": "B19",
+          "step": 29311,
+          "seconds": 5862.2
+        },
+        {
+          "id": "B20",
+          "step": 32973,
+          "seconds": 6594.6
+        },
+        {
+          "id": "B21",
+          "step": 35986,
+          "seconds": 7197.2
+        },
+        {
+          "id": "B22",
+          "step": 36274,
+          "seconds": 7254.8
+        },
+        {
+          "id": "B23",
+          "step": 36932,
+          "seconds": 7386.4
+        },
+        {
+          "id": "B24",
+          "step": 37321,
+          "seconds": 7464.2
+        }
+      ],
+      "required": 24,
+      "success": true,
+      "health": 24.0,
+      "events": {
+        "clue_exposed": 3,
+        "milestone_complete": 24,
+        "part_picked": 20,
+        "part_mounted": 20,
+        "cargo_loaded": 5,
+        "craft_moved": 1427,
+        "cargo_delivered": 5,
+        "ascended": 15,
+        "gallery_serviced": 3,
+        "land": 9,
+        "reversal_started": 4,
+        "platform_reversed": 112,
+        "reversal_cancelled": 4,
+        "platform_landing_reached": 4,
+        "new_day": 6,
+        "layer_changed": 8,
+        "reserves_cached": 2,
+        "service_part_recovered": 2,
+        "cache_retrieved": 2,
+        "outpost_opened": 1,
+        "cargo_towed": 5,
+        "station_engaged": 3,
+        "maintenance_bridge_closed": 1,
+        "lock_coupling_installed": 1,
+        "cargo_berth_opened": 1
+      },
+      "limitations": [
+        "Privileged scripted action-only oracle; demonstrates executability, not learned skills or memory performance.",
+        "Rated four-mount cargo craft and collision-backed grid-stepped actuators; no general rigid-body vehicle or fluid solver.",
+        "Cargo uses a grounded roller-cradle position ledger; it cannot follow the agent through Ascend.",
+        "Authored regional campaign geometry; the scene is not Nintendo game footage.",
+        "Standard cold-weather clothing and paraglider supplied at reset.",
+        "This reference itinerary does not validate every recovery, alternative construction, branch order, or held-out geometry in the research design."
+      ],
+      "world_shape": [
+        1280,
+        144,
+        1408
+      ],
+      "walked_metres": 25568.59875170586,
+      "return_dock": null,
+      "cache_bindings": {
+        "lamp_kit": 1,
+        "lock_coupling": 5
+      },
+      "controller": "privileged action-only full-campaign reference policy",
+      "sources": {
+        "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+        "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+        "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+        "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+        "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+        "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+        "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+        "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
+        "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+        "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+        "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+        "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
+        "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80"
+      },
+      "actions_sha256": "a634f169bde7418dd32728ddb3e14a8a04975fd19e8560db8c8a534d10a37034"
+    },
+    "movie": {
+      "renderer": {
+        "engine": "Blender Cycles",
+        "device": "OPTIX GPU",
+        "width": 1280,
+        "height": 720,
+        "samples": 64,
+        "denoising": true,
+        "max_bounces": 6,
+        "upscaling": false,
+        "geometry": "exact full-world surfaces",
+        "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+        "blender_version": "4.5.4 LTS",
+        "accelerators": [
+          "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+        ],
+        "render_sources": {
+          "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+          "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+          "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+        },
+        "ground_cover": {
+          "method": "fixed native meshes in one collection instance",
+          "source_instances": 6208588,
+          "triangles": 124171760,
+          "vertices": 248343520,
+          "stored_faces": 69326258,
+          "prototype_triangulation_verified": true,
+          "full_geometry": true,
+          "distance_culling": false
+        },
+        "chunks": [
+          {
+            "directory": ".cache/skylands-campaign/final-frames-b-2",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 6208588,
+                "triangles": 124171760,
+                "vertices": 248343520,
+                "stored_faces": 69326258,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          },
+          {
+            "directory": ".cache/skylands-campaign/final-frames-b-5",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 6208588,
+                "triangles": 124171760,
+                "vertices": 248343520,
+                "stored_faces": 69326258,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          },
+          {
+            "directory": ".cache/skylands-campaign/final-frames-b-3",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 6208588,
+                "triangles": 124171760,
+                "vertices": 248343520,
+                "stored_faces": 69326258,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          },
+          {
+            "directory": ".cache/skylands-campaign/final-frames-b-4",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 6208588,
+                "triangles": 124171760,
+                "vertices": 248343520,
+                "stored_faces": 69326258,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          },
+          {
+            "directory": ".cache/skylands-campaign/camera-frames-b",
+            "renderer": {
+              "blender_version": "4.5.4 LTS",
+              "accelerators": [
+                "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+              ],
+              "device": "OPTIX GPU",
+              "samples": 64,
+              "width": 1280,
+              "height": 720,
+              "denoising": true,
+              "max_bounces": 6,
+              "render_sources": {
+                "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+                "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+                "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+              },
+              "ground_cover": {
+                "method": "fixed native meshes in one collection instance",
+                "source_instances": 6208588,
+                "triangles": 124171760,
+                "vertices": 248343520,
+                "stored_faces": 69326258,
+                "prototype_triangulation_verified": true,
+                "full_geometry": true,
+                "distance_culling": false
+              }
+            }
+          }
+        ]
+      },
+      "playback": "Complete journey sampled with labeled 16x walking / 8x craft travel; 1x mechanisms; annotation pauses, including time to read full clues.",
+      "duration_seconds": 914.5000000000024,
+      "frames": 9145,
+      "rendered_states": 1170,
+      "source_seconds": 7464.200000009623,
+      "trace_sha256": "a634f169bde7418dd32728ddb3e14a8a04975fd19e8560db8c8a534d10a37034",
+      "video_sha256": "15ddf2d3cbfbfbd7061f45c641c9a89b120303db4d7e422dab274973a220a60b",
+      "encoded_size": [
+        1600,
+        900
+      ],
+      "source_render_size": [
+        1280,
+        720
+      ],
+      "encoded_fps": 10,
+      "upscaling": false,
+      "assembly_sources": {
+        "owb/scripts/skylands_campaign_video.py": "f058a1645fa6be0881a1c14e6085cda0d37caf4bd7d9f21607630f6a86f29dd1",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+      }
+    },
+    "chapters": [
+      {
+        "id": "B01",
+        "title": "Accept the lifeline commission",
+        "video_seconds": 0,
+        "source_seconds": 0.2,
+        "step": 1,
+        "instruction": "Inspect the commission or survey board. Retain its destination, landmark correspondence, or calibration for later use.",
+        "observed_clues": [
+          "Relief shipment destination: refuge 0. Restore depths, surface and sky station outputs."
+        ],
+        "end_seconds": 4.5
+      },
+      {
+        "id": "B02",
+        "title": "Commission the training barge",
+        "video_seconds": 4.5,
+        "source_seconds": 8.199999999999987,
+        "step": 41,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 57.4
+      },
+      {
+        "id": "B03",
+        "title": "Deliver the independent practice load",
+        "video_seconds": 57.4,
+        "source_seconds": 249.5999999999901,
+        "step": 1248,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 105.0
+      },
+      {
+        "id": "B04",
+        "title": "Open the ascent workshop",
+        "video_seconds": 105.0,
+        "source_seconds": 413.60000000002555,
+        "step": 2068,
+        "instruction": "Reach the supported launch point beneath the service ceiling, use Ascend, and operate the upper-gallery control.",
+        "observed_clues": [],
+        "end_seconds": 109.9
+      },
+      {
+        "id": "B05",
+        "title": "Recover the upper depot service kit",
+        "video_seconds": 109.9,
+        "source_seconds": 454.60000000003487,
+        "step": 2273,
+        "instruction": "Reach the supported launch point beneath the service ceiling, use Ascend, and operate the upper-gallery control.",
+        "observed_clues": [],
+        "end_seconds": 121.9
+      },
+      {
+        "id": "B06",
+        "title": "Restore the moving-platform training route",
+        "video_seconds": 121.9,
+        "source_seconds": 540.6000000000544,
+        "step": 2703,
+        "instruction": "Observe a fresh inbound platform trip, board, reverse its bounded motion history toward the far landing, cancel at the endpoint, and reach the service control.",
+        "observed_clues": [],
+        "end_seconds": 149.5
+      },
+      {
+        "id": "B07",
+        "title": "Retrieve the shuttle survey pack",
+        "video_seconds": 149.5,
+        "source_seconds": 746.6000000001012,
+        "step": 3733,
+        "instruction": "Observe a fresh inbound platform trip, board, reverse its bounded motion history toward the far landing, cancel at the endpoint, and reach the service control.",
+        "observed_clues": [],
+        "end_seconds": 181.3
+      },
+      {
+        "id": "B08",
+        "title": "Survey the three freight regions",
+        "video_seconds": 181.3,
+        "source_seconds": 986.6000000001558,
+        "step": 4933,
+        "instruction": "Inspect the commission or survey board. Retain its destination, landmark correspondence, or calibration for later use.",
+        "observed_clues": [
+          "Depths outpost: north crystal arch. Sky spindle: eastern shuttle. Normal lock approach: west maintenance bridge."
+        ],
+        "end_seconds": 217.2
+      },
+      {
+        "id": "B09",
+        "title": "Distribute the expedition reserves",
+        "video_seconds": 217.2,
+        "source_seconds": 1414.599999999809,
+        "step": 7073,
+        "instruction": "Choose a depths cache for the lamp kit and a separate surface cache for the lock coupling. Store each item in its assigned region.",
+        "observed_clues": [],
+        "end_seconds": 293.0
+      },
+      {
+        "id": "B10",
+        "title": "Recover the marsh coupling",
+        "video_seconds": 293.0,
+        "source_seconds": 1894.3999999993725,
+        "step": 9472,
+        "instruction": "Travel to the remote service yard and recover its unique coupling or sky-shuttle power cell.",
+        "observed_clues": [],
+        "end_seconds": 322.0
+      },
+      {
+        "id": "B11",
+        "title": "Charge the sky shuttle power cell",
+        "video_seconds": 322.0,
+        "source_seconds": 2283.3999999990187,
+        "step": 11417,
+        "instruction": "Travel to the remote service yard and recover its unique coupling or sky-shuttle power cell.",
+        "observed_clues": [],
+        "end_seconds": 360.6
+      },
+      {
+        "id": "B12",
+        "title": "Establish the depths freight outpost",
+        "video_seconds": 360.6,
+        "source_seconds": 2786.9999999985607,
+        "step": 13935,
+        "instruction": "Return to the chosen depths cache for the lamp kit, light the freight outpost, and release its unique power module.",
+        "observed_clues": [],
+        "end_seconds": 410.3
+      },
+      {
+        "id": "B13",
+        "title": "Transport the depths power module",
+        "video_seconds": 410.3,
+        "source_seconds": 3249.1999999981404,
+        "step": 16246,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 464.6
+      },
+      {
+        "id": "B14",
+        "title": "Reach the depths regulator gallery",
+        "video_seconds": 464.6,
+        "source_seconds": 3491.1999999979203,
+        "step": 17456,
+        "instruction": "Reach the supported launch point beneath the service ceiling, use Ascend, and operate the upper-gallery control.",
+        "observed_clues": [],
+        "end_seconds": 472.2
+      },
+      {
+        "id": "B15",
+        "title": "Restore the depths station",
+        "video_seconds": 472.2,
+        "source_seconds": 3542.7999999978733,
+        "step": 17714,
+        "instruction": "Tow the original regional module into the station, install it, and verify five seconds of stable output.",
+        "observed_clues": [],
+        "end_seconds": 494.8
+      },
+      {
+        "id": "B16",
+        "title": "Deliver the marsh coupling",
+        "video_seconds": 494.8,
+        "source_seconds": 3668.7999999977587,
+        "step": 18344,
+        "instruction": "Gather compatible hulls, fan and cell. Mount the parts, secure the physical payload, board fully, steer through the waterway, and unload at the receiving apron.",
+        "observed_clues": [],
+        "end_seconds": 618.1
+      },
+      {
+        "id": "B17",
+        "title": "Restore the surface station",
+        "video_seconds": 618.1,
+        "source_seconds": 4945.800000000461,
+        "step": 24729,
+        "instruction": "Tow the original regional module into the station, install it, and verify five seconds of stable output.",
+        "observed_clues": [],
+        "end_seconds": 637.8
+      },
+      {
+        "id": "B18",
+        "title": "Recover the sky station spindle",
+        "video_seconds": 637.8,
+        "source_seconds": 5082.80000000096,
+        "step": 25414,
+        "instruction": "Observe a fresh inbound platform trip, board, reverse its bounded motion history toward the far landing, cancel at the endpoint, and reach the service control.",
+        "observed_clues": [],
+        "end_seconds": 704.4
+      },
+      {
+        "id": "B19",
+        "title": "Restore the sky station",
+        "video_seconds": 704.4,
+        "source_seconds": 5805.80000000359,
+        "step": 29029,
+        "instruction": "Ascend to the sky station control room, install the recovered spindle, and verify five seconds of stable output.",
+        "observed_clues": [],
+        "end_seconds": 717.9
+      },
+      {
+        "id": "B20",
+        "title": "Survey the replacement lock approach",
+        "video_seconds": 717.9,
+        "source_seconds": 5870.200000003824,
+        "step": 29351,
+        "instruction": "Inspect the physical bridge closure and use the new route evidence for the lock approach.",
+        "observed_clues": [
+          "Maintenance bridge closed, report v2. Use the moving platform east of the approach and ascend into the loft."
+        ],
+        "end_seconds": 784.4
+      },
+      {
+        "id": "B21",
+        "title": "Recover and fit the reserved coupling",
+        "video_seconds": 784.4,
+        "source_seconds": 6602.600000006489,
+        "step": 33013,
+        "instruction": "Return to the surface cache chosen earlier. Recover the reserved coupling and install it in the lock drive housing.",
+        "observed_clues": [],
+        "end_seconds": 832.0
+      },
+      {
+        "id": "B22",
+        "title": "Reach the lock service terrace",
+        "video_seconds": 832.0,
+        "source_seconds": 7205.200000008681,
+        "step": 36026,
+        "instruction": "Observe a fresh inbound platform trip, board, reverse its bounded motion history toward the far landing, cancel at the endpoint, and reach the service control.",
+        "observed_clues": [],
+        "end_seconds": 853.7
+      },
+      {
+        "id": "B23",
+        "title": "Commission the final cargo lock and barge",
+        "video_seconds": 853.7,
+        "source_seconds": 7262.8000000088905,
+        "step": 36314,
+        "instruction": "Ascend into the control loft and engage the repaired drive. Return to the adjacent workshop, assemble the barge, load relief cargo, and complete its trial.",
+        "observed_clues": [],
+        "end_seconds": 903.2
+      },
+      {
+        "id": "B24",
+        "title": "Deliver the relief shipment",
+        "video_seconds": 903.2,
+        "source_seconds": 7390.400000009355,
+        "step": 36952,
+        "instruction": "Navigate the loaded barge to the distinct refuge assigned by the commission and unload at that refuge\u2019s receiving bay. The three stations and lock must remain operational.",
+        "observed_clues": [],
+        "end_seconds": 914.5000000000024
+      }
+    ],
+    "video": "task-b-seed-7/walkthrough.mp4"
+  }
+}

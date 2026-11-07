@@ -1,0 +1,194 @@
+{
+  "success": true,
+  "checked_actions": 43856,
+  "checked_positions": true,
+  "checked_events": true,
+  "checked_rewards": true,
+  "final_live_predicate": true,
+  "final_digest": "a505da0196a9cc9d0ee96b79940fbad1c87f59659faf4c113dad1315d3408e6b",
+  "evaluation": {
+    "success": true,
+    "objective": "extended",
+    "milestones": [
+      {
+        "id": "B01",
+        "step": 1,
+        "seconds": 0.2
+      },
+      {
+        "id": "B02",
+        "step": 1208,
+        "seconds": 241.6
+      },
+      {
+        "id": "B03",
+        "step": 2028,
+        "seconds": 405.6
+      },
+      {
+        "id": "B04",
+        "step": 2233,
+        "seconds": 446.6
+      },
+      {
+        "id": "B05",
+        "step": 2663,
+        "seconds": 532.6
+      },
+      {
+        "id": "B06",
+        "step": 3693,
+        "seconds": 738.6
+      },
+      {
+        "id": "B07",
+        "step": 4893,
+        "seconds": 978.6
+      },
+      {
+        "id": "B08",
+        "step": 7033,
+        "seconds": 1406.6
+      },
+      {
+        "id": "B09",
+        "step": 9545,
+        "seconds": 1909.0
+      },
+      {
+        "id": "B10",
+        "step": 11601,
+        "seconds": 2320.2
+      },
+      {
+        "id": "B11",
+        "step": 14119,
+        "seconds": 2823.8
+      },
+      {
+        "id": "B16",
+        "step": 18943,
+        "seconds": 3788.6
+      },
+      {
+        "id": "B17",
+        "step": 19596,
+        "seconds": 3919.2
+      },
+      {
+        "id": "B12",
+        "step": 23196,
+        "seconds": 4639.2
+      },
+      {
+        "id": "B13",
+        "step": 24419,
+        "seconds": 4883.8
+      },
+      {
+        "id": "B14",
+        "step": 24677,
+        "seconds": 4935.4
+      },
+      {
+        "id": "B15",
+        "step": 25308,
+        "seconds": 5061.6
+      },
+      {
+        "id": "B18",
+        "step": 29215,
+        "seconds": 5843.0
+      },
+      {
+        "id": "B19",
+        "step": 29537,
+        "seconds": 5907.4
+      },
+      {
+        "id": "B20",
+        "step": 33198,
+        "seconds": 6639.6
+      },
+      {
+        "id": "B21",
+        "step": 36434,
+        "seconds": 7286.8
+      },
+      {
+        "id": "B22",
+        "step": 36728,
+        "seconds": 7345.6
+      },
+      {
+        "id": "B23",
+        "step": 37386,
+        "seconds": 7477.2
+      },
+      {
+        "id": "B24",
+        "step": 37775,
+        "seconds": 7555.0
+      }
+    ],
+    "live_regions": {
+      "cooling": true,
+      "anchors": true,
+      "monitoring": true
+    },
+    "engine_disabled": true,
+    "engine_route": "grounding",
+    "locks": [
+      false,
+      false,
+      false
+    ],
+    "capacitors": [
+      3,
+      3,
+      3
+    ],
+    "grounding_live": true,
+    "facts_seen": {
+      "machine_plate": 42900
+    },
+    "decisions": 43856,
+    "simulated_seconds": 8771.200000014378,
+    "deaths": 0,
+    "architecture_count": 50,
+    "architecture_kinds": [
+      "archive",
+      "boathouse",
+      "cistern",
+      "foundry",
+      "gantry",
+      "observatory",
+      "pump_house",
+      "shelter",
+      "signal_tower",
+      "workshop"
+    ]
+  },
+  "sources": {
+    "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+    "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "bd093a6edb679b3c140af5640931f660d0bab6c7b58ccffda21b950176f0d20b",
+    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+    "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
+    "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80",
+    "owb/env/skylands_tempest.py": "7c25211fb65a76de445120382c670bb45fe1be23cf6daec6b9a1f132dcfbf412",
+    "owb/world/tempest.py": "f663a95de9f19a3f269c67928298a8ccf0410b410d25e60f57372b9e38cbb4ae",
+    "owb/render/tempest.py": "e48bb37e9fb6d1bdee6a57e9dc0dffbf328b7b478af7f0832d5f235d386b5c37",
+    "owb/bench/baselines/skylands_tempest.py": "48eebeb22b3e2cbe45813b4a07a16509905af6a32defce344a078d8c12f37e55",
+    "owb/scripts/skylands_tempest.py": "d7ce9e62580a2f656f8bf71812fa4a4fc74dce67e6eac782e9bc159789d48107",
+    "owb/render/skylands_campaign.py": "669e752fa977f24eab5248af5fa32af517bd5cb196b134220742a6e9e819a677"
+  }
+}

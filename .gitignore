@@ -226,3 +226,9 @@ __marimo__/
 
 # Machine-local presentation tool paths
 /.owb-render.local.json
+
+# Rendered videos over GitHub's 100 MB limit (kept locally, not tracked)
+assets/demos/skylands-campaign/task-a-seed-7/walkthrough.mp4
+assets/demos/skylands-campaign/task-b-seed-7/walkthrough.mp4
+videos/skylands-15-milestones.mp4
+videos/skylands-24-milestones.mp4

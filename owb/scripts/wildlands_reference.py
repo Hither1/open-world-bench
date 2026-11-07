@@ -187,9 +187,18 @@ def render_chunk(directory,cache,first,last,*,stride=12,fps=10,samples=48,thread
     env,manifest,rows=replay(directory)
     if not 1<=first<=last<=manifest['required']: raise ValueError('Invalid milestone interval')
     folder=cache/f'{directory.name}-{first:02}-{last:02}'
-    folder.mkdir(parents=True,exist_ok=False)
+    folder.mkdir(parents=True,exist_ok=True)
     overlay=Overlay(manifest['task'],samples,threads); entries=[]; previous=None
     selected=checkpoint_steps(rows) if checkpoints else None
+    contract=dict(first=first,last=last,fps=fps,stride=stride,checkpoints=checkpoints,
+                  presentation=overlay.renderer.metadata,trace_sha256=manifest['actions_sha256'],
+                  sources={p:sha(ROOT/p) for p in SOURCES})
+    plan=folder/'render-plan.json'
+    if plan.exists():
+        if json.loads(plan.read_text())!=contract: raise RuntimeError('Resume settings or source files changed')
+    else: save(plan,contract)
+    progress=folder/'progress.json'
+    previous_frames={r['step']:r for r in json.loads(progress.read_text())} if progress.exists() else {}
     started=time.monotonic()
     try:
         for row in rows:
@@ -204,17 +213,24 @@ def render_chunk(directory,cache,first,last,*,stride=12,fps=10,samples=48,thread
             movement=row['action']['command']==COMMANDS.index('drag')
             capture=(row['step'] in selected) if checkpoints else (new or important or row['step']%stride==0 or (flight and row['step']%2==0) or (movement and row['step']%4==0))
             if capture:
-                rgb=overlay.frame(env,row); name=f'{row["step"]:06}.png'
-                Image.fromarray(rgb).save(folder/name)
-                entries.append(dict(file=name,sha256=sha(folder/name),step=row['step'],id=row['milestone'],title=row['title'],
-                    seconds=row['seconds'],new=new,repeats=30 if checkpoints else (8 if important or new else 1),digest=env.state_digest()))
+                saved=previous_frames.get(row['step'])
+                if saved:
+                    if saved['digest']!=env.state_digest() or sha(folder/saved['file'])!=saved['sha256']:
+                        raise RuntimeError('Saved frame no longer matches replay')
+                    entries.append(saved)
+                else:
+                    rgb=overlay.frame(env,row); name=f'{row["step"]:06}.png'
+                    Image.fromarray(rgb).save(folder/name)
+                    entries.append(dict(file=name,sha256=sha(folder/name),step=row['step'],id=row['milestone'],title=row['title'],
+                        seconds=row['seconds'],new=new,repeats=30 if checkpoints else (8 if important or new else 1),digest=env.state_digest()))
+                    save(progress.with_suffix('.partial'),entries)
+                    progress.with_suffix('.partial').replace(progress)
                 print(f'{row["milestone"]} action {row["step"]}: saved Cycles frame',flush=True)
             if 'milestone_complete' in kinds:
                 print(f'{directory.name}: rendered {row["milestone"]}; {len(entries)} frames; {time.monotonic()-started:.0f} s',flush=True)
         if last==manifest['required']:
             assert env.success and env.state_digest()==manifest['final_digest']
-        save(folder/'index.json',dict(first=first,last=last,frames=entries,fps=fps,stride=stride,checkpoints=checkpoints,
-             presentation=overlay.renderer.metadata,trace_sha256=manifest['actions_sha256'],checkpoint=env.state_digest()))
+        save(folder/'index.json',dict(**contract,frames=entries,checkpoint=env.state_digest()))
     finally: overlay.close(); env.close()
 
 

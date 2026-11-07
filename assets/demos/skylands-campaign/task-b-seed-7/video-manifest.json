@@ -1,0 +1,206 @@
+{
+  "renderer": {
+    "engine": "Blender Cycles",
+    "device": "OPTIX GPU",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "denoising": true,
+    "max_bounces": 6,
+    "upscaling": false,
+    "geometry": "exact full-world surfaces",
+    "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+    "blender_version": "4.5.4 LTS",
+    "accelerators": [
+      "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+    ],
+    "render_sources": {
+      "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+      "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+      "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+    },
+    "ground_cover": {
+      "method": "fixed native meshes in one collection instance",
+      "source_instances": 6208588,
+      "triangles": 124171760,
+      "vertices": 248343520,
+      "stored_faces": 69326258,
+      "prototype_triangulation_verified": true,
+      "full_geometry": true,
+      "distance_culling": false
+    },
+    "chunks": [
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-2",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+            "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-5",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+            "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-3",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+            "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-4",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+            "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/camera-frames-b",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+            "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      }
+    ]
+  },
+  "playback": "Complete journey sampled with labeled 16x walking / 8x craft travel; 1x mechanisms; annotation pauses, including time to read full clues.",
+  "duration_seconds": 914.5000000000024,
+  "frames": 9145,
+  "rendered_states": 1170,
+  "source_seconds": 7464.200000009623,
+  "trace_sha256": "a634f169bde7418dd32728ddb3e14a8a04975fd19e8560db8c8a534d10a37034",
+  "video_sha256": "15ddf2d3cbfbfbd7061f45c641c9a89b120303db4d7e422dab274973a220a60b",
+  "encoded_size": [
+    1600,
+    900
+  ],
+  "source_render_size": [
+    1280,
+    720
+  ],
+  "encoded_fps": 10,
+  "upscaling": false,
+  "assembly_sources": {
+    "owb/scripts/skylands_campaign_video.py": "f058a1645fa6be0881a1c14e6085cda0d37caf4bd7d9f21607630f6a86f29dd1",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  }
+}

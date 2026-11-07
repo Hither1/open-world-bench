@@ -6,6 +6,9 @@ named sensors, supported controls, recent observation/action pairs, and a compac
 memory note. The model returns one validated action and a replacement memory note.
 The simulator advances, and the policy observes the result before choosing again.
 
+For the separate 12/24-milestone Wildlands courses, see the
+[GPT-6.1 Sol pilot runner and observation protocol](wildlands-model-pilots.md).
+
 ## Use your Google account with Gemini 4 Argon
 
 The `gemini` policy uses the same RGB, sensors, action schema, and bounded memory

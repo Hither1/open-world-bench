@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "checked_actions": 1118,
+  "checked_events": true,
+  "checked_positions": true,
+  "checked_milestone_hashes": 12,
+  "runtime": {
+    "python": "3.12.7",
+    "numpy": "2.1.3"
+  },
+  "verification": {
+    "success": true,
+    "failures": [],
+    "completed": 12,
+    "required": 12,
+    "scope": "compact native-simulator reference prototype"
+  },
+  "actions_sha256": "0fa9ea2e6d7681d2a199268d40ef3bc6c0da6116581ee3dcdd2c71a922772b37",
+  "validated_source_sha256": {
+    "open_world_bench/reference_tasks.py": "2eb93ad3f9629d0d378f5d13b4854cd6d85d51584a0bd6b834fea2fb5f1b81c8",
+    "open_world_bench/reference_policy.py": "69ee29c39aa42eb30bf1141226cdaa528aae46e11e1de62601573ef7f882574f",
+    "open_world_bench/architecture.py": "ab0f1d6fb3f5f2caa28957f60859cd75c263d47e1aecaef6e4c1398d4c143772",
+    "open_world_bench/render/architecture.py": "8df5b2e18fd82339a7223d983160eaf790c59d346aa98bdc10e937919f3ffec7",
+    "open_world_bench/camera.py": "a1669aa0d09375f8771d8d601d7f877a441b669fdf7da2ac16bd02528b4cb0b8",
+    "open_world_bench/env.py": "08246496be1a3a4c89af7691574b801fa62b34e92534b1d262be0023fe17a2f9",
+    "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425",
+    "open_world_bench/character.py": "89b169a174af06df3307e46f0a824e15bc7b76bd2bb08ae5e8b318da9eddc072",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "owb/scripts/teyvat_reference.py": "8a4a77abaef4e8530fa2627505a515e755daa7397160576e767bd5ec59f57efc",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/scene_export.py": "bd093a6edb679b3c140af5640931f660d0bab6c7b58ccffda21b950176f0d20b",
+    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  },
+  "video_sha256": {}
+}

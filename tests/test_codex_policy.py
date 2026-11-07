@@ -87,3 +87,12 @@ def test_cli_timeout_kills_launcher_and_child(tmp_path):
     with pytest.raises(subprocess.TimeoutExpired):
         _run_cli([sys.executable, "-c", code], input="", env=os.environ.copy(),
                  cwd=tmp_path, timeout=0.2)
+
+
+def test_relative_executable_survives_inference_cwd_change(tmp_path,monkeypatch):
+    account=tmp_path/'account';account.mkdir();(account/'auth.json').write_text('{}')
+    executable=tmp_path/'local-codex';executable.symlink_to(sys.executable)
+    monkeypatch.chdir(tmp_path)
+    client=CodexClient(account,executable='./local-codex')
+    assert Path(client.executable).is_absolute()
+    assert Path(client.executable).samefile(sys.executable)

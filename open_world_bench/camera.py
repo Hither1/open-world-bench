@@ -47,6 +47,7 @@ class OrbitCamera:
     def __init__(self, terrain: Terrain, props: PropField | None = None, cfg: CameraConfig | None = None):
         self.terrain = terrain
         self.props = props
+        self.architecture = None
         self.cfg = cfg or CameraConfig()
 
     def reset(self, char: CharacterState, yaw: float | None = None) -> CameraState:
@@ -112,6 +113,8 @@ class OrbitCamera:
         pts = st.pivot[None, :] + back[None, :] * samples[:, None]
         gh = self.terrain.height_at(pts[:, 0], pts[:, 2]) + c.collision_margin
         blocked = pts[:, 1] < gh
+        if self.architecture is not None:
+            blocked |= self.architecture.blocked(pts, c.collision_margin)
         if c.collide_props and self.props is not None and len(self.props) > 0:
             idx = self.props.query_radius(float(st.pivot[0]), float(st.pivot[2]), desired + 2.0)
             idx = idx[self.props.radius[idx] > 0.3] if len(idx) else idx

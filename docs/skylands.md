@@ -5,6 +5,17 @@ voxel physics and CPU landscape renderer. The first course contains three connec
 layers: floating meadows, the surface below, and a crystal cavern. It is runnable
 through Gymnasium and the shared agent/recording interface.
 
+The [long-horizon task designs](skylands-long-horizon-tasks.md) propose a
+15-milestone core-recovery expedition and a 24-milestone freight-restoration
+campaign. They specify construction, cross-layer memory, and delayed skill reuse;
+[full-scale reference implementations](skylands-campaign-demos.md) now complete
+both journeys in 57.9 and 124.4 simulated minutes, with independent action replay
+and completed [GPU Cycles walkthroughs with milestone chapters](../assets/demos/skylands-campaign/index.html).
+The videos cover the full campaigns with labeled travel timelapse.
+The guide describes their cargo-craft,
+reversal, rendering, and research limitations. A separate
+[compact testbed](skylands-reference-demos.md) remains available for mechanics checks.
+
 ![Aster Reach: golden trees, a broken crossing and a turquoise relic inside a ruined arch](../assets/screenshots/skylands.png)
 
 The visual pass adds irregular island outlines and tapered stone undersides,

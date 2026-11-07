@@ -1,6 +1,8 @@
 # Wildlands long-horizon memory and skill-learning tasks
 
-Status: revised task designs, not runnable implementations. These two tasks
+Status: full benchmark designs, with separate [compact executable reference
+courses and demonstration recordings](wildlands-reference-demos.md). The compact
+courses do not yet implement the full long-horizon memory evaluation. These two tasks
 use the original Breath of the Wild-inspired `wildlands` setting and retain
 exactly **12** and **24** milestones. The revision makes learning from experience,
 delayed retrieval, and reusable skills the central experimental structure.

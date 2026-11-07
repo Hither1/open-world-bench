@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "decoded_frames": 4793,
+  "size": [
+    1600,
+    900
+  ],
+  "fps": 10.0,
+  "video_sha256": "330730b4983ee6be16098046cc01f732d061a9004dd5682a78e0b5c0e11828a5",
+  "source_actions": 17372,
+  "source_simulated_seconds": 3474.3999999979355
+}
