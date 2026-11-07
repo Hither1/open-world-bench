@@ -1,10 +1,15 @@
-"""Run and record any common-schema environment: python -m owb.scripts.benchmark."""
+"""Run and record any common-schema environment: python -m owb.scripts.benchmark.
+
+Deprecated: use ``owb run <manifest.yaml>`` (docs/cli.md). The flags below are
+translated into the equivalent manifest (``manifest_from_args``) and executed by
+the same ``owb.cli.run.run_manifest``.
+"""
 import argparse
 import json
 from pathlib import Path
+import sys
 
-from ..bench import available_environments, make_env
-from ..bench.rollout import DemoPolicy, RandomPolicy, run_episode
+from ..bench import available_environments
 from ..render.presentation import add_render_arguments
 
 
@@ -43,18 +48,8 @@ def main():
     for name in args.env:
         if (args.output / f"{name}-{args.seed}").exists():
             parser.error(f"recording already exists: {args.output / f'{name}-{args.seed}'}")
-    policy_config = None
-    if args.policy in ("openai", "codex", "claude", "gemini"):
-        from ..bench.baselines import OpenAIPolicy, OpenAIPolicyConfig
-        try:
-            policy_config = OpenAIPolicyConfig(
-                model=args.model or {"claude": "claude-opus-5-5", "gemini": "gemini-4-argon"}.get(args.policy, "gpt-6-astra"),
-                reasoning_effort=args.reasoning_effort,
-                max_output_tokens=args.max_output_tokens, max_calls=args.max_model_calls,
-                history_steps=args.history_steps, timeout=args.api_timeout,
-                decision_seconds=args.decision_seconds)
-        except ValueError as exc:
-            parser.error(str(exc))
+    model_policy = args.policy in ("openai", "codex", "claude", "gemini")
+    if model_policy:
         if args.steps > args.max_model_calls:
             parser.error("--steps must not exceed --max-model-calls for a model policy")
         if args.policy == "codex" and args.codex_account_home is None:
@@ -66,51 +61,52 @@ def main():
                 parser.error("--policy gemini requires --gemini-account-home and --gemini-account-email")
             if args.reasoning_effort not in ("low", "medium", "high"):
                 parser.error("Gemini 4 Argon supports low, medium, or high reasoning effort")
-    for name in args.env:
-        if args.policy == "codex":
-            from ..bench.baselines import CodexPolicy
-            policy = CodexPolicy(policy_config, account_home=args.codex_account_home,
-                                 executable=args.codex_executable)
-        elif args.policy == "claude":
-            from ..bench.baselines import ClaudePolicy
-            policy = ClaudePolicy(policy_config, account_home=args.claude_account_home,
-                                  executable=args.claude_executable)
-        elif args.policy == "gemini":
-            from ..bench.baselines import GeminiPolicy
-            policy = GeminiPolicy(policy_config, account_home=args.gemini_account_home,
-                                  account_email=args.gemini_account_email, executable=args.gemini_executable)
-        else:
-            policy = (OpenAIPolicy(policy_config) if policy_config is not None else
-                  DemoPolicy() if args.policy == "demo" else RandomPolicy())
-        with make_env(name, seed=args.seed, max_steps=args.steps, variant=args.variant,
-                      image_size=tuple(args.size), render_quality=args.quality,
-                      decision_seconds=args.decision_seconds) as env:
-            try:
-                summary = run_episode(env, policy, seed=args.seed,
-                                      output_dir=args.output / f"{name}-{args.seed}", video=args.video,
-                                      video_renderer=args.video_renderer, video_size=tuple(args.video_size),
-                                      blender=args.blender, samples=args.samples, threads=args.threads)
-            except Exception as exc:
-                if policy_config is None:
-                    raise
-                from ..bench.baselines.codex_policy import CodexPolicyError
-                from ..bench.baselines.claude_policy import ClaudePolicyError
-                from ..bench.baselines.gemini_policy import GeminiPolicyError
-                if isinstance(exc, (CodexPolicyError, ClaudePolicyError, GeminiPolicyError)):
-                    parser.exit(1, str(exc) + "\n")
-                if args.policy in ("codex", "claude", "gemini"):
-                    raise
-                from openai import OpenAIError
-                if not isinstance(exc, OpenAIError):
-                    raise
-                code = getattr(exc, "code", None)
-                if code in ("credit_balance_exhausted", "insufficient_quota"):
-                    message = "OpenAI API credits/quota exhausted. Fund the API project or configure a funded OPENAI_API_KEY."
-                else:
-                    message = f"OpenAI request failed: {type(exc).__name__} (code={code})."
-                parser.exit(1, message + f" See {args.output / f'{name}-{args.seed}' / 'error.json'}.\n")
-            print(json.dumps(summary, indent=2))
+    from ..cli.manifest import ManifestError
+    from ..cli.run import RunError, run_manifest
+    try:
+        manifest = manifest_from_args(args)
+    except ManifestError as exc:
+        parser.error(str(exc))
+    print("DeprecationWarning: python -m owb.scripts.benchmark is deprecated; use `owb run <manifest.yaml>` "
+          "(see docs/cli.md)", file=sys.stderr, flush=True)
+    try:
+        run_manifest(manifest, on_episode=lambda episode: print(json.dumps(episode.summary, indent=2)))
+    except ManifestError as exc:
+        parser.error(str(exc))
+    except RunError as exc:
+        parser.exit(1, str(exc) + "\n")
 
+
+HARNESS_KINDS = {"openai": "openai_api", "codex": "codex_cli", "claude": "claude_cli", "gemini": "gemini_cli"}
+
+
+def manifest_from_args(args):
+    """The ``owb run`` manifest equivalent to these benchmark.py arguments (docs/cli.md)."""
+    from ..cli.manifest import Manifest
+    agent = dict(policy=args.policy)
+    budget = dict(max_steps=args.steps)
+    if args.policy in HARNESS_KINDS:
+        kind = HARNESS_KINDS[args.policy]
+        harness = dict(kind=kind, effort=args.reasoning_effort, timeout=args.api_timeout,
+                       model=args.model or {"claude": "claude-opus-5-5", "gemini": "gemini-4-argon"}.get(
+                           args.policy, "gpt-6-astra"))
+        if kind in ("openai_api", "gemini_cli"):
+            harness["max_output_tokens"] = args.max_output_tokens
+        if kind != "openai_api":
+            harness["account_home"] = str(getattr(args, f"{args.policy}_account_home"))
+            harness["executable"] = getattr(args, f"{args.policy}_executable")
+        if kind == "gemini_cli":
+            harness["account_email"] = args.gemini_account_email
+        agent = dict(policy="llm", harness=harness, history_steps=args.history_steps)
+        budget["max_model_calls"] = args.max_model_calls
+    return Manifest.from_dict(dict(
+        run=dict(name=f"benchmark-{args.policy}"),
+        env=dict(sim=list(args.env), variant=args.variant, image_size=list(args.size),
+                 decision_seconds=args.decision_seconds, render_quality=args.quality),
+        task=dict(seeds=[args.seed]), agent=agent, budget=budget,
+        record=dict(output_dir=str(args.output), video=args.video, video_renderer=args.video_renderer,
+                    video_size=list(args.video_size), samples=args.samples, threads=args.threads,
+                    blender=args.blender)))
 
 if __name__ == "__main__":
     main()
