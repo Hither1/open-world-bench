@@ -1,6 +1,6 @@
 # 重构方案：环境 / 任务 / 智能体 / 评测 分层
 
-状态：设计提案，尚未实施。目标是让 OWB 在不改变任何模拟器行为的前提下，
+状态：设计提案；步 0–7 已于 2026-11-06/07 实施并合入本分支（见 §3 的逐步状态与 §6）。§1 保留对重构前布局的描述，作为动机记录。目标是让 OWB 在不改变任何模拟器行为的前提下，
 变成"一个模拟器可以插进来、一个任务可以声明出来、一个 agent 可以换掉"的框架。
 
 ## 1. 现状诊断
@@ -250,12 +250,12 @@ record: {trajectory: true, video: false}
 | --- | --- | --- |
 | 0 | 冻结行为（当前基线：2026-11-06 全量 `pytest` 238 通过、3 跳过；CLI policy 测试要求 PATH 上有 `python`）：把 `assets/demos/*/actions.jsonl` + `verification.json` 接成回归测试（重放 → 比 digest）；补一个"三个 env 随机策略 200 步的 obs/info 哈希"快照测试 | 之后每一步都用它兜底 |
 | 1 | **已完成 2026-11-06。** `open_world_bench/` → `owb/sims/teyvat/`；`owb/{core,world,physics,sim,entities,env}` + 传感器渲染 → `owb/sims/voxel/`；`owb/_compat.py` meta-path finder 让所有旧路径带 DeprecationWarning 解析到同一对象；`tests/test_compat_imports.py` 24 个用例 | 全量测试 262 通过（原 238 + 24）；随机策略 smoke 输出与基线逐字节一致 |
-| 2 | 抽 `owb/core`（jsonable、Event、rng、版本）；删三份重复 | 小 |
-| 3 | `spaces/` Modality/Control 声明；`BenchmarkEnv` 改为据声明拼 space；`describe_observation`、recorder 词汇表改为从声明生成 | `test_common_spaces_are_identical` 保证 space 字节级不变 |
-| 4 | `agents/`：先把三个 CLI client 和 OpenAI client 改成 `StatelessCLI` / `StatelessAPI` 两个 `Harness`（删 Responses 伪装），抽 `Perception` / `ActionDecoder`，把沙箱参数上提为 `HarnessCaps`；`OpenAIPolicy` 变成 `LLMPolicy(StatelessAPI(openai))` 的别名；`SessionCLI` / `WorkspaceCLI` 作为后续新功能 | 现有 `test_*_policy.py` 用假 client 做合同测试，可直接迁移 |
-| 5 | `tasks/`：先定义 `TaskSpec/Predicate/MilestoneEvaluator`，把 Minecraft 转过去（最干净）；再把 `QuestGraph` 映射成 TaskSpec；最后拆两个参考课程：机制 → `tasks/*/mechanisms/`，布置 → `setup`，判定 → evaluator | 参考课程用步 0 的 digest 回归；这一步最大，可按 A/B 任务分两次 |
-| 6 | `eval/`：Recorder 去视频，`presentation` 读 trace 离线渲染；`Replayer` 通用化 | 视频产物对比哈希 |
-| 7 | `cli/` + manifest；三个脚本改成薄包装并标 deprecated | 文档同步 |
+| 2 | **已完成。** `owb/core`：唯一的 `jsonable`、`SCHEMA_VERSION`、`event_type`；旧 `owb.core.*` 子模块仍经 shim 解析到体素模拟器 | `tests/test_core.py` |
+| 3 | **已完成。** `owb/spaces`：`Modality` / `Control` / `SpaceRegistry`，内建 7 modality + 9 control；`BenchmarkEnv` 的 space、四个 mask、recorder 的 `schema` 块、`describe_observation` 都由声明生成 | 接口快照哈希逐字节不变；未声明化的残留见 §6 |
+| 4 | **已完成。** `owb/agents/{harness,perception,decoder,policy,oracle}`；四个 harness（OpenAI API、Claude/Codex/Gemini CLI）带 `HarnessCaps`；`LLMPolicy` + `Budgets(max_calls, max_total_tokens)`；旧 policy 名为兼容别名，argv/env/错误码逐项等价 | 旧 policy 测试全部未改动通过；`tests/test_agents.py` | 现有 `test_*_policy.py` 用假 client 做合同测试，可直接迁移 |
+| 5 | **已完成。** `owb/tasks/{schema,evaluator,registry,env,setups}`；Minecraft 两个任务改为 YAML；Teyvat 问题线映射并与 `QuestEngine` 逐步等价；两个参考课程拆成 `tasks/{teyvat,wildlands}/mechanisms/*`、`setup.py`、`course.py` 与四个 TaskSpec YAML；特权控制器移到 `owb/agents/oracle` | 四条参考轨迹 digest 逐字节不变；`tests/test_task_*.py`、`test_reference_specs.py` |
+| 6 | **已完成。** `owb/eval/{runner,recorder,sinks,replay,policies}`：录制只写 JSON，视频经 `FrameSink`；`Budget(max_model_calls, max_wall_clock_s)` 以 `termination_reason=budget` 干净结束；`verify_run(run_dir)` 通用重放校验；`policy.close()` 必调 | 三个 env 的 config/trajectory/summary/gif 与重构前逐字节一致 |
+| 7 | **已完成。** `owb` 控制台命令：`run / replay --verify / tasks / agents / envs / render`；manifest（YAML）校验并写入 run 目录；`benchmark.py` 变为弃用薄包装；特权策略需 `--allow-privileged` | `tests/test_cli.py` 44 例；`configs/examples/*.yaml` |
 
 步 1–3 约一两天；步 4 一天；步 5 最长，两个参考课程各半天到一天；步 6–7 一天。
 
@@ -282,3 +282,24 @@ record: {trajectory: true, video: false}
 详见 [related-benchmarks.md](related-benchmarks.md)。本方案采纳的外部惯例：Gymnasium env + 独立 evaluator（Crafter / MineDojo / BALROG）、
 声明式任务文件（BEHAVIOR BDDL、MCU yaml）、里程碑部分得分而非二元成功（MCU、Craftax）、seed 决定世界 + 任务参数并写入 manifest、
 特权 oracle 与 baseline 严格分开、trace 可重放校验。
+
+## 6. 实施结果与剩余事项（2026-11-07）
+
+**测试**：全量 460 通过、3 跳过（跳过：缺 `../MFM` 对照、缺 `cv2`）。重构前的 309 个上游测试全部未改动通过；
+新增 151 个：兼容导入 33、金标准 11、agents 8、tasks 25、core/spaces/eval 18、CLI 44、参考课程 12。
+
+**行为冻结证据**：四条参考轨迹（Teyvat A/B、Wildlands A/B）逐步 digest 一致；三个通用 env 150 步 + 三个原生 gym id 60 步的观测/info 哈希快照一致；随机策略 smoke 的录制产物与重构前逐字节一致；
+`import owb, owb.*` 在 `-W error::DeprecationWarning` 下干净，旧路径各发一次弃用警告并解析到同一对象。
+
+**尚未做、按优先级**：
+
+1. **Sim 协议（§2.1）**：Teyvat `OpenWorldEnv.step` 仍混有 `quests.consume`、reward shaping、终止判定；`RewardShaper` 尚未抽出。Wildlands/Skylands 的 `StateView` 为空。
+2. **`TaskEnv` 不执行 `spec.setup`**：目前只有两个参考课程 env 自己调用布置器。参考课程里仍有按里程碑 id 硬编码的事实（A02/B02 提示、B10/B11 授权、B18 温度依赖等）待迁入 setup 数据。
+3. **Predicate 表达力**：持续时间条件（"稳定 5 秒"）、episode 末仍需成立的活世界条件、合法提前完成的计分、机制状态谓词 `state_equals`。Wildlands 课程的里程碑因此仍以机制自己发的 `milestone_complete` 事件触发。
+4. **沙箱统一（agent-sandbox.md §4）**：manifest 已接受 `profile / network / persist_workspace` 等键，但只校验与 harness 固定 caps 相等，不做 OS 级执行；本地模型代理、`cli-session` / `cli-workspace` 档位未实现。
+5. **预算**：`max_total_tokens` 由 `LLMPolicy` 抛异常结束而非经 runner 干净截断；美元预算未加。
+6. **声明化残留**：`describe_observation` 的 prompt 键序、`action_schema` 的手写边界、`build_move` 需 construction 的规则、modality 版本号未写入 `config.json`（为保持哈希不变而保留）。
+7. **仍有的重复**：`owb/scripts/teyvat_reference.py` 的 `jsonable` 与 `owb/tasks/wildlands/mechanisms/base.py` 的 `plain`（后者额外对 set 排序）。
+8. **文档**：`docs/embodied-agent.md`、`rendering.md`、`skylands.md` 的命令示例仍是 `python -m owb.scripts.benchmark`（仍可用）。
+9. **已知环境差异**：Teyvat 特权控制器在本机实时运行时 `look` 有最后一位 float32 噪声（717/1118 步，最大 4.8e-7），重构前已如此，疑为 numpy/BLAS 差异；重放录制动作不受影响。
+
