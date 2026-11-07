@@ -1,0 +1,137 @@
+{
+  "task": "a",
+  "seed": 7,
+  "initial_digest": "4e7a921d6a9a4eaba77baf2d69fb5ef7e283ef42b0fe06d0fa36dd730e27ef29",
+  "final_digest": "90608d70b3714fae253ccead1f9cab0faebe9e2d42dd4a9c6f1a5ee0e429ac7a",
+  "decisions": 2001,
+  "simulated_seconds": 400.2000000000225,
+  "milestones": [
+    {
+      "id": "A01",
+      "step": 1,
+      "seconds": 0.2
+    },
+    {
+      "id": "A02",
+      "step": 64,
+      "seconds": 12.8
+    },
+    {
+      "id": "A03",
+      "step": 112,
+      "seconds": 22.4
+    },
+    {
+      "id": "A04",
+      "step": 245,
+      "seconds": 49.0
+    },
+    {
+      "id": "A05",
+      "step": 295,
+      "seconds": 59.0
+    },
+    {
+      "id": "A06",
+      "step": 371,
+      "seconds": 74.2
+    },
+    {
+      "id": "A07",
+      "step": 474,
+      "seconds": 94.8
+    },
+    {
+      "id": "A08",
+      "step": 633,
+      "seconds": 126.6
+    },
+    {
+      "id": "A09",
+      "step": 672,
+      "seconds": 134.4
+    },
+    {
+      "id": "A10",
+      "step": 723,
+      "seconds": 144.6
+    },
+    {
+      "id": "A11",
+      "step": 988,
+      "seconds": 197.6
+    },
+    {
+      "id": "A12",
+      "step": 1052,
+      "seconds": 210.4
+    },
+    {
+      "id": "A13",
+      "step": 1429,
+      "seconds": 285.8
+    },
+    {
+      "id": "A14",
+      "step": 1562,
+      "seconds": 312.4
+    },
+    {
+      "id": "A15",
+      "step": 2001,
+      "seconds": 400.2
+    }
+  ],
+  "required": 15,
+  "success": true,
+  "health": 24.0,
+  "events": {
+    "clue_exposed": 2,
+    "milestone_complete": 15,
+    "part_picked": 16,
+    "part_mounted": 16,
+    "cargo_loaded": 5,
+    "craft_moved": 60,
+    "cargo_delivered": 5,
+    "ascended": 4,
+    "gallery_serviced": 3,
+    "land": 4,
+    "raft_staged": 1,
+    "layer_changed": 3,
+    "lift_arrived": 5,
+    "dock_lit": 1,
+    "core_extracted": 1,
+    "cargo_towed": 4,
+    "freight_loaded": 2,
+    "hoist_started": 1,
+    "core_installed": 1
+  },
+  "limitations": [
+    "Compact authored reference course, not the full island-scale or long-duration benchmark.",
+    "Privileged scripted controller, not evidence of learned skills or memory performance.",
+    "Cargo craft use four discrete mounts, rated flotation and a straight authored water channel; no general rigid-body vehicle or fluid solver.",
+    "Deck movement is grid-stepped and collision-backed; freight lifts and reversible platforms are authored actuators.",
+    "Heavy cargo uses a separate physical-position ledger with grounded roller-cradle towing, not the native inventory or a general contact solver.",
+    "Task A uses one fixed return mooring rather than several agent-chosen docks; this video does not establish that spatial-memory probe.",
+    "Standard cold-weather clothing is supplied at reset; provisioning is not evaluated.",
+    "The two reserve items share a selected surface cache in this compact course, rather than separate regional cache networks.",
+    "Training is given through inspectable local instructions and executed practice, not an animated teacher.",
+    "A maintenance lift shortens inter-layer travel; cross-layer clue assignments and navigation alternatives are limited.",
+    "Video samples verified simulator states and omits long walking intervals. Full action logs retain all intermediate steps."
+  ],
+  "controller": "privileged action-only reference policy",
+  "sources": {
+    "owb/env/skylands_reference.py": "3aad43f49e3bbb9481142870e32a53f6d3bc884497f70b318f783337eee2174c",
+    "owb/bench/baselines/skylands_reference.py": "7a15ef5fc5a80e07d164379524d019566a513fd10d1ab9c354f064bd8846bacd",
+    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
+    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  },
+  "actions_sha256": "690f484b216fcbabb76a69f0329f037004cf8a6119e5de5e61b9546b6bdea2cf"
+}

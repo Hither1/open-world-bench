@@ -1,0 +1,9 @@
+{
+  "checked_states": 1170,
+  "corrected_states": 29,
+  "actions_replayed": 37321,
+  "geometry_unchanged": true,
+  "lighting_unchanged": true,
+  "simulation_unchanged": true,
+  "source_sha256": "e6c5e6284d4a7aebf9ed0e79ee6a1b0b804241c0a864137eafd8274222f83a01"
+}

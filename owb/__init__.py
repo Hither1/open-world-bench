@@ -15,6 +15,8 @@ def register_envs():
                         ("OpenWorldBench/Wildlands-Small-v0", "owb.sims.voxel.env:make_small"),
                         ("OpenWorldBench/Skylands-v0", "owb.sims.voxel.env:SkylandsEnv"),
                         ("OpenWorldBench/Skylands-Small-v0", "owb.sims.voxel.env.skylands:make_small"),
+                        ("OpenWorldBench/Skylands-Tempest-v0", "owb.sims.voxel.env.skylands_tempest:SkylandsTempestEnv"),
+                        ("OpenWorldBench/Skylands-Tempest-Extended-v0", "owb.sims.voxel.env.skylands_tempest:make_extended"),
                         ("OpenWorldBench/Genshin-v0", "owb.sims.teyvat.env:OpenWorldEnv"),
                         ("OpenWorldBench/Genshin-Small-v0", "owb.sims.teyvat.env:_make_small")):
         if name not in registry:

@@ -166,10 +166,21 @@ def add_mesh(data, index, spec, materials):
     return obj
 
 
-def setup_scene(metadata, samples, threads):
+def setup_scene(metadata, samples, threads, device="CPU"):
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
+    if device != "CPU":
+        preferences = bpy.context.preferences.addons["cycles"].preferences
+        preferences.compute_device_type = device
+        preferences.get_devices()
+        accelerators = [item for item in preferences.devices if item.type == device]
+        if not accelerators:
+            raise RuntimeError(f"No {device} Cycles device available; refusing CPU fallback")
+        for item in preferences.devices:
+            item.use = item.type == device
+        scene.cycles.device = "GPU"
+        print(f"Cycles {device}: " + ", ".join(item.name for item in accelerators), flush=True)
     scene.cycles.samples = samples
     scene.cycles.use_denoising = True
     scene.cycles.seed = int(metadata["seed"])
@@ -227,6 +238,14 @@ def setup_scene(metadata, samples, threads):
     links.new(separate.outputs["Z"], elevation.inputs[0])
     links.new(elevation.outputs[0], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], background.inputs["Color"])
+    for index, spec in enumerate(metadata.get("point_lights", [])):
+        light = bpy.data.lights.new(f"Task lamp {index}", "POINT")
+        light.energy = spec["power"]
+        light.color = spec["color"]
+        light.shadow_soft_size = spec["radius"]
+        lamp_obj = bpy.data.objects.new(f"Task lamp {index}", light)
+        bpy.context.collection.objects.link(lamp_obj)
+        lamp_obj.location = z_up(spec["pos"])
     scene["owb_snapshot"] = json.dumps(metadata)
     return scene
 
@@ -239,6 +258,7 @@ def main():
     parser.add_argument("--glb", type=Path)
     parser.add_argument("--samples", type=int, default=64)
     parser.add_argument("--threads", type=int, default=8)
+    parser.add_argument("--device", choices=("CPU", "CUDA", "OPTIX"), default="CPU")
     args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:])
     if args.samples <= 0 or args.threads <= 0:
         parser.error("samples and threads must be positive")
@@ -254,7 +274,7 @@ def main():
         print(f"Loaded {metadata['environment']} snapshot", flush=True)
         if metadata.get("version") != 1:
             raise ValueError("unsupported scene snapshot version")
-        scene = setup_scene(metadata, args.samples, args.threads)
+        scene = setup_scene(metadata, args.samples, args.threads, args.device)
         materials = dict(surface=material("Painted surfaces"),
                          emission=material("Elemental glow", emission=True),
                          water=material("Water", water=True))

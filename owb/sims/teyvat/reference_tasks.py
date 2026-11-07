@@ -557,6 +557,9 @@ class ReferenceTaskEnv(OpenWorldEnv):
         self.camera_rig=OrbitCamera(terrain,empty,self.cfg.camera)
         target=self.course.target()
         self.char=self.controller.spawn(float(target.pos[0]),float(target.pos[2])+5)
+        from .architecture import populate_architecture
+        architecture=populate_architecture(self.world,self.char.pos)
+        self.controller.architecture=self.camera_rig.architecture=architecture
         self.cam=self.camera_rig.reset(self.char)
         self.cam.pitch=.34
         self.steps=0

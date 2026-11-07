@@ -119,6 +119,7 @@ class CharacterController:
     def __init__(self, terrain: Terrain, props: PropField | None = None, cfg: CharacterConfig | None = None):
         self.terrain = terrain
         self.props = props
+        self.architecture = None
         self.cfg = cfg or CharacterConfig()
 
     # ------------------------------------------------------------------ spawn
@@ -373,6 +374,8 @@ class CharacterController:
         return None
 
     def _resolve_props(self, st: CharacterState) -> None:
+        if self.architecture is not None:
+            self.architecture.resolve(st, self.cfg.radius, self.cfg.height)
         if self.props is None or len(self.props) == 0:
             return
         c = self.cfg

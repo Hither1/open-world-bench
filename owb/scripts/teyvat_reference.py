@@ -30,6 +30,15 @@ from owb.sims.teyvat.reference_policy import ReferencePolicy
 from owb.render.presentation import PresentationRenderer, add_render_arguments
 
 
+def render_source_hashes():
+    root=Path(__file__).resolve().parents[2]
+    paths=[root/"owb/scripts/teyvat_reference.py",*sorted((root/"owb/render").glob("*.py")),
+           *sorted((root/"owb/sims/voxel/render").glob("*.py")),
+           *sorted((root/"owb/sims/teyvat").glob("*.py")),
+           *sorted((root/"owb/sims/teyvat/render").glob("*.py"))]
+    return {str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+
 def jsonable(value):
     if isinstance(value,np.ndarray):
         return value.tolist()
@@ -378,6 +387,8 @@ def verify_recording(directory):
         assert env.quests.all_complete and env.course.verify()["success"]
         root=Path(__file__).resolve().parents[2]
         sources=["owb/sims/teyvat/reference_tasks.py","owb/sims/teyvat/reference_policy.py",
+                 "owb/sims/teyvat/architecture.py","owb/sims/teyvat/render/architecture.py",
+                 "owb/sims/teyvat/camera.py",
                  "owb/sims/teyvat/env.py","owb/sims/teyvat/world.py","owb/sims/teyvat/character.py",
                  "owb/sims/teyvat/party.py","owb/sims/teyvat/terrain.py","owb/scripts/teyvat_reference.py",
                  "owb/render/presentation.py","owb/render/scene_export.py",
@@ -395,8 +406,8 @@ def verify_recording(directory):
         env.close()
 
 
-def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",blender=None,samples=48,threads=8):
-    """Replay from reset, rendering only one milestone interval into a cache."""
+def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",blender=None,samples=48,threads=8,max_frames=None):
+    """Replay an interval, resuming only frames matching its source/state contract."""
     from PIL import Image
     manifest=json.loads((directory/"reference-manifest.json").read_text())
     rows=[json.loads(s) for s in (directory/"actions.jsonl").read_text().splitlines()]
@@ -405,13 +416,28 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
     if not 1<=first<=last<=total:
         raise ValueError("invalid milestone interval")
     folder=cache/f"{directory.name}-{first:02d}-{last:02d}"
-    folder.mkdir(parents=True,exist_ok=False)
+    folder.mkdir(parents=True,exist_ok=True)
     env=ReferenceTaskEnv(task,seed,render_enabled=False)
     overlay=Overlay(task,manifest,stride,fps,renderer=renderer,blender=blender,samples=samples,threads=threads)
     entries=[]
     previous=None
     plan=frame_plan(rows,stride,fps)
     try:
+        contract={"first":first,"last":last,"fps":fps,"stride":stride,
+                  "presentation":overlay.metadata,
+                  "trace_sha256":hashlib.sha256((directory/"actions.jsonl").read_bytes()).hexdigest(),
+                  "sources":render_source_hashes()}
+        contract_path=folder/"render-plan.json"
+        if contract_path.exists():
+            if json.loads(contract_path.read_text())!=contract:
+                raise RuntimeError("Cannot resume: render settings, source files, or trace changed")
+        else:
+            if any(folder.iterdir()):
+                raise RuntimeError("Existing cache has no verified render contract; use a new cache")
+            save_json(contract_path,contract)
+        progress=folder/"progress.json"
+        saved={e["step"]:e for e in json.loads(progress.read_text())} if progress.exists() else {}
+        rendered=0
         env.reset(seed=seed)
         assert env.state_digest()==manifest["initial_digest"]
         for row in rows:
@@ -423,7 +449,9 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
             before=env.world.elapsed
             action={k:np.asarray(v,dtype=np.int8 if k=="buttons" else np.float32) if k in ("move","look","buttons") else v
                     for k,v in row["action"].items()}
-            env.step(action)
+            _,_,_,_,info=env.step(action)
+            assert env.char.pos.tolist()==row["position_after"],f"Position mismatch at step {row['step']}"
+            assert info["event_details"]==row["events"],f"Event mismatch at step {row['step']}"
             if "state_digest" in row:
                 assert env.state_digest()==row["state_digest"]
             if number<first:
@@ -431,21 +459,38 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
             kinds={e["type"] for e in row["events"]}
             if row["step"] in plan:
                 entry=plan[row["step"]]
+                digest=env.state_digest()
+                if row["step"] in saved:
+                    cached=saved[row["step"]]
+                    if cached["state_digest"]!=digest or hashlib.sha256((folder/cached["file"]).read_bytes()).hexdigest()!=cached["sha256"]:
+                        raise RuntimeError("Cached frame no longer matches its replay state or image hash")
+                    entries.append(cached)
+                    continue
+                if max_frames is not None and rendered>=max_frames:
+                    return False
                 frame=overlay.frame(env,row,chapter=entry["chapter"],transition=entry["transition"])
+                assert env.state_digest()==digest,"Rendering changed the simulation"
                 filename=f"{row['step']:06d}.png"
-                Image.fromarray(frame).save(folder/filename)
+                partial=folder/(filename+".partial")
+                Image.fromarray(frame).save(partial,format="PNG")
+                partial.replace(folder/filename)
                 entries.append({"file":filename,"step":row["step"],"milestone":row["milestone"],
                                 "title":row["title"],"new_chapter":new,"simulation_start":before,
-                                "repeats":entry["repeats"],"transition":entry["transition"]})
+                                "repeats":entry["repeats"],"transition":entry["transition"],
+                                "state_digest":digest,"sha256":hashlib.sha256((folder/filename).read_bytes()).hexdigest()})
+                partial_progress=folder/"progress.partial.json"
+                save_json(partial_progress,entries)
+                partial_progress.replace(progress)
+                rendered+=1
+                print(f"Task {task.upper()} {row['milestone']}: saved action {row['step']} ({len(entries)} frames in chunk)",flush=True)
             if "milestone_complete" in kinds:
                 print(f"Rendered chunk {first:02d}-{last:02d}: {row['milestone']}",flush=True)
         if last==total:
             assert env.state_digest()==manifest["final_digest"]
             assert env.course.verify()["success"] and env.quests.all_complete
-        save_json(folder/"index.json",{"first":first,"last":last,"fps":fps,"stride":stride,
-                 "presentation":overlay.metadata,
-                 "trace_sha256":hashlib.sha256((directory/"actions.jsonl").read_bytes()).hexdigest(),
+        save_json(folder/"index.json",{**contract,
                  "checkpoint":env.state_digest(),"frames":entries})
+        return True
     finally:
         overlay.close()
         env.close()
@@ -467,6 +512,7 @@ def assemble_chunks(directory,cache,*,renderer="cycles"):
         assert piece["first"]==expected,"Render intervals must be contiguous and disjoint"
         assert piece["trace_sha256"]==digest and piece["fps"]==fps and piece["stride"]==stride
         assert piece.get("presentation",{"backend":"cpu","legacy":True})==presentation,"Cannot mix render settings"
+        assert piece.get("sources")==pieces[0][1].get("sources"),"Cannot mix render source versions"
         expected=piece["last"]+1
     assert expected==manifest["verification"]["required"]+1
     assert pieces[-1][1]["checkpoint"]==manifest["final_digest"]
@@ -477,6 +523,8 @@ def assemble_chunks(directory,cache,*,renderer="cycles"):
     try:
         for folder,piece in pieces:
             for entry in piece["frames"]:
+                if "sha256" in entry:
+                    assert hashlib.sha256((folder/entry["file"]).read_bytes()).hexdigest()==entry["sha256"],"Cached image changed after rendering"
                 if entry["new_chapter"]:
                     if chapters:
                         chapters[-1]["end_seconds"]=writer.frames/fps
@@ -500,6 +548,7 @@ def assemble_chunks(directory,cache,*,renderer="cycles"):
                                duration=[d for _,d in preview],loop=0,optimize=True)
         summary={**manifest,"replay_verified":True,"render_method":"verified contiguous chunks",
                  "presentation":presentation,
+                 "render_sources":pieces[0][1].get("sources"),
                  "video_frames":writer.frames,"video_fps":fps,"video_seconds":writer.frames/fps,
                  "render_stride":stride,"actions_sha256":digest}
         save_json(directory/"summary.json",summary)
@@ -522,15 +571,19 @@ def main():
     parser.add_argument("--render-stride",type=int,default=5)
     parser.add_argument("--fps",type=int,default=10)
     parser.add_argument("--max-steps",type=int,default=9000)
+    parser.add_argument("--max-render-frames",type=int,help="Save this many new frames per chunk invocation, then resume with the same command")
     add_render_arguments(parser)
     args=parser.parse_args()
     if min(args.render_stride,args.fps,args.max_steps,args.samples,args.threads)<=0:
         parser.error("stride, fps, max-steps, samples, and threads must be positive")
+    if args.max_render_frames is not None and args.max_render_frames<=0:
+        parser.error("max-render-frames must be positive")
     rendering=dict(renderer=args.renderer,blender=args.blender,samples=args.samples,threads=args.threads)
     if args.render_chunk:
         if not args.milestones:
             parser.error("--render-chunk requires --milestones FIRST LAST")
-        render_chunk(args.render_chunk,args.cache,*args.milestones,args.render_stride,args.fps,**rendering)
+        render_chunk(args.render_chunk,args.cache,*args.milestones,args.render_stride,args.fps,
+                     max_frames=args.max_render_frames,**rendering)
         return
     if args.assemble:
         assemble_chunks(args.assemble,args.cache,renderer=args.renderer)

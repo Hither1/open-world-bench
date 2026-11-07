@@ -41,7 +41,7 @@ class PresentationRenderer:
     """Render actual states at presentation resolution without stepping the env."""
 
     def __init__(self, *, backend="cycles", width=960, height=540,
-                 blender=None, samples=48, threads=8):
+                 blender=None, samples=48, threads=8, device=None):
         if backend not in ("cycles", "cpu"):
             raise ValueError("renderer must be 'cycles' or 'cpu'")
         if any(not isinstance(n, int) or n <= 0 for n in (width, height, samples, threads)):
@@ -49,6 +49,9 @@ class PresentationRenderer:
         self.backend = backend
         self.width, self.height = width, height
         self.samples, self.threads = samples, threads
+        self.device = device or os.environ.get("OWB_CYCLES_DEVICE", "CPU")
+        if self.device not in ("CPU", "CUDA", "OPTIX"):
+            raise ValueError("Cycles device must be CPU, CUDA, or OPTIX")
         self.blender = resolve_blender(blender) if backend == "cycles" else None
         self._workspace = None
 
@@ -56,7 +59,7 @@ class PresentationRenderer:
     def metadata(self):
         result = dict(backend=self.backend, width=self.width, height=self.height)
         if self.backend == "cycles":
-            result.update(samples=self.samples, threads=self.threads)
+            result.update(samples=self.samples, threads=self.threads, device=self.device)
         return result
 
     def render(self, env):
@@ -74,7 +77,8 @@ class PresentationRenderer:
         script = Path(__file__).with_name("blender_scene.py")
         command = [self.blender, "--background", "--factory-startup", "--python-exit-code", "1",
                    "--python", str(script), "--", "--scene", str(snapshot), "--output", str(output),
-                   "--samples", str(self.samples), "--threads", str(self.threads)]
+                   "--samples", str(self.samples), "--threads", str(self.threads),
+                   "--device", self.device]
         with log.open("w") as stream:
             result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT)
         if result.returncode or not output.is_file():

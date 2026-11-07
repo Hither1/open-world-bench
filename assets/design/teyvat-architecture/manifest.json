@@ -1,0 +1,687 @@
+{
+  "task": "b",
+  "seed": 7,
+  "state_digest": "743b63fe968e34c8627d55b0f852c16fee8e285506bcded45c25f8f565de92bb",
+  "scope": "Actual compact reference course; presentation cameras only",
+  "renderer": {
+    "engine": "Blender Cycles",
+    "device": "CUDA",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "denoising": true,
+    "resolution_percentage": 100,
+    "blender_version": "Blender 4.5.4 LTS"
+  },
+  "buildings": [
+    {
+      "id": "architecture:op000_00",
+      "kind": "timber_house",
+      "position": [
+        -168.0,
+        12.0,
+        -186.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 2468763416,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op001_00",
+      "kind": "pavilion",
+      "position": [
+        -122.0,
+        12.0,
+        -186.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 1849372600,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op002_01",
+      "kind": "pavilion",
+      "position": [
+        -76.0,
+        12.0,
+        -186.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 2744547836,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op003_02",
+      "kind": "timber_house",
+      "position": [
+        -48.0,
+        12.0,
+        -186.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 2513781978,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op004_02",
+      "kind": "ruin_gate",
+      "position": [
+        34.0,
+        12.0,
+        -150.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 3705749475,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op005_03",
+      "kind": "ruin_gate",
+      "position": [
+        44.0,
+        12.0,
+        -186.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 3053395826,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op006_04",
+      "kind": "timber_house",
+      "position": [
+        126.0,
+        12.0,
+        -150.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 2415863187,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op007_04",
+      "kind": "windmill",
+      "position": [
+        154.0,
+        12.0,
+        -186.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 3490122688,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op008_05",
+      "kind": "windmill",
+      "position": [
+        172.0,
+        12.0,
+        -104.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 575454411,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op010_06",
+      "kind": "market_stall",
+      "position": [
+        90.0,
+        12.0,
+        -140.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 2482388405,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op011_07",
+      "kind": "watchtower",
+      "position": [
+        16.0,
+        12.0,
+        -140.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 69983240,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op012_07",
+      "kind": "watchtower",
+      "position": [
+        -12.0,
+        12.0,
+        -104.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 2124237919,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op013_08",
+      "kind": "ruin_gate",
+      "position": [
+        -76.0,
+        12.0,
+        -104.0
+      ],
+      "yaw": -0.0,
+      "appearance": 1762055025,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op014_09",
+      "kind": "market_stall",
+      "position": [
+        -122.0,
+        12.0,
+        -104.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2996867765,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op015_09",
+      "kind": "pavilion",
+      "position": [
+        -168.0,
+        12.0,
+        -140.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 1508229892,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op016_10",
+      "kind": "pavilion",
+      "position": [
+        -168.0,
+        12.0,
+        -58.0
+      ],
+      "yaw": -0.0,
+      "appearance": 1518815201,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op017_11",
+      "kind": "windmill",
+      "position": [
+        -122.0,
+        12.0,
+        -58.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2279971513,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op018_12",
+      "kind": "ruin_gate",
+      "position": [
+        -76.0,
+        12.0,
+        -58.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2913657517,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op019_13",
+      "kind": "market_stall",
+      "position": [
+        -12.0,
+        12.0,
+        -58.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 2882915931,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op020_13",
+      "kind": "pavilion",
+      "position": [
+        -2.0,
+        12.0,
+        -94.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 3252120542,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op021_14",
+      "kind": "pavilion",
+      "position": [
+        126.0,
+        12.0,
+        -104.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 610337723,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op022_15",
+      "kind": "market_stall",
+      "position": [
+        108.0,
+        12.0,
+        -58.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2610334316,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op023_15",
+      "kind": "pavilion",
+      "position": [
+        136.0,
+        12.0,
+        -94.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 3161991218,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op024_15",
+      "kind": "windmill",
+      "position": [
+        154.0,
+        12.0,
+        -12.0
+      ],
+      "yaw": -0.0,
+      "appearance": 1299450188,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op025_16",
+      "kind": "ruin_gate",
+      "position": [
+        90.0,
+        12.0,
+        -48.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 394641790,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op026_16",
+      "kind": "pavilion",
+      "position": [
+        44.0,
+        12.0,
+        -48.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 2107712986,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op027_17",
+      "kind": "windmill",
+      "position": [
+        16.0,
+        12.0,
+        -12.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2493715729,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op028_17",
+      "kind": "ruin_gate",
+      "position": [
+        -30.0,
+        12.0,
+        -48.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 3495249816,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op029_18",
+      "kind": "market_stall",
+      "position": [
+        -76.0,
+        12.0,
+        -12.0
+      ],
+      "yaw": -0.0,
+      "appearance": 1860509064,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op030_18",
+      "kind": "timber_house",
+      "position": [
+        -122.0,
+        12.0,
+        -12.0
+      ],
+      "yaw": -0.0,
+      "appearance": 3606236388,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op031_18",
+      "kind": "pavilion",
+      "position": [
+        -186.0,
+        12.0,
+        -48.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 347375832,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op032_19",
+      "kind": "windmill",
+      "position": [
+        -150.0,
+        12.0,
+        34.0
+      ],
+      "yaw": 0.7853981633974483,
+      "appearance": 4090249983,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op033_19",
+      "kind": "pavilion",
+      "position": [
+        -122.0,
+        12.0,
+        34.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2463590629,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op034_20",
+      "kind": "pavilion",
+      "position": [
+        -76.0,
+        12.0,
+        34.0
+      ],
+      "yaw": -0.0,
+      "appearance": 450463925,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op035_21",
+      "kind": "pavilion",
+      "position": [
+        -30.0,
+        12.0,
+        -2.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 4132078704,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op036_22",
+      "kind": "pavilion",
+      "position": [
+        -2.0,
+        12.0,
+        -2.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 2111321262,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op037_22",
+      "kind": "windmill",
+      "position": [
+        62.0,
+        12.0,
+        -2.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 1017133480,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op038_22",
+      "kind": "ruin_gate",
+      "position": [
+        108.0,
+        12.0,
+        34.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2122777377,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op039_23",
+      "kind": "ruin_gate",
+      "position": [
+        136.0,
+        12.0,
+        -2.0
+      ],
+      "yaw": -2.356194490192345,
+      "appearance": 2199331548,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op040_23",
+      "kind": "windmill",
+      "position": [
+        154.0,
+        12.0,
+        80.0
+      ],
+      "yaw": -0.0,
+      "appearance": 2389901376,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op041_23",
+      "kind": "market_stall",
+      "position": [
+        108.0,
+        12.0,
+        80.0
+      ],
+      "yaw": -0.0,
+      "appearance": 150077320,
+      "foundation_depth": 0.0
+    },
+    {
+      "id": "architecture:op042_23",
+      "kind": "pavilion",
+      "position": [
+        62.0,
+        12.0,
+        44.0
+      ],
+      "yaw": -3.141592653589793,
+      "appearance": 1152938392,
+      "foundation_depth": 0.0
+    }
+  ],
+  "views": [
+    {
+      "kind": "timber_house",
+      "building": {
+        "id": "architecture:op000_00",
+        "kind": "timber_house",
+        "position": [
+          -168.0,
+          12.0,
+          -186.0
+        ],
+        "yaw": -3.141592653589793,
+        "appearance": 2468763416,
+        "foundation_depth": 0.0
+      },
+      "snapshot": "timber_house.npz",
+      "image": "timber_house.png",
+      "camera": {
+        "eye": [
+          -182.0,
+          23.0,
+          -165.0
+        ],
+        "target": [
+          -168.0,
+          14.6,
+          -186.0
+        ]
+      },
+      "image_sha256": "76515c7bced4d4a63ef774b9b4ee7440c8f899128482ae4f14b71da1962416cf"
+    },
+    {
+      "kind": "pavilion",
+      "building": {
+        "id": "architecture:op001_00",
+        "kind": "pavilion",
+        "position": [
+          -122.0,
+          12.0,
+          -186.0
+        ],
+        "yaw": -3.141592653589793,
+        "appearance": 1849372600,
+        "foundation_depth": 0.0
+      },
+      "snapshot": "pavilion.npz",
+      "image": "pavilion.png",
+      "camera": {
+        "eye": [
+          -136.0,
+          23.0,
+          -165.0
+        ],
+        "target": [
+          -122.0,
+          14.6,
+          -186.0
+        ]
+      },
+      "image_sha256": "b1f8beaed5be02bbf4cc848f36d2d13e6706571b2c855c89ff0acc145ce0dfb3"
+    },
+    {
+      "kind": "ruin_gate",
+      "building": {
+        "id": "architecture:op004_02",
+        "kind": "ruin_gate",
+        "position": [
+          34.0,
+          12.0,
+          -150.0
+        ],
+        "yaw": 0.7853981633974483,
+        "appearance": 3705749475,
+        "foundation_depth": 0.0
+      },
+      "snapshot": "ruin_gate.npz",
+      "image": "ruin_gate.png",
+      "camera": {
+        "eye": [
+          29.05025291442871,
+          23.0,
+          -174.7487335205078
+        ],
+        "target": [
+          34.0,
+          14.6,
+          -150.0
+        ]
+      },
+      "image_sha256": "0e2cc5cabf3b78ac3571219557e99d62c1058258aff014b267f2e7574294b73c"
+    },
+    {
+      "kind": "windmill",
+      "building": {
+        "id": "architecture:op007_04",
+        "kind": "windmill",
+        "position": [
+          154.0,
+          12.0,
+          -186.0
+        ],
+        "yaw": -3.141592653589793,
+        "appearance": 3490122688,
+        "foundation_depth": 0.0
+      },
+      "snapshot": "windmill.npz",
+      "image": "windmill.png",
+      "camera": {
+        "eye": [
+          140.0,
+          23.0,
+          -165.0
+        ],
+        "target": [
+          154.0,
+          14.6,
+          -186.0
+        ]
+      },
+      "image_sha256": "e87a81359a6752a443ebf2f3f5096544fbc380b89643427d74a1e9a7c8bd5c78"
+    }
+  ],
+  "sources": {
+    "owb/scripts/teyvat_reference.py": "8a4a77abaef4e8530fa2627505a515e755daa7397160576e767bd5ec59f57efc",
+    "owb/render/__init__.py": "cada2e5a3276c0fbc42b5d0d436fce358b421eecd16fbf0b7c226fa652505784",
+    "owb/render/blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+    "owb/render/blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c",
+    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "owb/render/camera.py": "934c485b32ccda941bea94a65e546f7d15a8d61ab25f0f4111aa3544057557fa",
+    "owb/render/hud.py": "7e63200ca1533b7d8b525f3f7b8a5217fb6c50e7d5946250679f03ee9ca302f5",
+    "owb/render/landscape.py": "962cc0032d566099efc22a7f2f6c5eaee1565bd9418f9ef99cb5021054f8cbd0",
+    "owb/render/models.py": "5f6fc94413ff03c85db124c0c6b0ab1fea98ef23fdfa8656eae2cbf357f7c66a",
+    "owb/render/palette.py": "f44dfade4f9d2245b7374086e913353af2cf6679e27fab1846ec82605f296c4c",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/raycast.py": "cab565518416d25ef415dfb95de913f149259a47af4ea7898d7145e2bd08a1dc",
+    "owb/render/scene_export.py": "bd093a6edb679b3c140af5640931f660d0bab6c7b58ccffda21b950176f0d20b",
+    "owb/render/shadows.py": "1db68500167dc0778d53d2fe5fb952d02efb6843fffcff6e552969a2fef7dfe5",
+    "owb/render/skylands_campaign.py": "7261032d4f587b8fd6c23f6f528b7044558b3086c4a8e0fb8479bdfb4c40c0d1",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "open_world_bench/__init__.py": "e3272367dc2b279b3850dfb4d1eb50531112433005210f841d5cb1ee6d127795",
+    "open_world_bench/architecture.py": "ab0f1d6fb3f5f2caa28957f60859cd75c263d47e1aecaef6e4c1398d4c143772",
+    "open_world_bench/camera.py": "a1669aa0d09375f8771d8d601d7f877a441b669fdf7da2ac16bd02528b4cb0b8",
+    "open_world_bench/campaign_tasks.py": "32e494d0dd262ae9efd763ab167f16b3652f2120c69f32b2d87c27169f97e6aa",
+    "open_world_bench/character.py": "89b169a174af06df3307e46f0a824e15bc7b76bd2bb08ae5e8b318da9eddc072",
+    "open_world_bench/elements.py": "04e371edf0579a051409747b33f22c9601c1bf311f47bcb8051531bc95af118b",
+    "open_world_bench/env.py": "08246496be1a3a4c89af7691574b801fa62b34e92534b1d262be0023fe17a2f9",
+    "open_world_bench/events.py": "d96d33e798017ae7904efb4ccf36b56993467c7eda5170d7c054403ba931b4ec",
+    "open_world_bench/math3d.py": "0af565bdccfba69c84e2c89c95bd8e6a3d63f4feefcbb92874959e245e22c8af",
+    "open_world_bench/noise.py": "b99ae1f423b8fe311dc69bd43e5d5672563bea95cda6dcc8f39326fed3f3a8fc",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/reference_policy.py": "69ee29c39aa42eb30bf1141226cdaa528aae46e11e1de62601573ef7f882574f",
+    "open_world_bench/reference_tasks.py": "2eb93ad3f9629d0d378f5d13b4854cd6d85d51584a0bd6b834fea2fb5f1b81c8",
+    "open_world_bench/scatter.py": "51542646055dc279417940ea34f2bb86942bfd20447742c8e522ea4d66a874f4",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425",
+    "open_world_bench/render/__init__.py": "bdf55adfb0bae4641ded9669e4693269a648229647ce96e42dc8f3efd480e02c",
+    "open_world_bench/render/architecture.py": "8df5b2e18fd82339a7223d983160eaf790c59d346aa98bdc10e937919f3ffec7",
+    "open_world_bench/render/assets.py": "9c7b0ec4dcb6ccf782a2ce9b558bba71f8a915b850ca70b971f303eabb86a236",
+    "open_world_bench/render/base.py": "5b07ca91b3213c3ee3020c7883b9c4c8ce568950e3b7b2132d50a4618810241a",
+    "open_world_bench/render/hud.py": "067e00e1c90016e8e553667e0375dc9bf9c0f555dbfd4ed55c5d591b527037ea",
+    "open_world_bench/render/meshes.py": "c0f014a2f1fc6570d49834c6718b8d84e26104d62a3708d5a9fccd804d946231",
+    "open_world_bench/render/raster.py": "bdf38b4a6e394242a0a7f13b7f31db3a898662f9873762dbbc30cfaa0a7b4f8a",
+    "open_world_bench/render/soft_renderer.py": "49dca440ee93150d18bad483c31f8163fa70e7f369360dc4cd9ca6568a028768",
+    "open_world_bench/render/style.py": "c85c6122f71e260b99650eb95096ae252bb3a8028a0dcd811307c075560bc856"
+  }
+}

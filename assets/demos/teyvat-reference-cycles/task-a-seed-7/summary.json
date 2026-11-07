@@ -1,0 +1,221 @@
+{
+  "task": "a",
+  "seed": 7,
+  "controller": "privileged native-action ReferencePolicy",
+  "verification": {
+    "success": true,
+    "failures": [],
+    "completed": 12,
+    "required": 12,
+    "scope": "compact native-simulator reference prototype"
+  },
+  "initial_digest": "b8b7816f3c936fc674e4be1b386e5a401aa7f4ce9e12ec83c32b0fc7a9b567df",
+  "final_digest": "268951b873980abed005fb688d8336e889cbecc218952ecd3a29956369c5cf1f",
+  "decisions": 1118,
+  "simulated_seconds": 223.59999999998988,
+  "event_counts": {
+    "interact": 15,
+    "talk": 1,
+    "mechanism_feedback": 28,
+    "operation_complete": 17,
+    "party_swap": 17,
+    "skill": 19,
+    "relay_application": 15,
+    "move_land": 8,
+    "relay_active": 6,
+    "activate": 12,
+    "milestone_complete": 12,
+    "relay_interrupted": 2,
+    "player_hit": 4,
+    "enemy_hit": 6,
+    "reaction": 2,
+    "swing": 2,
+    "defeat": 2,
+    "item_acquired": 3,
+    "item_consumed": 3,
+    "item_granted": 2,
+    "designed_context_boundary": 2,
+    "lift_started": 1,
+    "lift_arrived": 1
+  },
+  "milestones": [
+    {
+      "id": "A01",
+      "time": 13.233333,
+      "operations": [
+        "op000_00",
+        "op001_00"
+      ]
+    },
+    {
+      "id": "A02",
+      "time": 27.233333,
+      "operations": [
+        "op002_01"
+      ]
+    },
+    {
+      "id": "A03",
+      "time": 50.833333,
+      "operations": [
+        "op003_02"
+      ]
+    },
+    {
+      "id": "A04",
+      "time": 76.033333,
+      "operations": [
+        "op005_03",
+        "op006_03"
+      ]
+    },
+    {
+      "id": "A05",
+      "time": 111.633333,
+      "operations": [
+        "op007_04",
+        "op008_04"
+      ]
+    },
+    {
+      "id": "A06",
+      "time": 120.433333,
+      "operations": [
+        "op009_05"
+      ]
+    },
+    {
+      "id": "A07",
+      "time": 148.833333,
+      "operations": [
+        "op010_06",
+        "op011_06"
+      ]
+    },
+    {
+      "id": "A08",
+      "time": 162.033333,
+      "operations": [
+        "op012_07"
+      ]
+    },
+    {
+      "id": "A09",
+      "time": 177.633333,
+      "operations": [
+        "op013_08"
+      ]
+    },
+    {
+      "id": "A10",
+      "time": 196.433333,
+      "operations": [
+        "op014_09",
+        "op015_09"
+      ]
+    },
+    {
+      "id": "A11",
+      "time": 208.466667,
+      "operations": [
+        "op016_10"
+      ]
+    },
+    {
+      "id": "A12",
+      "time": 223.433333,
+      "operations": [
+        "op017_11"
+      ]
+    }
+  ],
+  "decision_seconds": 0.2,
+  "limitations": [
+    "Compact authored course, not the full island-scale task suite",
+    "Privileged reference controller: no claim about learned memory or model performance",
+    "Ferry/causeway repair represented by item exchanges and access milestones",
+    "Native service lift and vent flights; no teleportation by the controller",
+    "Sentinel trials test phase mechanics without active sentinel damage",
+    "Designed context boundaries logged, not evaluated with a language-model memory store"
+  ],
+  "replay_verified": true,
+  "render_method": "verified contiguous chunks",
+  "presentation": {
+    "backend": "cycles",
+    "width": 864,
+    "height": 486,
+    "samples": 48,
+    "threads": 8,
+    "device": "CUDA",
+    "layout": "party-continuity-v1",
+    "swap_before_hold_seconds": 0.4,
+    "swap_after_hold_seconds": 1.2
+  },
+  "render_sources": {
+    "owb/scripts/teyvat_reference.py": "f140dcc18145b2c00fbaa978fedcad77a3ed1324e867d4d7825f5be903a82220",
+    "owb/render/__init__.py": "cada2e5a3276c0fbc42b5d0d436fce358b421eecd16fbf0b7c226fa652505784",
+    "owb/render/blender_scene.py": "f2b1a40b5e9557ed5ed595fbef64063eb8f0ae76f4597849d06281101e8cdb4e",
+    "owb/render/camera.py": "934c485b32ccda941bea94a65e546f7d15a8d61ab25f0f4111aa3544057557fa",
+    "owb/render/hud.py": "7e63200ca1533b7d8b525f3f7b8a5217fb6c50e7d5946250679f03ee9ca302f5",
+    "owb/render/landscape.py": "962cc0032d566099efc22a7f2f6c5eaee1565bd9418f9ef99cb5021054f8cbd0",
+    "owb/render/models.py": "5f6fc94413ff03c85db124c0c6b0ab1fea98ef23fdfa8656eae2cbf357f7c66a",
+    "owb/render/palette.py": "f44dfade4f9d2245b7374086e913353af2cf6679e27fab1846ec82605f296c4c",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/raycast.py": "cab565518416d25ef415dfb95de913f149259a47af4ea7898d7145e2bd08a1dc",
+    "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
+    "owb/render/shadows.py": "1db68500167dc0778d53d2fe5fb952d02efb6843fffcff6e552969a2fef7dfe5",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "open_world_bench/__init__.py": "e3272367dc2b279b3850dfb4d1eb50531112433005210f841d5cb1ee6d127795",
+    "open_world_bench/camera.py": "37680df1e04438d73394e77cec0138f11c90d34bef4bcbebbcf4569182f26441",
+    "open_world_bench/character.py": "cb7125d7d351046691ee97f67b2404977c7e15bf939bd406701bf08c68ba6250",
+    "open_world_bench/elements.py": "04e371edf0579a051409747b33f22c9601c1bf311f47bcb8051531bc95af118b",
+    "open_world_bench/env.py": "c5f6f390c255b83f07ad372ed19c45504855edd5effc05035764c1e63c43f538",
+    "open_world_bench/events.py": "d96d33e798017ae7904efb4ccf36b56993467c7eda5170d7c054403ba931b4ec",
+    "open_world_bench/math3d.py": "0af565bdccfba69c84e2c89c95bd8e6a3d63f4feefcbb92874959e245e22c8af",
+    "open_world_bench/noise.py": "b99ae1f423b8fe311dc69bd43e5d5672563bea95cda6dcc8f39326fed3f3a8fc",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/reference_policy.py": "69ee29c39aa42eb30bf1141226cdaa528aae46e11e1de62601573ef7f882574f",
+    "open_world_bench/reference_tasks.py": "2ef01d49c603078ac4f9d3538f5e6285604a415775a6e98a99e7a391d0a84a0e",
+    "open_world_bench/scatter.py": "51542646055dc279417940ea34f2bb86942bfd20447742c8e522ea4d66a874f4",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "open_world_bench/world.py": "a0ee40db079f3d3617fafdd87dd0d701c7574ff8af8cbc10c5ce0f909166be08",
+    "open_world_bench/render/__init__.py": "bdf55adfb0bae4641ded9669e4693269a648229647ce96e42dc8f3efd480e02c",
+    "open_world_bench/render/assets.py": "9c7b0ec4dcb6ccf782a2ce9b558bba71f8a915b850ca70b971f303eabb86a236",
+    "open_world_bench/render/base.py": "5b07ca91b3213c3ee3020c7883b9c4c8ce568950e3b7b2132d50a4618810241a",
+    "open_world_bench/render/hud.py": "067e00e1c90016e8e553667e0375dc9bf9c0f555dbfd4ed55c5d591b527037ea",
+    "open_world_bench/render/meshes.py": "c0f014a2f1fc6570d49834c6718b8d84e26104d62a3708d5a9fccd804d946231",
+    "open_world_bench/render/raster.py": "bdf38b4a6e394242a0a7f13b7f31db3a898662f9873762dbbc30cfaa0a7b4f8a",
+    "open_world_bench/render/soft_renderer.py": "aaed918fe0ed89b1ab6dcf9bdc10895b2bc19e7bbf7aeb7896d3ba7f7e69de5c",
+    "open_world_bench/render/style.py": "c85c6122f71e260b99650eb95096ae252bb3a8028a0dcd811307c075560bc856"
+  },
+  "video_frames": 605,
+  "video_fps": 10,
+  "video_seconds": 60.5,
+  "render_stride": 8,
+  "actions_sha256": "0fa9ea2e6d7681d2a199268d40ef3bc6c0da6116581ee3dcdd2c71a922772b37",
+  "toolchain": {
+    "blender": {
+      "version": "4.5.4 LTS",
+      "build_hash": "b3efe983cc58",
+      "archive_sha256": "2e6ef8e99fc36327270429ddc8e7bad2859dd878a5a137d2e0bf0f02f6792505"
+    },
+    "ffmpeg": {
+      "version": "ffmpeg version 7.0.2-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2024 the FFmpeg developers",
+      "executable_sha256": "e7e7fb30477f717e6f55f9180a70386c62677ef8a4d4d1a5d948f4098aa3eb99"
+    },
+    "cycles": {
+      "device": "CUDA",
+      "samples": 48,
+      "denoising": true,
+      "max_bounces": 6,
+      "resolution_percentage": 100,
+      "view_transform": "AgX",
+      "look": "AgX - Medium High Contrast",
+      "exposure": 0.5
+    },
+    "gpu_and_driver": [
+      "NVIDIA A100-SXM4-40GB, 610.57.04",
+      "NVIDIA RTX PRO 6000 Blackwell Server Edition, 610.57.04"
+    ]
+  }
+}

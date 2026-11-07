@@ -90,6 +90,22 @@ def test_direct_and_chunk_recorders_preserve_the_same_swap_timeline(monkeypatch,
     assert sum(e["repeats"] for p in indices for e in p["frames"])==summary["video_frames"]
     assert indices[-1]["checkpoint"]==manifest["final_digest"]
 
+    # An interrupted chunk must reuse only intact frames from the same settings.
+    resumed=tmp_path/"resumed"
+    seen.clear()
+    assert recorder.render_chunk(directory,resumed,1,2,stride=8,fps=10,max_frames=2) is False
+    assert len(seen)==2
+    assert not list(resumed.glob("*/index.json"))
+    assert recorder.render_chunk(directory,resumed,1,2,stride=8,fps=10) is True
+    expected=[item for item in direct if item[0]<=rows[next(i for i,r in enumerate(rows) if r["milestone"]=="A03")-1]["step"]]
+    assert seen==expected
+    with pytest.raises(RuntimeError,match="settings, source files, or trace changed"):
+        recorder.render_chunk(directory,resumed,1,2,stride=9,fps=10)
+    image_path=next(resumed.glob("*/*.png"))
+    image_path.write_bytes(b"corrupted image")
+    with pytest.raises(RuntimeError,match="image hash"):
+        recorder.render_chunk(directory,resumed,1,2,stride=8,fps=10)
+
 
 def test_missing_cycles_is_an_error_not_a_cpu_fallback(monkeypatch):
     monkeypatch.setattr("owb.render.presentation.shutil.which", lambda _: None)
@@ -102,10 +118,12 @@ def test_missing_cycles_is_an_error_not_a_cpu_fallback(monkeypatch):
 def test_failed_cycles_render_is_reported(monkeypatch):
     monkeypatch.setattr("owb.render.presentation.export_scene", lambda env, path, **kw: path.write_bytes(b"snapshot"))
     def fail(command, stdout, **kwargs):
+        assert command[-2:]==["--device","CUDA"]
         stdout.write("Renderer test failure")
         return SimpleNamespace(returncode=1)
     monkeypatch.setattr("owb.render.presentation.subprocess.run", fail)
-    with PresentationRenderer(blender=sys.executable) as renderer:
+    with PresentationRenderer(blender=sys.executable,device="CUDA") as renderer:
+        assert renderer.metadata["device"]=="CUDA"
         with pytest.raises(RuntimeError, match="Renderer test failure"):
             renderer.render(object())
 

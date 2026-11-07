@@ -208,6 +208,10 @@ def _teyvat(native, size):
     ):
         color = color * (1 - weight[:, None]) + albedo * weight[:, None]
     scene.add("Island terrain", triangles, color, smooth=True, material="terrain")
+    if world.architecture is not None:
+        scene.metadata["architecture"] = dict(
+            revision=1, collision="structural boxes; roofs are not traversal platforms",
+            buildings=[b.metadata() for b in world.architecture.buildings])
     extent = terrain.cfg.size * 4
     plane = np.array([[[-extent, terrain.cfg.sea_level, -extent], [-extent, terrain.cfg.sea_level, extent]],
                       [[extent, terrain.cfg.sea_level, -extent], [extent, terrain.cfg.sea_level, extent]]])
@@ -265,6 +269,11 @@ def _wildlands(native, size):
     triangles, _ = _voxel_faces(world.vox, world.vox == B.WATER)
     scene.add("Water", triangles, (0.16, 0.61, 0.66), water=True)
     entities = native.npcs.render_list(agent.pos) + native.bodies.render_list() + native.gameplay.render_list()
+    if world.meta.get("theme") == "skylands":
+        entities += native._extra_entities()
+        scene.metadata["environment"] = "skylands"
+    if hasattr(native, "presentation_lights"):
+        scene.metadata["point_lights"] = native.presentation_lights()
     if cfg.render_cfg.third_person:
         entities.append(dict(pos=tuple(agent.pos + (0, 0.9, 0)), radius=0.35, height=1.75,
             color=(59, 128, 147), semantic=B.SEM_SELF, yaw=agent.yaw,
@@ -297,9 +306,11 @@ def capture_scene(env, *, width=960, height=540):
         return _teyvat(native, (width, height))
     # Deliberately exclude subclasses with extra scene content until adapted.
     from ..sims.voxel.env.wildlands_reference import WildlandsReferenceEnv
-    if type(native) in (WildlandsEnv, WildlandsReferenceEnv):
+    from ..sims.voxel.env.skylands import SkylandsEnv
+    from ..sims.voxel.env.skylands_reference import SkylandsReferenceEnv
+    if type(native) in (WildlandsEnv, WildlandsReferenceEnv, SkylandsEnv, SkylandsReferenceEnv):
         return _wildlands(native, (width, height))
-    raise ValueError("scene export currently supports teyvat and wildlands")
+    raise ValueError("scene export currently supports teyvat, wildlands, and skylands")
 
 
 def export_scene(env, path, *, width=960, height=540):

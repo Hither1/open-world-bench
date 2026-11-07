@@ -15,6 +15,9 @@ OLD_TO_NEW = [
     ("open_world_bench.reference_policy", "owb.sims.teyvat.reference_policy"),
     ("open_world_bench.render.meshes", "owb.sims.teyvat.render.meshes"),
     ("open_world_bench.quests.schema", "owb.sims.teyvat.quests.schema"),
+    ("open_world_bench.architecture", "owb.sims.teyvat.architecture"),
+    ("open_world_bench.campaign_tasks", "owb.sims.teyvat.campaign_tasks"),
+    ("open_world_bench.render.architecture", "owb.sims.teyvat.render.architecture"),
     ("owb.core.blocks", "owb.sims.voxel.core.blocks"),
     ("owb.core.config", "owb.sims.voxel.core.config"),
     ("owb.world.worldgen", "owb.sims.voxel.world.worldgen"),
@@ -23,12 +26,17 @@ OLD_TO_NEW = [
     ("owb.entities.agent", "owb.sims.voxel.entities.agent"),
     ("owb.env", "owb.sims.voxel.env"),
     ("owb.env.wildlands_reference", "owb.sims.voxel.env.wildlands_reference"),
+    ("owb.env.skylands_reference", "owb.sims.voxel.env.skylands_reference"),
+    ("owb.env.skylands_campaign", "owb.sims.voxel.env.skylands_campaign"),
+    ("owb.env.skylands_tempest", "owb.sims.voxel.env.skylands_tempest"),
+    ("owb.world.tempest", "owb.sims.voxel.world.tempest"),
     ("owb.render.landscape", "owb.sims.voxel.render.landscape"),
     ("owb.render.raycast", "owb.sims.voxel.render.raycast"),
 ]
 
 GYM_IDS = ["OpenWorldBench/Wildlands-v0", "OpenWorldBench/Wildlands-Small-v0",
            "OpenWorldBench/Skylands-v0", "OpenWorldBench/Skylands-Small-v0",
+           "OpenWorldBench/Skylands-Tempest-v0", "OpenWorldBench/Skylands-Tempest-Extended-v0",
            "OpenWorldBench/Genshin-v0", "OpenWorldBench/Genshin-Small-v0"]
 
 
@@ -95,9 +103,11 @@ import warnings
 warnings.simplefilter("ignore", DeprecationWarning)
 import open_world_bench
 from gymnasium.envs.registration import registry
-print(registry["OpenWorldBench/Genshin-v0"].entry_point, registry["OpenWorldBench/Wildlands-v0"].entry_point)
+print(*sorted(spec.entry_point for name, spec in registry.items() if name.startswith("OpenWorldBench/")))
 """
-    assert _fresh(code) == ["owb.sims.teyvat.env:OpenWorldEnv", "owb.sims.voxel.env:WildlandsEnv"]
+    entries = _fresh(code)
+    assert len(entries) == len(GYM_IDS)
+    assert all(e.startswith(("owb.sims.teyvat.env:", "owb.sims.voxel.env")) for e in entries), entries
 
 
 @pytest.mark.parametrize("env_id", GYM_IDS)

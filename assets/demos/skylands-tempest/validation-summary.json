@@ -1,0 +1,145 @@
+{
+  "format": "owb-tempest-validation-v1",
+  "checked_at": "2026-11-06T21:18:03.054226+00:00",
+  "success": true,
+  "source_hashes_match": true,
+  "tests": {
+    "tests": 94,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "seconds": 51.841,
+    "sha256": "f5a84dded93beb6950b31fe2f31b52fd140745bc9ffd9cb51055852ff11c2821",
+    "report": "tests.xml"
+  },
+  "runs": [
+    {
+      "directory": "extended-seed-7",
+      "objective": "extended",
+      "seed": 7,
+      "method": "synchronization",
+      "regional_order": [
+        "monitoring",
+        "anchors",
+        "cooling"
+      ],
+      "actions": 42818,
+      "simulated_seconds": 8563.600000013623,
+      "deaths": 0,
+      "regional_milestones": 24,
+      "live_regions": {
+        "cooling": true,
+        "anchors": true,
+        "monitoring": true
+      },
+      "success": true,
+      "final_live_predicate": true,
+      "source_hashes_match": true,
+      "actions_sha256": "a8cb1f294888f2f0c643acf34222f9757eaf7d9fb5e1aa37df7899747b451a96",
+      "final_digest": "0ef346dd21b47cc8466486d61e22449edfd05d8e88b10400c02f11f15dbf1998",
+      "verification_sha256": "6a2b7c7433d3822d3f3251d869161e5b8bd77b90fe5c5028aa48921424899857",
+      "manifest_sha256": "7dbc4507a0085a1fd20ba1ed62e00d0f133ad55265e3c1b6dad389debafa2a77"
+    },
+    {
+      "directory": "extended-grounding-seed-23",
+      "objective": "extended",
+      "seed": 23,
+      "method": "grounding",
+      "regional_order": [
+        "anchors",
+        "cooling",
+        "monitoring"
+      ],
+      "actions": 43856,
+      "simulated_seconds": 8771.200000014378,
+      "deaths": 0,
+      "regional_milestones": 24,
+      "live_regions": {
+        "cooling": true,
+        "anchors": true,
+        "monitoring": true
+      },
+      "success": true,
+      "final_live_predicate": true,
+      "source_hashes_match": true,
+      "actions_sha256": "ae09a2dd4f644534787567a0927f4b7c89f81cb5e52e54957ca69bc4e0ec6cfb",
+      "final_digest": "a505da0196a9cc9d0ee96b79940fbad1c87f59659faf4c113dad1315d3408e6b",
+      "verification_sha256": "94466184c57141ece91088fe5ed671c3354a485ee68cca530aa8c744386d7d1e",
+      "manifest_sha256": "c56de51fd22201b746a9ae574d40d96d12fd04320b4cf4187e47b6317e03a428"
+    },
+    {
+      "directory": "open-capacitors-seed-7",
+      "objective": "open",
+      "seed": 7,
+      "method": "capacitors",
+      "regional_order": [
+        "cooling",
+        "anchors",
+        "monitoring"
+      ],
+      "actions": 3311,
+      "simulated_seconds": 662.200000000082,
+      "deaths": 0,
+      "regional_milestones": 0,
+      "live_regions": {
+        "cooling": false,
+        "anchors": false,
+        "monitoring": false
+      },
+      "success": true,
+      "final_live_predicate": true,
+      "source_hashes_match": true,
+      "actions_sha256": "c268e9e55a868aa1cc8fafd16f3db7d38590cb966fc7d6043e3059605bcabf95",
+      "final_digest": "e4764c98c267c6c8eb90486784b43e192e1995bc8803d2e319e50a40de910b19",
+      "verification_sha256": "6f5be811d7906e1351665eb5e4d3637500db02fa4b0aec021280b729e1c4c716",
+      "manifest_sha256": "496bcb886c14ee6b3dd8055f8d184296b80c3cd8482aeadccac6fa610727c9f0"
+    },
+    {
+      "directory": "open-grounding-seed-23",
+      "objective": "open",
+      "seed": 23,
+      "method": "grounding",
+      "regional_order": [
+        "cooling",
+        "anchors",
+        "monitoring"
+      ],
+      "actions": 3941,
+      "simulated_seconds": 788.2000000001107,
+      "deaths": 0,
+      "regional_milestones": 0,
+      "live_regions": {
+        "cooling": false,
+        "anchors": false,
+        "monitoring": false
+      },
+      "success": true,
+      "final_live_predicate": true,
+      "source_hashes_match": true,
+      "actions_sha256": "deacfb753770d719596ab8b5e86df3a8a1279333bc53cc6c46688eb191fe2f8f",
+      "final_digest": "e0e9a42533ef2308a8c2ba45193d9a8a1627cbc0d85b8bb447ed3885e99ade01",
+      "verification_sha256": "27a1f9c6ca287644d777144f938c7b84df865899f3af29966452686b861f3195",
+      "manifest_sha256": "e97682a1c8bf26953758f989e62978259068638b73b06288d53ce2df5deee484"
+    }
+  ],
+  "architecture": {
+    "count": 50,
+    "kinds": [
+      "archive",
+      "boathouse",
+      "cistern",
+      "foundry",
+      "gantry",
+      "observatory",
+      "pump_house",
+      "shelter",
+      "signal_tower",
+      "workshop"
+    ]
+  },
+  "limitations": [
+    "Privileged scripted references; no learned-agent scores or memory-causality result.",
+    "Measured extended routes take approximately 2.4 simulated hours; no 3\u20136-hour lower bound established.",
+    "Authored voxel collision world; fine facade and machinery details are decorative."
+  ]
+}

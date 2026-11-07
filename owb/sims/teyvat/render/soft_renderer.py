@@ -319,6 +319,9 @@ class SoftRenderer(Renderer):
                     else:
                         _add_prop_lod(batch, PROP_NAMES[int(props.kind[i])], props.pos[i],
                                       float(props.scale[i]), obj_id=10)
+        if s.draw_props:
+            from .architecture import add_architecture
+            add_architecture(batch, world.architecture, eye, s.prop_draw_distance)
         if s.draw_entities:
             from ..world import ENTITY_NAMES
             from ..elements import Element, ELEMENT_COLORS

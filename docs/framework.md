@@ -194,11 +194,11 @@ the video extra for longer recordings.
 
 | Package | Contents |
 | --- | --- |
-| `owb.sims.teyvat` | Teyvat simulator: terrain, world, party, elements, character, camera, quests, sensor renderers (`render/`), `env.OpenWorldEnv`, reference course and privileged reference policy. |
-| `owb.sims.voxel` | Voxel simulator behind Wildlands and Skylands: `core`, `world`, `physics`, `sim`, `entities`, `env` (`WildlandsEnv`, `SkylandsEnv`, `WildlandsReferenceEnv`) and the observation renderers in `render/` (`make_renderer`, raycast, landscape, shadows). |
+| `owb.sims.teyvat` | Teyvat simulator: terrain, world, party, elements, character, camera, quests, architecture, campaign tasks, sensor renderers (`render/`), `env.OpenWorldEnv`, reference course and privileged reference policy. |
+| `owb.sims.voxel` | Voxel simulator behind Wildlands and Skylands: `core`, `world`, `physics`, `sim`, `entities`, `env` (`WildlandsEnv`, `SkylandsEnv`, the Wildlands/Skylands reference, campaign and Tempest envs) and the observation renderers in `render/` (`make_renderer`, raycast, landscape, shadows). |
 | `owb.bench` | Common `BenchmarkEnv`, adapters, rollout and baselines. |
 | `owb.tasks` | Evaluator-side task definitions. |
-| `owb.render` | Presentation only: scene export, Blender Cycles, video encoding. |
+| `owb.render` | Presentation only: scene export (including the Skylands campaign and Tempest meshes), Blender Cycles scripts, video encoding. |
 | `owb.scripts` | `python -m owb.scripts.*` entry points. |
 
 The old import paths still work but are deprecated: `open_world_bench` and its

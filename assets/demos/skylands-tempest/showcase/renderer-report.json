@@ -1,0 +1,27 @@
+{
+  "blender_version": "4.5.4 LTS",
+  "accelerators": [
+    "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+  ],
+  "device": "OPTIX GPU",
+  "samples": 64,
+  "width": 1280,
+  "height": 720,
+  "denoising": true,
+  "max_bounces": 6,
+  "render_sources": {
+    "blender_campaign.py": "66a6f36e10ff7a7a7894df8747b46d30d24486a882ad3722faadd2ba62fa1a64",
+    "blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+  },
+  "ground_cover": {
+    "method": "fixed native meshes in one collection instance",
+    "source_instances": 6163988,
+    "triangles": 123279760,
+    "vertices": 246559520,
+    "stored_faces": 68828453,
+    "prototype_triangulation_verified": true,
+    "full_geometry": true,
+    "distance_culling": false
+  }
+}

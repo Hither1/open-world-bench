@@ -1,0 +1,43 @@
+{
+  "tests": {
+    "passed": 149,
+    "failed": 0,
+    "command": "OPENBLAS_NUM_THREADS=1 python -m pytest -q tests/test_teyvat_architecture.py tests/test_teyvat_reference.py tests/test_asset_diversity.py tests/test_scene_export.py tests/test_framework.py tests/test_combat.py"
+  },
+  "replay": {
+    "a": {
+      "actions": 1118,
+      "milestones": 12,
+      "positions_exact": true,
+      "events_exact": true,
+      "success": true
+    },
+    "b": {
+      "actions": 3038,
+      "milestones": 24,
+      "positions_exact": true,
+      "events_exact": true,
+      "success": true
+    }
+  },
+  "seed7_buildings": {
+    "task_a": 17,
+    "task_b": 42,
+    "regular_island": 9
+  },
+  "preview_job": {
+    "slurm_job_id": 58134039,
+    "renderer": "Blender Cycles",
+    "device": "CUDA",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "views": [
+      "timber_house",
+      "pavilion",
+      "ruin_gate",
+      "windmill"
+    ],
+    "note": "Submitted to the GPU scheduler; render completion and image hashes are recorded separately in manifest.json."
+  }
+}

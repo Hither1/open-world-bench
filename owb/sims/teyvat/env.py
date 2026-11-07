@@ -163,6 +163,9 @@ class OpenWorldEnv(gym.Env):
         if c.randomize_spawn:
             p = self.world.terrain.sample_land(self.rng, 1, min_height=4.0, max_slope_deg=25.0)[0]
             spawn = self.world.ground_pos(float(p[0]), float(p[1]))
+        from .architecture import populate_architecture
+        architecture = populate_architecture(self.world, spawn)
+        self.controller.architecture = self.camera_rig.architecture = architecture
         self.char = self.controller.spawn(float(spawn[0]), float(spawn[2]))
         self.cam = self.camera_rig.reset(self.char)
         self.steps = 0

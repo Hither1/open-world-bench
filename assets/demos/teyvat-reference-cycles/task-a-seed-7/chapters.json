@@ -1,0 +1,98 @@
+[
+  {
+    "id": "A01",
+    "title": "Guided relay repair",
+    "start_seconds": 0.0,
+    "simulation_start": 0.0,
+    "action_start": 1,
+    "end_seconds": 6.0
+  },
+  {
+    "id": "A02",
+    "title": "Repair without coaching",
+    "start_seconds": 6.0,
+    "simulation_start": 13.399999999999963,
+    "action_start": 68,
+    "end_seconds": 11.4
+  },
+  {
+    "id": "A03",
+    "title": "Recover from a fault",
+    "start_seconds": 11.4,
+    "simulation_start": 27.40000000000052,
+    "action_start": 138,
+    "end_seconds": 21.3
+  },
+  {
+    "id": "A04",
+    "title": "Survey the marsh route",
+    "start_seconds": 21.3,
+    "simulation_start": 50.999999999999666,
+    "action_start": 256,
+    "end_seconds": 24.2
+  },
+  {
+    "id": "A05",
+    "title": "Recover the lift casing",
+    "start_seconds": 24.2,
+    "simulation_start": 76.19999999999824,
+    "action_start": 382,
+    "end_seconds": 30.9
+  },
+  {
+    "id": "A06",
+    "title": "Repair the ferry lift",
+    "start_seconds": 30.9,
+    "simulation_start": 111.79999999999622,
+    "action_start": 560,
+    "end_seconds": 32.8
+  },
+  {
+    "id": "A07",
+    "title": "Supply the outpost",
+    "start_seconds": 32.8,
+    "simulation_start": 120.59999999999572,
+    "action_start": 604,
+    "end_seconds": 36.7
+  },
+  {
+    "id": "A08",
+    "title": "Restore a field relay",
+    "start_seconds": 36.7,
+    "simulation_start": 148.99999999999412,
+    "action_start": 746,
+    "end_seconds": 41.1
+  },
+  {
+    "id": "A09",
+    "title": "Stabilize a primed relay",
+    "start_seconds": 41.1,
+    "simulation_start": 162.19999999999337,
+    "action_start": 812,
+    "end_seconds": 46.6
+  },
+  {
+    "id": "A10",
+    "title": "Recover the service cap",
+    "start_seconds": 46.6,
+    "simulation_start": 177.79999999999248,
+    "action_start": 890,
+    "end_seconds": 52.2
+  },
+  {
+    "id": "A11",
+    "title": "Reopen summit access",
+    "start_seconds": 52.2,
+    "simulation_start": 196.5999999999914,
+    "action_start": 984,
+    "end_seconds": 54.3
+  },
+  {
+    "id": "A12",
+    "title": "Commission the summit beacon",
+    "start_seconds": 54.3,
+    "simulation_start": 208.59999999999073,
+    "action_start": 1044,
+    "end_seconds": 60.5
+  }
+]

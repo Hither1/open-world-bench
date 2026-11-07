@@ -52,6 +52,9 @@ class CodexClient:
         self.executable = shutil.which(str(executable))
         if self.executable is None:
             raise ValueError(f"Codex executable not found: {executable}")
+        # Inference changes cwd to an empty temporary directory. Preserve a
+        # caller-supplied relative installation path before that directory switch.
+        self.executable = str(Path(self.executable).resolve())
         self.timeout = timeout
         self.responses = self
 

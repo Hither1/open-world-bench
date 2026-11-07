@@ -102,6 +102,7 @@ class World:
             self.terrain, self.cfg.seed, self.cfg.prop_density)
         self.rng = np.random.default_rng(self.cfg.seed * 104729 + 7)
         self.entities: dict[str, Entity] = {}
+        self.architecture = None  # Populated once task sites and spawn are known.
         self.time_of_day = float(self.cfg.start_time_of_day)
         self.elapsed = 0.0
         self._player_attack_cd = 0.0

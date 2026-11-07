@@ -77,3 +77,28 @@ def test_final_state_is_not_just_historical_milestones(env):
     assert not env.system_operational()
     env._task_outcome([])
     assert not env.success
+
+
+def test_render_resume_reuses_only_verified_frames(tmp_path,monkeypatch):
+    """A headless recorder check; synthetic test pixels are never published."""
+    from pathlib import Path
+    from types import SimpleNamespace
+    from owb.scripts import wildlands_reference as recorder
+    calls=[]
+    class DiagnosticOverlay:
+        def __init__(self,*args):
+            self.renderer=SimpleNamespace(metadata=dict(backend='diagnostic-test'))
+        def frame(self,env,row):
+            calls.append(row['step'])
+            return np.zeros((720,1280,3),np.uint8)
+        def close(self): pass
+    monkeypatch.setattr(recorder,'Overlay',DiagnosticOverlay)
+    trace=Path(__file__).resolve().parents[1]/'assets/demos/wildlands-reference/task-a-seed-7'
+    recorder.render_chunk(trace,tmp_path,1,1,checkpoints=True)
+    assert calls==[1]
+    recorder.render_chunk(trace,tmp_path,1,1,checkpoints=True)
+    assert calls==[1]
+    frame=next(tmp_path.glob('*/*.png'))
+    frame.write_bytes(b'tampered')
+    with pytest.raises(RuntimeError,match='Saved frame'):
+        recorder.render_chunk(trace,tmp_path,1,1,checkpoints=True)

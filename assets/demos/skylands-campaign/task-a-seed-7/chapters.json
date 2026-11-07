@@ -1,0 +1,107 @@
+[
+  {
+    "id": "A01",
+    "title": "Take the observatory commission",
+    "video_seconds": 0,
+    "source_seconds": 0.2,
+    "step": 1
+  },
+  {
+    "id": "A02",
+    "title": "Restore the workshop cargo raft",
+    "video_seconds": 3.0,
+    "source_seconds": 8.199999999999987,
+    "step": 41
+  },
+  {
+    "id": "A03",
+    "title": "Deliver the practice load",
+    "video_seconds": 45.4,
+    "source_seconds": 134.39999999999665,
+    "step": 672
+  },
+  {
+    "id": "A04",
+    "title": "Open the ascent workshop",
+    "video_seconds": 89.8,
+    "source_seconds": 288.3999999999971,
+    "step": 1442
+  },
+  {
+    "id": "A05",
+    "title": "Recover the survey instrument",
+    "video_seconds": 96.7,
+    "source_seconds": 316.80000000000354,
+    "step": 1584
+  },
+  {
+    "id": "A06",
+    "title": "Stage the surface return raft",
+    "video_seconds": 103.1,
+    "source_seconds": 382.2000000000184,
+    "step": 1911
+  },
+  {
+    "id": "A07",
+    "title": "Survey the buried works",
+    "video_seconds": 158.6,
+    "source_seconds": 789.0000000001108,
+    "step": 3945
+  },
+  {
+    "id": "A08",
+    "title": "Establish the depths staging dock",
+    "video_seconds": 188.5,
+    "source_seconds": 1199.4000000000046,
+    "step": 5997
+  },
+  {
+    "id": "A09",
+    "title": "Open the vault service entrance",
+    "video_seconds": 243.3,
+    "source_seconds": 1794.1999999994637,
+    "step": 8971
+  },
+  {
+    "id": "A10",
+    "title": "Extract and secure the navigation core",
+    "video_seconds": 259.1,
+    "source_seconds": 1943.9999999993274,
+    "step": 9720
+  },
+  {
+    "id": "A11",
+    "title": "Ferry the core through the flooded gallery",
+    "video_seconds": 263.4,
+    "source_seconds": 1970.799999999303,
+    "step": 9854
+  },
+  {
+    "id": "A12",
+    "title": "Raise the core to the surface",
+    "video_seconds": 329.4,
+    "source_seconds": 2178.3999999991142,
+    "step": 10892
+  },
+  {
+    "id": "A13",
+    "title": "Recover the staged raft and ferry the core",
+    "video_seconds": 347.4,
+    "source_seconds": 2217.199999999079,
+    "step": 11086
+  },
+  {
+    "id": "A14",
+    "title": "Raise the core to the observatory",
+    "video_seconds": 446.3,
+    "source_seconds": 3449.599999997958,
+    "step": 17248
+  },
+  {
+    "id": "A15",
+    "title": "Restore navigation service",
+    "video_seconds": 469.1,
+    "source_seconds": 3468.9999999979404,
+    "step": 17345
+  }
+]

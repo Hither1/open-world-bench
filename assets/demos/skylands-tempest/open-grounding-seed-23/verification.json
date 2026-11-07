@@ -1,0 +1,73 @@
+{
+  "success": true,
+  "checked_actions": 3941,
+  "checked_positions": true,
+  "checked_events": true,
+  "checked_rewards": true,
+  "final_live_predicate": true,
+  "final_digest": "e0e9a42533ef2308a8c2ba45193d9a8a1627cbc0d85b8bb447ed3885e99ade01",
+  "evaluation": {
+    "success": true,
+    "objective": "open",
+    "milestones": [],
+    "live_regions": {
+      "cooling": false,
+      "anchors": false,
+      "monitoring": false
+    },
+    "engine_disabled": true,
+    "engine_route": "grounding",
+    "locks": [
+      false,
+      false,
+      false
+    ],
+    "capacitors": [
+      3,
+      3,
+      3
+    ],
+    "grounding_live": true,
+    "facts_seen": {
+      "machine_plate": 2985
+    },
+    "decisions": 3941,
+    "simulated_seconds": 788.2000000001107,
+    "deaths": 0,
+    "architecture_count": 50,
+    "architecture_kinds": [
+      "archive",
+      "boathouse",
+      "cistern",
+      "foundry",
+      "gantry",
+      "observatory",
+      "pump_house",
+      "shelter",
+      "signal_tower",
+      "workshop"
+    ]
+  },
+  "sources": {
+    "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+    "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "bd093a6edb679b3c140af5640931f660d0bab6c7b58ccffda21b950176f0d20b",
+    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
+    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+    "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
+    "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80",
+    "owb/env/skylands_tempest.py": "7c25211fb65a76de445120382c670bb45fe1be23cf6daec6b9a1f132dcfbf412",
+    "owb/world/tempest.py": "f663a95de9f19a3f269c67928298a8ccf0410b410d25e60f57372b9e38cbb4ae",
+    "owb/render/tempest.py": "e48bb37e9fb6d1bdee6a57e9dc0dffbf328b7b478af7f0832d5f235d386b5c37",
+    "owb/bench/baselines/skylands_tempest.py": "48eebeb22b3e2cbe45813b4a07a16509905af6a32defce344a078d8c12f37e55",
+    "owb/scripts/skylands_tempest.py": "d7ce9e62580a2f656f8bf71812fa4a4fc74dce67e6eac782e9bc159789d48107",
+    "owb/render/skylands_campaign.py": "669e752fa977f24eab5248af5fa32af517bd5cb196b134220742a6e9e819a677"
+  }
+}

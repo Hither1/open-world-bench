@@ -121,6 +121,13 @@ This is offline rendering and can take substantially longer than simulation.
 MP4 output uses H.264, `yuv420p`, and fast-start metadata for viewer compatibility.
 The recording's `config.json` includes the presentation backend and settings.
 
+Cycles presentation supports an explicit GPU device through
+`OWB_CYCLES_DEVICE=CUDA` or `OWB_CYCLES_DEVICE=OPTIX`. The default hardware device
+is `CPU`; all three use the same full Cycles scene, materials, and sample count.
+The selected device is recorded in presentation metadata. An unavailable GPU
+raises an error instead of switching devices. The standalone Blender script
+accepts the equivalent `--device CPU|CUDA|OPTIX` option.
+
 The reference task recorder (`owb.scripts.teyvat_reference`), screenshot script,
 and native Teyvat `render_hd()` also default to Cycles. Reference frames are
 rendered at 864×486 inside a 1280×720 annotated layout, without upscaling a
