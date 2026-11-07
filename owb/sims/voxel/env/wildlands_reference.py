@@ -337,17 +337,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 s['installed']=True
                 return [dict(type='parts_installed',milestone=m.id,parts=list(m.consumes))]
             if m.kind in MECHANISMS: return MECHANISMS[m.kind].operate(self,m,role,obj)
-            if m.kind=='calibrate':
-                if role.startswith('mark'): s['selected']=int(role[-1]); return [dict(type='calibration_selected',value=s['selected'])]
-                if not s['installed']: return self._fail('install both repair parts first')
-                if s['selected']!=self.calibration: return [dict(type='calibration_trip')]
-                s['engaged']=True; return [dict(type='intake_engaged')]
-            if m.kind=='station':
-                if any(self.satchel[k]<1 for k in m.consumes): return self._fail('required coupling missing')
-                if not s['installed']:
-                    for k in m.consumes: self.satchel[k]-=1
-                    s['installed']=True
-                return [dict(type='station_engaged',milestone=m.id)]
             if m.kind=='exchange':
                 if s['done']: return self._fail('locker empty')
                 if any(self.satchel[k]<1 for k in m.consumes): return self._fail('exchange input missing')
@@ -386,8 +375,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 for e in events:
                     if e['type']=='cook': s['cooked'].extend(k for k in e['effects'] if k in ('cold_resist','heat_resist'))
                 s['done']={'cold_resist','heat_resist'}<=set(s['cooked']) and self.world.get(x-2,29,z+2)==B.CAMPFIRE_LIT
-            if m.kind=='calibrate' and s.get('engaged') and s['selected']==self.calibration: s['elapsed']+=dt
-            if m.kind=='station' and s['installed']: s['elapsed']+=dt
         if self.drained:
             x,_,z=self.agent.pos
             if abs(x-24.5)<2:
