@@ -31,7 +31,9 @@ ALIASES = {
 #: aliases backed by a real shim package: only their submodules go through the finder
 _SHIM_PACKAGES = {"open_world_bench"}
 #: modules whose frames are skipped when attributing the warning
-_SHIM_MODULES = {__name__, "owb", "owb.render", "open_world_bench"}
+_SHIM_MODULES = {__name__, "owb", "owb.render", "open_world_bench",
+                 # explicit re-export shims for modules that moved to owb.agents.oracle
+                 "owb.sims.teyvat.reference_policy", "owb.bench.baselines.wildlands_reference"}
 
 _warned: set[str] = set()
 

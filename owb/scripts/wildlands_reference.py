@@ -9,12 +9,12 @@ import textwrap
 import time
 import numpy as np
 from owb.sims.voxel.env.wildlands_reference import WildlandsReferenceEnv, plain, COMMANDS
-from owb.bench.baselines.wildlands_reference import WildlandsReferencePolicy
+from owb.agents.oracle.wildlands_reference import WildlandsReferencePolicy
 from owb.render.presentation import PresentationRenderer
 from owb.render.video import H264Writer
 
 ROOT=Path(__file__).resolve().parents[2]
-SOURCES=('owb/sims/voxel/env/wildlands_reference.py','owb/bench/baselines/wildlands_reference.py',
+SOURCES=('owb/sims/voxel/env/wildlands_reference.py','owb/agents/oracle/wildlands_reference.py',
          'owb/scripts/wildlands_reference.py','owb/sims/voxel/env/wildlands.py','owb/sims/voxel/physics/character.py',
          'owb/sims/voxel/physics/bodies.py','owb/sims/voxel/physics/elements.py','owb/render/scene_export.py',
          'owb/render/blender_scene.py','owb/render/presentation.py','owb/render/video.py')
