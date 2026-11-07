@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from owb.sims.teyvat.character import MoveState
 from owb.sims.teyvat.elements import Element
 from owb.sims.teyvat.events import Event
 from owb.sims.teyvat.world import EntityKind, World
@@ -71,8 +70,8 @@ class Course:
         return self.current.operations[self.operation_index] if self.current else None
 
     def mechanism(self, op):
-        """The state machine that runs ``op`` (``None`` while a kind is still inline)."""
-        return MECHANISMS.get(op.kind)
+        """The state machine that runs ``op``."""
+        return MECHANISMS[op.kind]
 
     def emit(self, event_type, **payload):
         self.events.append(Event(event_type, payload))
@@ -228,9 +227,7 @@ class Course:
         op=self.op
         if op is None:
             return None
-        if op.kind in MECHANISMS:
-            return MECHANISMS[op.kind].target(self,op)
-        return self.world.get(op.entities[0])
+        return MECHANISMS[op.kind].target(self,op)
 
     def local_entities(self):
         return self.op.entities if self.op else []
@@ -278,36 +275,11 @@ class Course:
             return
         entity=min(candidates,key=lambda e:float(np.linalg.norm(e.pos-char.pos)))
         self.emit("interact",entity=entity.id,operation=op.id)
-        if op.kind in MECHANISMS:
-            MECHANISMS[op.kind].interact(self,op,char,entity)
-        elif op.kind in ("lesson","survey","collect","exchange","dive","lift"):
-            if not self.can_use_items(op):
-                self.feedback("Required mission items are missing.")
-                return
-            if op.kind=="dive" and (char.pos[1]>-2.8 or char.state!=MoveState.SWIMMING):
-                self.feedback("Dive to the chest; surface interaction cannot recover it.")
-                return
-            if op.kind=="lesson":
-                self.dialogue=op.state["text"]
-                self.emit("talk",entity=entity.id,text=self.dialogue)
-                self.feedback(self.dialogue)
-            if op.kind=="lift":
-                if not op.state["riding"]:
-                    self.consume_items(op)
-                    op.state["riding"]=True
-                    self.emit("lift_started",operation=op.id)
-                return
-            self.consume_items(op)
-            if op.state.get("item"):
-                item=op.state["item"]
-                self.inventory[item]=self.inventory.get(item,0)+1
-                self.emit("item_acquired",item=item,entity=entity.id)
-            entity.used=True
-            self.finish_operation()
+        MECHANISMS[op.kind].interact(self,op,char,entity)
 
     def apply_element(self,char,element):
         op=self.op
-        if op is None or op.kind not in ("relay","crossing"):
+        if op is None or not MECHANISMS[op.kind].accepts_elements:
             return
         candidates=[self.world.get(e) for e in op.entities]
         candidates=[e for e in candidates if np.linalg.norm((e.pos-char.pos)[[0,2]])<2.6 and abs(float(e.pos[1]-char.pos[1]))<4.0]
@@ -320,28 +292,13 @@ class Course:
         op=self.op
         if op is None or enemy.id not in op.entities:
             return []
-        return MECHANISMS[op.kind].hit(self,op,enemy,damage,element) if op.kind in MECHANISMS else None
+        return MECHANISMS[op.kind].hit(self,op,enemy,damage,element)
 
     def tick(self,char,dt):
         op=self.op
         if op is None:
             return
-        s=op.state
-        if op.kind in MECHANISMS:
-            MECHANISMS[op.kind].tick(self,op,char,dt)
-        elif op.kind=="lift" and s["riding"]:
-            s["height"]=min(s["target_height"],s["height"]+dt*2.0)
-            char.pos[1]=s["height"]
-            char.vel[:]=0
-            char.grounded=True
-            char.state=MoveState.GROUNDED
-            self.world.get(op.entities[0]).pos[1]=s["height"]
-            if s["height"]>=s["target_height"]:
-                self.flat_patch(s["site"],s["height"],radius=5)
-                self.world.terrain._compute_normals()
-                self.world.terrain._compute_biomes()
-                self.emit("lift_arrived",operation=op.id,height=s["height"])
-                self.finish_operation()
+        MECHANISMS[op.kind].tick(self,op,char,dt)
 
     def state(self):
         return {"task":self.task,"milestone_index":self.index,"operation_index":self.operation_index,
@@ -355,8 +312,7 @@ class Course:
             for op in m.operations:
                 if not op.complete:
                     failures.append(f"{m.id}: {op.id} incomplete")
-                if op.kind in MECHANISMS:
-                    failures.extend(MECHANISMS[op.kind].verify(self,m,op))
+                failures.extend(MECHANISMS[op.kind].verify(self,m,op))
         if len(self.completed)!=len(self.milestones):
             failures.append("milestone count mismatch")
         return {"success":not failures,"failures":failures,"completed":len(self.completed),

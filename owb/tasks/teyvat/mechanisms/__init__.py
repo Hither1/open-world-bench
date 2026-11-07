@@ -20,6 +20,6 @@ def mechanism(kind: str) -> Mechanism:
     return MECHANISMS[kind]
 
 
-from . import crossing, relay, sentinel  # noqa: E402,F401
+from . import crossing, dive, lift, relay, sentinel, stations  # noqa: E402,F401
 
 __all__ = ["MECHANISMS", "Mechanism", "mechanism", "register"]
