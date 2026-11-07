@@ -1,10 +1,11 @@
 # Task specifications
 
-Status: step 5, first half, of the [architecture proposal](architecture-proposal.md) §2.3.
+Status: step 5 of the [architecture proposal](architecture-proposal.md) §2.3.
 Tasks are declared as data (`owb/tasks/schema.py`), scored by an evaluator that only
 reads events and a read-only state view (`owb/tasks/evaluator.py`), and attached to a
-common-schema environment by a wrapper (`owb/tasks/env.py`). Setup hooks and mechanism
-modules are not part of this step (see [Not covered yet](#not-covered-yet)).
+common-schema environment by a wrapper (`owb/tasks/env.py`). The two reference courses are
+split into mechanisms, setup builders and specs (see [Reference courses](#reference-courses));
+`TaskEnv` does not run setups yet (see [Not covered yet](#not-covered-yet)).
 
 | Module | Contents |
 | --- | --- |
@@ -14,6 +15,9 @@ modules are not part of this step (see [Not covered yet](#not-covered-yet)).
 | `owb.tasks.env` | `TaskEnv(benchmark_env, spec)`, `TeyvatStateView`, `NullStateView` |
 | `owb.tasks.minecraft` | `MinecraftTask`, `MilestoneTracker`: the old API, now loaded from `specs/minecraft/*.yaml` |
 | `owb.tasks.teyvat` | `questgraph_to_spec(graph, ...)`, `builtin_questline_spec(seed)` |
+| `owb.tasks.setups` | `SetupResult`, `register_setup(name)`, `get_setup(name)`, `run_setup(name, hooks, rng, params)` |
+| `owb.tasks.teyvat.{course,setup,mechanisms}` | Teyvat reference courses A/B: runtime/ledger, placement, state machines |
+| `owb.tasks.wildlands.{course,setup,mechanisms}` | Wildlands reference courses A/B: ledger, placement, state machines and commands |
 
 ## File format
 
@@ -196,18 +200,104 @@ divergence, not exercised by the built-in questline: `QuestEngine` updates its i
 while it walks the quests, so a grant or delivery earlier in the same step is visible to a
 later quest's `COLLECT` check. The evaluator reads the post-step inventory instead.
 
+## Reference courses
+
+The compact Teyvat and Wildlands reference courses A/B (12/24 milestones; what they are:
+architecture proposal §4, [Teyvat demos](teyvat-reference-demos.md),
+[Wildlands demos](wildlands-reference-demos.md)) are demonstration courses and the
+regression gold standard: tests/test_reference_replay.py replays the four recorded traces
+in `assets/demos/{teyvat,wildlands}-reference/` and checks every milestone `state_digest`.
+Everything below was moved out of the env subclasses without changing a digest, an event,
+a spawn order or an RNG draw. The env subclasses
+(`owb/sims/teyvat/reference_tasks.py`, `owb/sims/voxel/env/wildlands_reference.py`) now
+only configure the sim, run the setup, forward native inputs and ticks, and keep
+`state_digest()`, observations and presentation (rendering is unchanged).
+
+**Mechanisms.** Stateless state machines, one module per family, registered by operation /
+milestone kind in `MECHANISMS`. All their state lives in the operation's / milestone's
+`state` dict (which the digest serialises) or on world entities; they report progress as
+events. Each also places its own local fixture at setup time (`place`).
+
+| Sim | Module (`owb/tasks/<sim>/mechanisms/`) | Kinds |
+| --- | --- | --- |
+| Teyvat | `relay.py` | `relay`: single-ring (v1) and double-ring (v2, drain first) relay, interruption |
+| Teyvat | `sentinel.py` | `sentinel` (shield / exposed / windup / vulnerable, reform, reset), `fight` |
+| Teyvat | `crossing.py` | `crossing`: charged vent, pulse-gated launch, glide, two landings, retry |
+| Teyvat | `stations.py`, `dive.py`, `lift.py` | `lesson`, `survey`, `collect`, `exchange`; `dive`; `lift` |
+| Wildlands | `counterweight.py` | `balance`: brake, load gauge, release, trips, timed opening |
+| Wildlands | `thermal.py` | `thermal`: vent/heat/exposed hearth, updraft lane, plume safety, landing |
+| Wildlands | `flow.py` | `flow`, `cool` (bypass lowers the plume), `prepare` (route, inlet isolated) |
+| Wildlands | `stations.py` | `calibrate` (A11 interlock), `station` (B15 coupling) |
+| Wildlands | `errands.py` | `clue` (board texts), `exchange`, `cook`, `report` (+ drained-road survey) |
+| Wildlands | `commands.py` | `inspect`, `operate`, `grip`, `drag`, `drop`, `install`, targeted `interact` |
+
+Teyvat's `Course` (`owb/tasks/teyvat/course.py`, still importable from
+`reference_tasks`) is the runtime: it picks the current operation, applies the reach checks,
+forwards interact / elemental application / hits / ticks to `MECHANISMS[op.kind]`, and keeps
+the ledger (`finish_operation`, `completed`, mission inventory, `verify()`, `state()`).
+`CourseWorld` / `CourseCombat` stay in the sim as the hooks that route native input to it.
+Wildlands' ledger is `owb/tasks/wildlands/course.py`: `outcome(env, events)` (mechanism
+updates, road survey, eligible completions and their consequences, the storm) and
+`system_operational(env)`.
+
+**Setup.** `owb/tasks/setups.py` holds the registry: `setup(world_hooks, rng, params) ->
+SetupResult(milestones, rules, record, extras)`, where `record` is a JSON-ready summary of
+the sampled assignments for manifests. Two builders are registered:
+
+- `teyvat.reference_course` (`owb/tasks/teyvat/setup.py`, params `{course: a|b}`, rng
+  `default_rng(seed + 739)`): draws the relay/guard/vent element bindings, builds the A/B
+  operation lists on the serpentine 8-wide grid of 46 m cells (`site()`; every `make` takes
+  a cell even when given a site), writes the lesson texts from the bindings, and has each
+  mechanism place its fixture (relays draw one `shuffle` each; B draws the outpost relay
+  version last). `author_plateau` and `settle_entities` are the level construction around
+  it. `WorldHooks` is the placement surface (spawn, get, `flat_patch`).
+- `wildlands.reference_course` (`owb/tasks/wildlands/setup.py`, params `{course: a|b}`, rng
+  `default_rng(seed + 8191)`): the A/B site tables, the assessment DAG and satchel
+  transfers, the seeded calibration / authorized basin / basin map / family symbols, the
+  per-mechanism fixtures (flow and cool draw their requested outlet in course order), the
+  B22 inlet and the yard bokoblin. `author_world` is the earlier world-generation phase
+  (courtyards, `fill_box` lanes, flooded road, bridge and detour, temperate mask).
+
+**Specs.** `owb/tasks/specs/teyvat/reference_course_{a,b}.yaml` and
+`owb/tasks/specs/wildlands/reference_course_{a,b}.yaml` (`id: <sim>.reference_course_<a|b>`)
+name the setup and declare the milestones. A Teyvat milestone is `all` of
+`event(type=operation_complete, targets=[<operation id>])` over its operations, each
+requiring the previous milestone. Wildlands completion conditions are held durations and
+live-world states (five seconds of stable feed, plume at most 45 C, two seconds of released
+motion, B23's join), which the predicate language cannot express, so its milestones fire on
+the ledger's `milestone_complete` event and `requires` carries the course DAG (B09-B11 after
+B08, the B13/B16/B17 branches, B19's join). `stage` / `role` annotate the memory roles of
+the design docs (learning, interference, transfer, composition, adaptation, recall);
+fresh-context checkpoints and session splits stay with the harness. Mechanism events carry their
+ids under `operation` / `milestone`; `owb.tasks.{teyvat,wildlands}.course.evaluator_events`
+copies them into `entity`, which the `event` predicate matches. tests/test_reference_specs.py
+checks each spec against the course it mirrors and shows that `MilestoneEvaluator`, fed the
+recorded traces and live replays, fires the same milestone ids in the same order at the same
+steps as `course.completed` / `env.completed`. `course.verify()`, `system_operational()` and
+`state_digest()` are unchanged and still produce what `verification.json` records.
+
+**Oracle.** The privileged reference controllers are `owb/agents/oracle/teyvat_reference.py`
+(`ReferencePolicy`) and `owb/agents/oracle/wildlands_reference.py`
+(`WildlandsReferencePolicy`); `metadata()` reports `privileged: True`. They read the
+course's private state and emit native actions only. The old modules
+(`owb.sims.teyvat.reference_policy`, `open_world_bench.reference_policy`,
+`owb.bench.baselines.wildlands_reference`) re-export them with a DeprecationWarning.
+
+Known limits of the split: some course-specific facts are still keyed by milestone id
+inside mechanisms (the A02/B02 training lift and lesson hints, the A03/B04 and B06 hints,
+B18's dependence on B17's plume, B10/B11's commission check, the elevated A11/B15
+consoles); the Teyvat milestone-boundary notes (`designed_context_boundary` before
+A08/A12/B11/B21/B24) are emitted by the ledger. Neither changes behaviour; moving them into
+setup data is left for when the courses become parameterised tasks.
+
 ## Not covered yet
 
-- **Setup / placement hooks.** `setup` and `setup_params` are recorded but nothing runs
-  them. Tasks run in the world the native env builds, which is why the Teyvat spec must be
-  generated per seed.
-- **Mechanism modules.** The reference courses' relay, sentinel, vent, counterweight and
-  flow-network state machines (`owb/sims/teyvat/reference_tasks.py`,
-  `owb/sims/voxel/env/wildlands_reference.py`) still live in env subclasses. Their milestones need
-  mechanism events or a `state_equals` predicate over mechanism state, neither of which
-  exists yet.
-- **Wildlands and Skylands.** Wildlands has no victory predicate and the evaluator gets no
-  state from it (`NullStateView`); Skylands keeps its native `success` / `task_progress`.
+- **Running setups from specs.** `TaskEnv` does not call `setup` / `setup_params`; tasks run
+  in the world the native env builds, which is why the Teyvat questline spec must be
+  generated per seed. Only the reference-course envs run their (registered) setup.
+- **Wildlands and Skylands.** Native Wildlands has no victory predicate and the evaluator
+  gets no state from it (`NullStateView`); the reference courses' specs rely on the course
+  ledger's events instead. Skylands keeps its native `success` / `task_progress`.
 - **Parts of the 12/24-milestone designs** (docs/teyvat-long-horizon-tasks.md,
   docs/wildlands-long-horizon-tasks.md) the schema cannot express yet:
   - conditions held for a duration ("hold valid flow for five simulated seconds") and

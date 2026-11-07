@@ -157,6 +157,22 @@ checks the saved image hashes again. Set `OWB_CYCLES_DEVICE=CUDA` to use an
 allocated GPU with the same scene and sample count.
 
 The script refuses to overwrite an existing course directory. Mechanism and
-controller regression checks are in `tests/test_teyvat_reference.py`. The full
+controller regression checks are in `tests/test_teyvat_reference.py`; the full-trace
+replay of both recordings is `tests/test_reference_replay.py`. The full
 [task design](teyvat-long-horizon-tasks.md) remains the specification for the
 eventual memory benchmark.
+
+## Code layout
+
+| Part | Location |
+| --- | --- |
+| Env (sim configuration, `CourseWorld`/`CourseCombat` input hooks, `state_digest`) | `owb/sims/teyvat/reference_tasks.py` (`ReferenceTaskEnv`) |
+| Course runtime and ledger (`Course`, `verify()`) | `owb/tasks/teyvat/course.py` |
+| Mechanisms (relay, sentinel/fight, crossing, stations, dive, lift) | `owb/tasks/teyvat/mechanisms/` |
+| Placement (`setup: teyvat.reference_course`) | `owb/tasks/teyvat/setup.py` |
+| Milestone specs | `owb/tasks/specs/teyvat/reference_course_{a,b}.yaml` |
+| Privileged reference controller | `owb/agents/oracle/teyvat_reference.py` (`ReferencePolicy`) |
+| Recording / verification / render CLI | `owb/scripts/teyvat_reference.py` |
+
+`open_world_bench.reference_tasks`, `owb.sims.teyvat.reference_tasks.Course` and
+`owb.sims.teyvat.reference_policy` remain importable. See docs/tasks.md, "Reference courses".
