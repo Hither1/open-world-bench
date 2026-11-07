@@ -230,9 +230,6 @@ class Course:
             return None
         if op.kind in MECHANISMS:
             return MECHANISMS[op.kind].target(self,op)
-        if op.kind=="crossing":
-            k=op.state["leg"] + int(op.state["launched"])
-            return self.world.get(op.entities[min(k,2)])
         return self.world.get(op.entities[0])
 
     def local_entities(self):
@@ -317,15 +314,6 @@ class Course:
         if not candidates:
             return
         entity=min(candidates,key=lambda e:float(np.linalg.norm(e.pos-char.pos)))
-        s=op.state
-        if op.kind=="crossing":
-            if entity.id==op.entities[s["leg"]] and element==self.vent_element:
-                s["charged"]=True
-                s["charged_at"]=self.world.elapsed
-                entity.used=True
-                self.feedback("Vent charged. Jump during the bright pulse.")
-                self.emit("vent_charged",operation=op.id,leg=s["leg"],element=element.name.lower())
-            return
         MECHANISMS[op.kind].apply_element(self,op,char,element,entity)
 
     def sentinel_hit(self,enemy,damage,element):
@@ -341,30 +329,6 @@ class Course:
         s=op.state
         if op.kind in MECHANISMS:
             MECHANISMS[op.kind].tick(self,op,char,dt)
-        elif op.kind=="crossing":
-            leg=s["leg"]
-            start=self.world.get(op.entities[leg]).pos
-            end=self.world.get(op.entities[leg+1]).pos
-            near=np.linalg.norm((char.pos-start)[[0,2]])<2.3
-            safe=1.0 <= self.world.elapsed % 4.0 <= 3.5
-            if s["charged"] and not s["launched"] and near and safe and char.vel[1]>1 and char.state==MoveState.AIRBORNE:
-                char.vel[1]=20.0
-                s.update(launched=True,glided=False)
-                s["launches"]+=1
-                self.emit("vent_launch",operation=op.id,leg=leg)
-            if s["launched"] and char.state==MoveState.GLIDING:
-                s["glided"]=True
-            if s["launched"] and np.linalg.norm((char.pos-end)[[0,2]])<2.0 and char.grounded and char.pos[1]>=end[1]-0.4:
-                s["landings"]+=1
-                s["glide_legs"]+=int(s["glided"])
-                self.emit("vent_landed",operation=op.id,leg=leg,glided=s["glided"])
-                if leg==1:
-                    self.finish_operation()
-                else:
-                    s.update(leg=1,charged=False,launched=False,glided=False)
-            elif s["launched"] and char.grounded and not near and char.pos[1]<end[1]-1:
-                s.update(charged=False,launched=False,glided=False)
-                self.emit("crossing_retry",operation=op.id,leg=leg)
         elif op.kind=="lift" and s["riding"]:
             s["height"]=min(s["target_height"],s["height"]+dt*2.0)
             char.pos[1]=s["height"]
@@ -393,8 +357,6 @@ class Course:
                     failures.append(f"{m.id}: {op.id} incomplete")
                 if op.kind in MECHANISMS:
                     failures.extend(MECHANISMS[op.kind].verify(self,m,op))
-                if op.kind=="crossing" and (op.state["landings"]!=2 or op.state["glide_legs"]!=2):
-                    failures.append(f"{m.id}: two demonstrated vent/glide landings not verified")
         if len(self.completed)!=len(self.milestones):
             failures.append("milestone count mismatch")
         return {"success":not failures,"failures":failures,"completed":len(self.completed),
