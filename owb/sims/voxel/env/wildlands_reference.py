@@ -17,6 +17,8 @@ from ..core.config import EnvConfig, WorldConfig, RenderConfig, SimConfig
 from ..core import blocks as B
 from ..physics.collide import box_collides
 from ..world.worldgen import generate, Landmark
+from owb.tasks.wildlands.mechanisms import MECHANISMS
+from owb.tasks.wildlands.mechanisms.counterweight import valid_load
 
 COMMANDS = BASE_COMMANDS + ('inspect', 'operate', 'grip', 'drag', 'drop', 'install')
 Y = 29.0
@@ -337,22 +339,14 @@ class WildlandsReferenceEnv(WildlandsEnv):
             if command=='install':
                 if role!='install': return self._fail('not an installation socket')
                 if s['installed']: return self._fail('parts already installed')
-                if m.kind=='balance' and not s['released']: return self._fail('support lock before installation')
+                blocked=MECHANISMS[m.kind].install_blocked(self,m) if m.kind in MECHANISMS else None
+                if blocked: return self._fail(blocked)
                 if m.kind=='thermal' and not s['landed']: return self._fail('reach service deck first')
                 if any(self.satchel[k]<1 for k in m.consumes): return self._fail('required repair parts missing')
                 for k in m.consumes: self.satchel[k]-=1
                 s['installed']=True
                 return [dict(type='parts_installed',milestone=m.id,parts=list(m.consumes))]
-            if m.kind=='balance':
-                if role=='brake':
-                    s['braked']=True; s['released']=False; s['stable']=0
-                elif role=='release':
-                    if not s['braked'] or not self._valid_load(m):
-                        s['released']=False; s['stable']=0
-                        return [dict(type='brake_trip',milestone=m.id,load=s['load'])]
-                    s['released']=True
-                else: return self._fail('not a counterweight control')
-                return [dict(type='counterweight_control',milestone=m.id,control=role,load=s['load'])]
+            if m.kind in MECHANISMS: return MECHANISMS[m.kind].operate(self,m,role,obj)
             if m.kind=='thermal':
                 if role=='vent': s['vent']=not s['vent']
                 elif role=='heat':
@@ -407,10 +401,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
         if m.id=='B08': return 'Reserve depot: stone arch at the eastern causeway. Normal approach crosses the wooden bridge. Shutter needs all three stations.'
         if m.id=='B12': return f'Outlet symbols 1,2,3 lead to basins {[v+1 for v in self.basin_map]}. Furnace launch is safe only at 45 C or below.'
         if m.id=='B19': return 'Storm report v2: wooden causeway bridge is closed. Use the north stone detour to the same reserve depot.'
+        if m.kind in MECHANISMS: return MECHANISMS[m.kind].clue(self,m)
         roles={self.targets[v]['symbol']:k for k,v in m.targets.items() if k in ('brake','release','vent','heat','inlet')}
-        if m.kind=='balance':
-            hint=f'Family counterweight: {roles}. Hold brake, establish support, then release. ' if m.id in ('A02','B02') else ''
-            return hint+f'Load safe band: {m.state["count"]*320} kg. Current load: {m.state["load"]} kg.'
         if m.kind=='thermal':
             hint=f'Family thermal: {roles}. Open draft, protect heat, check temperature, then launch. Exposed hearths fail. ' if m.id in ('A03','B04') else ''
             return hint+f'Plume launch safe: {m.state["safe"]}.'
@@ -421,31 +413,14 @@ class WildlandsReferenceEnv(WildlandsEnv):
         return m.title
 
     def _valid_load(self,m):
-        s=m.state; x,z=m.site
-        bodies=[b for b in self.bodies.bodies.values() if not b.held and abs(b.pos[1]-b.half[1]-Y)<.06
-                and x+2.4<b.pos[0]<x+4.7 and z+.5<b.pos[2]<z+4.7 and b.resting]
-        s['load']=sum(b.spec.mass for b in bodies)
-        return s['count']*320-1<=s['load']<=s['count']*320+1
+        return valid_load(self,m)
 
     def _task_outcome(self,events):
         reward=0.; kinds={e['type'] for e in events}; dt=self.cfg.frame_skip*self.cfg.sim_cfg.dt
         for m in self.milestones:
             s=m.state; x,z=m.site
-            if m.kind=='balance':
-                valid=self._valid_load(m)
-                if s['released'] and not valid:
-                    s['released']=False; s['stable']=0
-                    events.append(dict(type='brake_trip',milestone=m.id,reason='support lost'))
-                if s['released']:
-                    s['stable']+=dt
-                    if s['stable']>=2 and not s['done']:
-                        s['done']=True
-                        self.world.fill_box((x+6,29,z-2),(x+6,32,z+2),B.AIR)
-                        if m.id in ('A02','B02'):
-                            self.world.fill_box((x+7,29,z-2),(x+10,29,z+2),B.AIR)
-                            self.world.fill_box((x+7,32,z-2),(x+10,32,z+2),B.BRICK)
-                            s['lift_level']=3
-                        events.append(dict(type='counterweight_open',milestone=m.id))
+            if m.kind in MECHANISMS:
+                MECHANISMS[m.kind].update(self,m,events,kinds,dt); continue
             if m.kind=='thermal':
                 if m.id=='B18': s['safe']=self.by_id['B17'].state['temperature']<=45
                 if 'updraft' in kinds and x-2<self.agent.pos[0]<x+10 and abs(self.agent.pos[2]-(z+.5))<4:
@@ -477,7 +452,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
         for m in self.milestones:
             if m.id in completed_ids or not self.eligible(m): continue
             s=m.state
-            ok={'clue':s['observed'],'balance':s['done'] and (not m.consumes or s['installed']),
+            if m.kind in MECHANISMS: ok=MECHANISMS[m.kind].complete(self,m)
+            else: ok={'clue':s['observed'],'balance':s['done'] and (not m.consumes or s['installed']),
                 'thermal':s.get('landed',False) and (not m.consumes or (s['installed'] and s['elapsed']>=5)),
                 'flow':s.get('stable',0)>=5 and (not m.consumes or s['installed']),
                 'cool':s.get('temperature',90)<=45, 'prepare':s.get('outlets')==[k==s.get('expected') for k in range(3)] and not s.get('inlet',False),

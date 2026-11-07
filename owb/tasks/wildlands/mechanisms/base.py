@@ -1,0 +1,51 @@
+"""Mechanism protocol shared by the Wildlands reference-course state machines.
+
+A mechanism is stateless. It reads and writes the milestone's ``state`` dict (which
+``state_digest`` serialises) and the env's world/body/satchel handles, and reports what
+happened as native-style event dicts. ``env`` is the hosting ``WildlandsReferenceEnv``;
+the course ledger (:mod:`owb.tasks.wildlands.course`) decides completion from
+:meth:`Mechanism.complete`.
+"""
+from __future__ import annotations
+
+#: walking level of the authored course pads (top of the brick floor at y=28)
+Y = 29.0
+
+
+def fail(reason, **kw):
+    return [dict(type='action_failed', reason=reason, **kw)]
+
+
+class Mechanism:
+    kinds: tuple = ()
+
+    def install_blocked(self, env, m):
+        """Reason why parts cannot be installed yet (``None`` when the socket is ready)."""
+        return None
+
+    def operate(self, env, m, role, obj):
+        """``operate``/``interact`` on one of the milestone's controls; returns events."""
+        return fail('inspect this source instead')
+
+    def clue(self, env, m):
+        """Text shown by ``inspect`` on one of the milestone's controls."""
+        return m.title
+
+    def update(self, env, m, events, kinds, dt):
+        """Per-step update after the native ticks; may append events."""
+
+    def complete(self, env, m):
+        """The milestone's completion condition (checked only while it is eligible)."""
+        return False
+
+
+__all__ = ["Mechanism", "Y", "fail"]
+
+
+def family_roles(env, m):
+    """Symbol -> control role of the milestone's primary controls (taught at the lessons)."""
+    return {env.targets[v]['symbol']: k for k, v in m.targets.items()
+            if k in ('brake', 'release', 'vent', 'heat', 'inlet')}
+
+
+__all__ += ["family_roles"]
