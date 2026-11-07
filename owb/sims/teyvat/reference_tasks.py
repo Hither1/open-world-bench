@@ -29,6 +29,7 @@ from .terrain import Terrain, TerrainConfig
 from .world import CombatSystem, World, WorldConfig
 
 from owb.tasks.teyvat.course import Course, Milestone, Operation  # noqa: F401  (re-exported)
+from owb.tasks.teyvat.setup import author_plateau, settle_entities
 
 
 class CourseCombat(CombatSystem):
@@ -91,21 +92,13 @@ class ReferenceTaskEnv(OpenWorldEnv):
     def _build(self,seed):
         self.rng=np.random.default_rng(seed)
         terrain=Terrain(replace(self.cfg.world.terrain,seed=seed))
-        # Author a coastal plateau; this is level construction at reset, not a policy action.
-        axis=np.linspace(-terrain._half,terrain._half,terrain.cfg.resolution)
-        x,z=np.meshgrid(axis,axis,indexing="ij")
-        edge=np.clip((np.maximum(np.abs(x),np.abs(z))-255)/50,0,1)
-        terrain.height[:]=12.0-edge*24
+        author_plateau(terrain)
         self.party=Party(self.cfg.party)
         empty=PropField(np.empty((0,3),np.float32),np.empty(0,np.float32),np.empty(0,np.float32),np.empty(0,np.int8))
         self.world=CourseWorld(replace(self.cfg.world,seed=seed),terrain=terrain,props=empty,party=self.party)
         self.course=Course(self.world,self.task,seed)
         self.world.course=self.course
-        terrain._compute_normals(); terrain._compute_biomes()
-        # Refresh heights after all authored shelf/pool patches are constructed.
-        for entity in self.world.entities.values():
-            entity.pos[1]=terrain.height_at(entity.pos[0],entity.pos[2])
-            entity.home=entity.pos.copy()
+        settle_entities(self.world,terrain)
         self.world.combat=CourseCombat(self.world,self.party)
         stages=[Stage([Objective(m.id,ObjKind.ACTIVATE,m.title,targets=(m.id,))]) for m in self.course.milestones]
         self.graph=QuestGraph([Quest(f"reference_{self.task}",f"Task {self.task.upper()}","Reference course",stages,reward=0)])

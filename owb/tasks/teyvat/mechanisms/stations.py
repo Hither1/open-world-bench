@@ -7,11 +7,18 @@ first shows its dialogue; that is exposure, not a demonstration of the taught pr
 """
 from __future__ import annotations
 
+from owb.sims.teyvat.world import EntityKind
+
 from . import register
 from .base import Mechanism
 
 
 class Station(Mechanism):
+    entity_kind = EntityKind.WAYPOINT
+
+    def place(self, hooks, op, p, rng, rules):
+        hooks.spawn(op, "target", self.entity_kind, p, label=op.title)
+
     def interact(self, course, op, char, entity):
         if not course.can_use_items(op):
             course.feedback("Required mission items are missing.")
@@ -36,6 +43,7 @@ class Station(Mechanism):
 @register
 class Lesson(Station):
     kind = "lesson"
+    entity_kind = EntityKind.NPC
 
     def use(self, course, op, char, entity):
         course.dialogue = op.state["text"]
@@ -52,8 +60,10 @@ class Survey(Station):
 @register
 class Collect(Station):
     kind = "collect"
+    entity_kind = EntityKind.CHEST
 
 
 @register
 class Exchange(Station):
     kind = "exchange"
+    entity_kind = EntityKind.NPC

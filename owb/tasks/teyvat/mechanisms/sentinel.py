@@ -9,6 +9,7 @@ uninterrupted wind-up resets it to the shield phase after 18 s.
 from __future__ import annotations
 
 from owb.sims.teyvat.elements import Element
+from owb.sims.teyvat.world import EntityKind
 
 from . import register
 from .base import Mechanism
@@ -17,6 +18,17 @@ from .base import Mechanism
 @register
 class Fight(Mechanism):
     kind = "fight"
+
+    def place(self, hooks, op, p, rng, rules):
+        kind = op.kind
+        state = op.state
+        eid = hooks.spawn(op, "guard", EntityKind.ENEMY, p,
+                          hp=84.0 if kind == "sentinel" else 60.0,
+                          damage=2.0, label="Phase Sentinel" if kind == "sentinel" else "Camp Sentry")
+        op.state.update(phase=state.get("phase", "shield"), timer=0.0, reformed=False)
+        if kind == "sentinel":
+            hooks.get(eid).elemental.shield = 50.0
+            hooks.get(eid).elemental.shield_element = Element(int(rules["guard_elements"][0]))
 
     def tick(self, course, op, char, dt):
         e = course.world.get(op.entities[0])

@@ -8,6 +8,10 @@ routed, fault-free relay activates it and completes the operation.
 """
 from __future__ import annotations
 
+import numpy as np
+
+from owb.sims.teyvat.world import EntityKind
+
 from . import register
 from .base import Mechanism
 
@@ -16,6 +20,24 @@ from .base import Mechanism
 class Relay(Mechanism):
     kind = "relay"
     accepts_elements = True
+
+    def place(self, hooks, op, p, rng, rules):
+        state = op.state
+        op.state.update(progress=int(state.get("progress", 0)),
+                        overloaded=bool(state.get("overloaded", False)),
+                        drained=False, interrupted=False, active=False,
+                        version=int(state.get("version", 1)))
+        offsets = np.array([[-5,-4], [5,-4], [-5,5], [5,5]])
+        rng.shuffle(offsets)
+        op.state["roles"] = {}
+        for role, off in zip(("source", "vane", "drain", "core"), offsets):
+            kind_ = EntityKind.BEACON if role == "core" else EntityKind.PILLAR
+            eid = hooks.spawn(op, role, kind_, p+off,
+                              label=f"{'Double' if op.state['version']==2 else 'Single'}-ring {role}",
+                              visual_role=role, visual_version=op.state["version"])
+            op.state["roles"][role] = eid
+            if role == "source" and op.state["progress"] >= 1:
+                hooks.get(eid).used = True
 
     def target(self, course, op):
         s = op.state

@@ -2,6 +2,7 @@
 
 A mechanism is stateless: everything it changes lives in the operation's ``state`` dict
 (which ``Course.state()`` and hence ``state_digest`` serialise) or on world entities. It
+places its own fixture at setup time (:meth:`Mechanism.place`), then
 receives the course runtime (``course``: world handle, rule bindings, ``emit`` /
 ``feedback`` / ``finish_operation``) and the native inputs the course forwards to it
 (interactions, elemental applications, hits, ticks), and it reports progress by emitting
@@ -17,6 +18,14 @@ class Mechanism:
     accepts_elements = False
     #: this operation's enemies keep their authored stance instead of pursuing
     holds_position = False
+
+    def place(self, hooks, op, p, rng, rules):
+        """Initialise ``op.state`` and spawn the fixture's entities around site ``p``.
+
+        Called by the course setup (:mod:`owb.tasks.teyvat.setup`) in build order;
+        ``rng`` is the course RNG, so a mechanism that draws from it changes the course.
+        """
+        raise NotImplementedError
 
     def target(self, course, op):
         """The entity the operation currently needs (privileged; used by the oracle)."""

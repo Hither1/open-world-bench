@@ -11,6 +11,7 @@ from __future__ import annotations
 import numpy as np
 
 from owb.sims.teyvat.character import MoveState
+from owb.sims.teyvat.world import EntityKind
 
 from . import register
 from .base import Mechanism
@@ -20,6 +21,17 @@ from .base import Mechanism
 class Crossing(Mechanism):
     kind = "crossing"
     accepts_elements = True
+
+    def place(self, hooks, op, p, rng, rules):
+        op.state.update(leg=0, charged=False, launched=False, glided=False,
+                        landings=0, launches=0, glide_legs=0, charged_at=0.0)
+        # Two genuine upward flights with native gliding and landings.
+        points = [p + (-12,0), p, p + (12,0)]
+        for k, point in enumerate(points):
+            hooks.flat_patch(point, 12.0 + k*3.0, radius=4.0)
+            hooks.spawn(op, f"shelf{k}", EntityKind.WAYPOINT, point, label=f"Wind shelf {k+1}",
+                        visual_role="vent")
+        op.state["points"] = [v.tolist() for v in points]
 
     def target(self, course, op):
         k = op.state["leg"] + int(op.state["launched"])

@@ -4,6 +4,7 @@ and the operation completes."""
 from __future__ import annotations
 
 from owb.sims.teyvat.character import MoveState
+from owb.sims.teyvat.world import EntityKind
 
 from . import register
 from .stations import Station
@@ -12,6 +13,10 @@ from .stations import Station
 @register
 class Lift(Station):
     kind = "lift"
+
+    def place(self, hooks, op, p, rng, rules):
+        hooks.spawn(op, "platform", EntityKind.ALTAR, p, label="Service lift")
+        op.state.update(riding=False, height=12.0, target_height=18.0)
 
     def use(self, course, op, char, entity):
         if not op.state["riding"]:
