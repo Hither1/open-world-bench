@@ -15,17 +15,23 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 
-from ..sims.voxel.env import INVENTORY_COLUMNS, SURVIVAL_NAMES
-from ..sims.voxel.sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS
-
-SCHEMA_VERSION = 2
-BUTTONS = ("jump", "sprint", "climb", "glide", "dive", "crouch")
-COMMANDS = ("none", "interact", "attack", "skill", "burst", "eat", "cook", "equip", "stow") + BUILD_COMMANDS
-MODALITIES = ("party", "inventory", "survival", "minimap", "goal", "construction", "build_state")
-PROPRIO_NAMES = (
-    "velocity_forward", "velocity_right", "velocity_up", "health_fraction", "stamina_fraction",
-    "grounded", "airborne", "swimming", "climbing", "gliding", "day_sin", "day_cos",
+from .. import spaces as owb_spaces
+from ..core import SCHEMA_VERSION, jsonable
+from ..sims.voxel.env import INVENTORY_COLUMNS, SURVIVAL_NAMES  # noqa: F401  (formerly used here)
+from ..sims.voxel.sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS  # noqa: F401
+from ..spaces import Control, Modality
+from ..spaces.builtin import (
+    BUILD_STATE, BUTTONS, COMMANDS, CONSTRUCTION, GOAL, INVENTORY, MINIMAP, MODALITY_SPECS, PARTY,
+    PROPRIO_NAMES, SURVIVAL, register_builtins,
 )
+
+register_builtins(owb_spaces.REGISTRY)
+#: built-in modalities in canonical ``modality_mask`` order; later registrations append
+MODALITIES = tuple(m.name for m in MODALITY_SPECS)
+#: info fields copied into ``info["episode"]`` (and run summaries) when an episode ends
+EPISODE_KEYS = ("environment", "seed", "steps", "simulated_seconds", "episode_return", "success",
+                "task_progress", "success_defined", "task_progress_defined",
+                "terminated", "truncated", "termination_reason")
 
 
 @dataclass(frozen=True)
@@ -49,24 +55,24 @@ class BenchmarkConfig:
             raise ValueError("image dimensions, max_steps, and decision_seconds must be positive")
 
 
-def jsonable(value):
-    """Detach simulator values and convert them to JSON-compatible data."""
-    if isinstance(value, np.ndarray):
-        return value.tolist()
-    if isinstance(value, np.generic):
-        return value.item()
-    if isinstance(value, dict):
-        return {str(k): jsonable(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [jsonable(v) for v in value]
-    return deepcopy(value)
+def _zero(space):
+    return 0 if isinstance(space, spaces.Discrete) else np.zeros(space.shape, space.dtype)
 
 
 def neutral_action() -> dict:
-    """A new, valid no-op action in the common schema."""
-    return dict(move=np.zeros(2, np.float32), look=np.zeros(2, np.float32),
-                buttons=np.zeros(len(BUTTONS), np.int8), command=0, swap=0, slot=0,
-                ingredients=np.zeros(5, np.int64), part=0, build_move=np.zeros(3, np.float32))
+    """A new, valid no-op action in the common schema (zero for every registered control)."""
+    return {control.name: _zero(control.space) for control in owb_spaces.controls()}
+
+
+def schema_vocabularies(modalities=None, controls=None) -> dict:
+    """Field vocabularies recorded in config.json["schema"], generated from the declarations."""
+    modalities = owb_spaces.modalities() if modalities is None else modalities
+    controls = {c.name: c for c in (owb_spaces.controls() if controls is None else controls)}
+    out = dict(buttons=controls["buttons"].vocab, commands=controls["command"].vocab,
+               modalities=tuple(m.name for m in modalities), proprio=PROPRIO_NAMES)
+    for modality in modalities:
+        out.update(modality.vocab or {})
+    return out
 
 
 def _repeat(seconds, dt):
@@ -79,10 +85,23 @@ def _repeat(seconds, dt):
 
 
 class NativeAdapter:
-    """Implement this contract to add another simulator to the common pipeline."""
+    """Implement this contract to add another simulator to the common pipeline.
+
+    ``modality_specs`` declares every optional observation field the backend can
+    supply and ``control_specs`` any control beyond the shared ones; both are
+    registered by ``register_environment``. ``modalities`` names the fields that are
+    active (defaults to all declared ones; an instance may narrow it).
+    """
     commands = ("none", "interact", "attack")
     buttons = BUTTONS
+    modality_specs: tuple[Modality, ...] = ()
+    control_specs: tuple[Control, ...] = ()
     modalities: tuple[str, ...] = ()
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if "modality_specs" in vars(cls) and "modalities" not in vars(cls):
+            cls.modalities = tuple(m.name for m in cls.modality_specs)
 
     def __init__(self, native, config):
         self.native, self.config = native, config
@@ -110,11 +129,14 @@ class NativeAdapter:
         return info.get("events", [])
 
     def swap_mask(self):
-        return np.array([1, 0, 0, 0, 0], np.int8)
+        mask = np.zeros(int(owb_spaces.REGISTRY.control("swap").space.n), np.int8)
+        mask[0] = 1
+        return mask
 
 
 class TeyvatAdapter(NativeAdapter):
     buttons = BUTTONS[:-1]
+    modality_specs = (PARTY, GOAL)
 
     def __init__(self, native, config):
         super().__init__(native, config)
@@ -179,7 +201,7 @@ class TeyvatAdapter(NativeAdapter):
 
 class WildlandsAdapter(NativeAdapter):
     commands = ("none", "interact", "attack", "eat", "cook", "equip", "stow")
-    modalities = ("inventory", "survival", "minimap")
+    modality_specs = (INVENTORY, SURVIVAL, MINIMAP)
 
     def translate(self, action):
         from ..sims.voxel.env import COMMANDS as NATIVE_COMMANDS
@@ -213,7 +235,7 @@ class WildlandsAdapter(NativeAdapter):
 
 class SkylandsAdapter(WildlandsAdapter):
     commands = WildlandsAdapter.commands + BUILD_COMMANDS
-    modalities = WildlandsAdapter.modalities + ("construction", "build_state")
+    modality_specs = WildlandsAdapter.modality_specs + (CONSTRUCTION, BUILD_STATE)
 
     def translate(self, action):
         from ..sims.voxel.env.skylands import COMMANDS as NATIVE_COMMANDS
@@ -329,6 +351,17 @@ def register_environment(spec: EnvironmentSpec) -> None:
         raise ValueError(f"environment {spec.name!r} is already implemented")
     if not spec.implemented or not issubclass(spec.adapter, NativeAdapter):
         raise ValueError("registration requires a native factory and a NativeAdapter subclass")
+    registry = owb_spaces.REGISTRY
+    # validate everything before mutating, so a conflicting backend registers nothing
+    trial = registry.copy()
+    for modality in spec.adapter.modality_specs:
+        trial.register_modality(modality)
+    for control in spec.adapter.control_specs:
+        trial.register_control(control)
+    for modality in spec.adapter.modality_specs:
+        registry.register_modality(modality)
+    for control in spec.adapter.control_specs:
+        registry.register_control(control)
     _REGISTRY[spec.name] = spec
 
 
@@ -358,32 +391,24 @@ class BenchmarkEnv(gym.Env):
         self.name, self.native, self.adapter, self.config = name, native, adapter, config
         self.render_mode = "rgb_array"
         self.metadata = dict(self.metadata, render_fps=max(1, round(1 / config.decision_seconds)))
-        self.action_space = spaces.Dict({
-            "move": spaces.Box(-1, 1, (2,), np.float32),  # forward, right
-            "look": spaces.Box(-1, 1, (2,), np.float32),  # right, up
-            "buttons": spaces.MultiBinary(len(BUTTONS)),
-            "command": spaces.Discrete(len(COMMANDS)),
-            "swap": spaces.Discrete(5), "slot": spaces.Discrete(32),
-            "ingredients": spaces.MultiDiscrete([33] * 5),
-            "part": spaces.Discrete(MAX_PARTS + 1),
-            "build_move": spaces.Box(-1, 1, (3,), np.float32),
-        })
+        # Spaces come from the declarations registered when the env is built (shared
+        # fields + union of all modalities/controls); copies keep per-env RNG state apart.
+        self.modality_specs = owb_spaces.modalities()
+        self.control_specs = owb_spaces.controls()
+        controls = {c.name: c for c in self.control_specs}
+        self._modality_names = tuple(m.name for m in self.modality_specs)
+        self._buttons, self._commands = controls["buttons"].vocab, controls["command"].vocab
+        self.action_space = spaces.Dict({c.name: deepcopy(c.space) for c in self.control_specs})
         width, height = config.image_size
         self.observation_space = spaces.Dict({
             "rgb": spaces.Box(0, 255, (height, width, 3), np.uint8),
             "proprio": spaces.Box(-np.inf, np.inf, (len(PROPRIO_NAMES),), np.float32),
             "instruction": spaces.Text(max_length=1024, charset=string.printable),
-            "party": spaces.Box(0, np.inf, (30,), np.float32),
-            "inventory": spaces.Box(0, np.inf, (32, len(INVENTORY_COLUMNS)), np.float32),
-            "survival": spaces.Box(-np.inf, np.inf, (len(SURVIVAL_NAMES),), np.float32),
-            "minimap": spaces.Box(0, 255, (32, 32), np.uint8),
-            "goal": spaces.Box(-np.inf, np.inf, (15,), np.float32),
-            "construction": spaces.Box(-np.inf, np.inf, (MAX_PARTS, len(PART_COLUMNS)), np.float32),
-            "build_state": spaces.Box(-np.inf, np.inf, (len(BUILD_STATE_NAMES),), np.float32),
-            "modality_mask": spaces.MultiBinary(len(MODALITIES)),
-            "command_mask": spaces.MultiBinary(len(COMMANDS)),
-            "button_mask": spaces.MultiBinary(len(BUTTONS)),
-            "swap_mask": spaces.MultiBinary(5),
+            **{m.name: deepcopy(m.space) for m in self.modality_specs},
+            "modality_mask": spaces.MultiBinary(len(self._modality_names)),
+            "command_mask": spaces.MultiBinary(len(self._commands)),
+            "button_mask": spaces.MultiBinary(len(self._buttons)),
+            "swap_mask": spaces.MultiBinary(int(controls["swap"].space.n)),
         })
         self._needs_reset, self._seed = True, config.seed
         self.steps, self.episode_return = 0, 0.0
@@ -408,11 +433,11 @@ class BenchmarkEnv(gym.Env):
             raise ValueError("action is outside the common action_space")
         action = deepcopy(action)
         unavailable = []
-        command = COMMANDS[int(action["command"])]
+        command = self._commands[int(action["command"])]
         if command not in self.adapter.commands:
             unavailable.append(dict(type="action_unavailable", command=command))
             action["command"] = 0
-        for i, button in enumerate(BUTTONS):
+        for i, button in enumerate(self._buttons):
             if action["buttons"][i] and button not in self.adapter.buttons:
                 unavailable.append(dict(type="action_unavailable", button=button))
                 action["buttons"][i] = 0
@@ -445,9 +470,9 @@ class BenchmarkEnv(gym.Env):
             grounded, airborne, swimming, climbing, gliding,
             np.sin(tod * 2 * np.pi), np.cos(tod * 2 * np.pi),
         ], np.float32)
-        out["modality_mask"] = np.array([name in self.adapter.modalities for name in MODALITIES], np.int8)
-        out["command_mask"] = np.array([name in self.adapter.commands for name in COMMANDS], np.int8)
-        out["button_mask"] = np.array([name in self.adapter.buttons for name in BUTTONS], np.int8)
+        out["modality_mask"] = np.array([name in self.adapter.modalities for name in self._modality_names], np.int8)
+        out["command_mask"] = np.array([name in self.adapter.commands for name in self._commands], np.int8)
+        out["button_mask"] = np.array([name in self.adapter.buttons for name in self._buttons], np.int8)
         out["swap_mask"] = self.adapter.swap_mask()
         return out
 
@@ -463,11 +488,12 @@ class BenchmarkEnv(gym.Env):
                     terminated=terminated, truncated=truncated, termination_reason=reason,
                     events=jsonable(events), metrics=jsonable(metrics), native=jsonable(native_info))
         if terminated or truncated:
-            info["episode"] = {key: info[key] for key in (
-                "environment", "seed", "steps", "simulated_seconds", "episode_return", "success",
-                "task_progress", "success_defined", "task_progress_defined",
-                "terminated", "truncated", "termination_reason")}
+            info["episode"] = {key: info[key] for key in EPISODE_KEYS}
         return info
+
+    def schema_vocabularies(self):
+        """config.json["schema"] for this env's spaces."""
+        return schema_vocabularies(self.modality_specs, self.control_specs)
 
     def render(self):
         if self.steps == 0 and self._needs_reset:

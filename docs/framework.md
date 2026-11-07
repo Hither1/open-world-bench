@@ -185,6 +185,36 @@ copy of the policy's RGB observation. Existing run directories are never overwri
 Omit `--video` for JSON-only recording. Python callers can use
 `run_episode(..., output_dir=path, video="gif")`.
 
+Recording and presentation are separate (`owb.eval`). `EpisodeRecorder` writes
+only `config.json`, `trajectory.jsonl`, `summary.json`, `error.json` (on failure)
+and `policy.json` (when the policy has `metadata()`); it never renders.
+Its `config.json["schema"]` vocabularies are generated from the modality and
+control declarations (`owb.spaces`). Video is an optional `FrameSink` passed as
+`run_episode(..., frame_sink=sink)`: it is opened with the run directory (or
+`None` when nothing is recorded), receives the live env and observation after the
+reset and every step, and must not change the simulation. `video="gif"|"mp4"`
+plus the `video_*`/Blender options is shorthand for `owb.eval.VideoSink`, so the
+CLI and existing callers are unchanged. `owb.bench.rollout` re-exports
+`run_episode`, `RandomPolicy` and `DemoPolicy`; its `EpisodeRecorder` keeps the
+old combined (JSON + video) constructor.
+
+`run_episode` accepts optional budgets, `max_model_calls` (the policy's `calls`
+counter when it has one, otherwise decisions) and `max_wall_clock_s` (from the
+start of the run). An exhausted budget is checked before each decision and ends
+the episode with `termination_reason="budget"` (`truncated=True`); summaries then
+carry `budget` (the limits) and `budget_hit` (the budget's name, or `None` when
+the episode ended normally). Without budgets the summary is unchanged. The runner
+calls `policy.close()`, when present, once the episode ends, including on errors.
+
+`owb.eval.verify_run(run_dir)` rebuilds the environment from `config.json`
+(common and native configuration, run seed), replays the recorded actions, and
+compares each transition's `proprio`, `reward` and `events` (pass
+`compare=(..., "info")` for the full info). It returns `verified` and the first
+`divergence` (`{"step", "fields"}`, step 0 being the reset). A native configuration
+that cannot be rebuilt from its recorded form can be passed as `native_config=`.
+`replay_actions(env, actions, seed=...)` resets and steps an env and returns the
+step infos.
+
 Logs are action/event traces, not full observation datasets or simulator
 checkpoints. Reconstruct omitted tensors with the same code/dependency versions,
 configuration, seed, and actions. GIF is intended for short previews; use MP4 with
@@ -196,15 +226,20 @@ the video extra for longer recordings.
 | --- | --- |
 | `owb.sims.teyvat` | Teyvat simulator: terrain, world, party, elements, character, camera, quests, architecture, campaign tasks, sensor renderers (`render/`), `env.OpenWorldEnv`, reference course and privileged reference policy. |
 | `owb.sims.voxel` | Voxel simulator behind Wildlands and Skylands: `core`, `world`, `physics`, `sim`, `entities`, `env` (`WildlandsEnv`, `SkylandsEnv`, the Wildlands/Skylands reference, campaign and Tempest envs) and the observation renderers in `render/` (`make_renderer`, raycast, landscape, shadows). |
-| `owb.bench` | Common `BenchmarkEnv`, adapters, rollout and baselines. |
+| `owb.core` | Simulator-agnostic helpers: `jsonable`, `SCHEMA_VERSION`, `event_type`. |
+| `owb.spaces` | `Modality`/`Control` declarations and their registry; `owb.spaces.builtin` holds the schema-v2 controls and seven modalities. |
+| `owb.bench` | Common `BenchmarkEnv`, adapters, environment registry, baselines; `rollout` is a compatibility re-export of `owb.eval`. |
+| `owb.eval` | `run_episode` with budgets, `EpisodeRecorder` (JSON only), `FrameSink`/`VideoSink`, `RandomPolicy`/`DemoPolicy`, `replay_actions`/`verify_run`. |
+| `owb.agents` | Model-agnostic LLM policy: perception (descriptions from the modality declarations), action decoder, harnesses. |
 | `owb.tasks` | Evaluator-side task definitions. |
 | `owb.render` | Presentation only: scene export (including the Skylands campaign and Tempest meshes), Blender Cycles scripts, video encoding. |
 | `owb.scripts` | `python -m owb.scripts.*` entry points. |
 
 The old import paths still work but are deprecated: `open_world_bench` and its
-submodules alias `owb.sims.teyvat`; `owb.core`, `owb.world`, `owb.physics`,
-`owb.sim`, `owb.entities`, `owb.env` and the moved `owb.render.*` sensor modules
-alias `owb.sims.voxel.*`. `owb/_compat.py` registers the canonical module objects
+submodules alias `owb.sims.teyvat`; the old `owb.core.{blocks,config,items,noise,rng}`
+submodules (`owb.core` itself is now the shared helper package), `owb.world`,
+`owb.physics`, `owb.sim`, `owb.entities`, `owb.env` and the moved `owb.render.*`
+sensor modules alias `owb.sims.voxel.*`. `owb/_compat.py` registers the canonical module objects
 under the old names (so `open_world_bench.env.OpenWorldEnv is
 owb.sims.teyvat.env.OpenWorldEnv`) and issues one `DeprecationWarning` per old
 prefix. Gymnasium ids are unchanged; their entry points name the canonical modules.
@@ -218,6 +253,31 @@ using `register_environment()`. New backends can be implemented this
 way without changing the recorder. Implemented names cannot be
 silently replaced. New mechanics may require a new schema version rather than
 reusing an existing action with different semantics.
+
+A backend-specific observation field is declared, not added to a central table:
+
+```python
+from gymnasium import spaces
+import numpy as np
+from owb.spaces import Control, Modality
+
+RANGES = Modality("ranges", spaces.Box(-np.inf, np.inf, (3,), np.float32),
+                  describe=lambda value, obs: {"ranges": dict(zip(("ahead", "behind", "up"), value.tolist()))},
+                  vocab={"ranges": ("ahead", "behind", "up")})
+
+class MyAdapter(NativeAdapter):
+    modality_specs = (RANGES,)                     # active by default; narrow `modalities` per instance
+    control_specs = (Control("brake", spaces.Discrete(2), "1 stops"),)  # optional extra controls
+```
+
+`register_environment()` registers the declarations all-or-nothing (a different
+declaration under an existing name is rejected). Every `BenchmarkEnv` built
+afterwards exposes the shared fields plus the union of registered modalities and
+controls; registration is append-only, so existing `modality_mask` indices never
+move, and fields a backend does not supply are zero-filled. `describe_observation`
+(model prompts), `neutral_action()`, the masks and the recorder vocabularies all
+follow the declarations. `MODALITIES` names the seven built-in modalities.
+`SCHEMA_VERSION` covers the shared fields; a modality carries its own `version`.
 
 Run contracts and native regressions with:
 
