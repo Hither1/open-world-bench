@@ -13,16 +13,14 @@ import numpy as np
 from gymnasium import spaces
 from .wildlands import WildlandsEnv, COMMANDS as BASE_COMMANDS
 from ..core.config import EnvConfig, WorldConfig, RenderConfig, SimConfig
-from ..core import blocks as B
 from ..world.worldgen import generate
 from owb.tasks.setups import run_setup
-from owb.tasks.wildlands.course import Milestone  # noqa: F401  (re-exported)
+from owb.tasks.wildlands.course import Milestone, outcome as course_outcome, system_operational  # noqa: F401  (Milestone re-exported)
 from owb.tasks.wildlands.setup import A, B_TASK, WorldHooks, author_world  # noqa: F401  (A, B_TASK re-exported)
 from owb.tasks.wildlands.mechanisms import MECHANISMS
 from owb.tasks.wildlands.mechanisms.base import Y, plain  # noqa: F401  (re-exported)
 from owb.tasks.wildlands.mechanisms.commands import COURSE_COMMANDS, dispatch
 from owb.tasks.wildlands.mechanisms.counterweight import valid_load
-from owb.tasks.wildlands.mechanisms.errands import survey_road
 from owb.tasks.wildlands.mechanisms.thermal import install_updraft
 
 COMMANDS = BASE_COMMANDS + COURSE_COMMANDS
@@ -99,46 +97,11 @@ class WildlandsReferenceEnv(WildlandsEnv):
         return valid_load(self,m)
 
     def _task_outcome(self,events):
-        reward=0.; kinds={e['type'] for e in events}; dt=self.cfg.frame_skip*self.cfg.sim_cfg.dt
-        for m in self.milestones:
-            MECHANISMS[m.kind].update(self,m,events,kinds,dt)
-        survey_road(self)
-        completed_ids={r['id'] for r in self.completed}
-        for m in self.milestones:
-            if m.id in completed_ids or not self.eligible(m): continue
-            ok=MECHANISMS[m.kind].complete(self,m)
-            if m.id=='B23':
-                flow=self.by_id['B22'].state
-                ok=ok and flow['stable']>=5 and {'B15','B16','B18','B21','B22'}<=completed_ids
-            if ok:
-                if m.kind!='exchange':
-                    for item in m.gives: self.satchel[item]+=1
-                self.completed.append(dict(id=m.id,step=self.steps,seconds=round(self.elapsed,6)))
-                completed_ids.add(m.id); reward+=1
-                events.append(dict(type='milestone_complete',milestone=m.id,title=m.title))
-                if m.id in ('B15','B16','B18'): self.online.add(m.id)
-                if m.id in ('A11','B23'):
-                    self.world.fill_box((22,29,43),(26,30,47),B.AIR)
-                    self.drained=True; events.append(dict(type='road_drained'))
-        if self.task=='b' and self.online=={'B15','B16','B18'} and not self.storm:
-            self.storm=True; self.world.fill_box((127,28,95),(131,28,97),B.AIR)
-            self.elements.climate.weather='storm'
-            events.append(dict(type='bridge_closed',version=2))
-        if self.task=='a' and 'A09' in completed_ids: self.elements.climate.weather='rain'
-        self.success=(len(self.completed)==len(self.milestones) and self.drained
-                      and self.agent.alive and self.system_operational())
-        return self.success,reward+(10 if self.success else 0)
+        return course_outcome(self,events)
 
     def system_operational(self):
         """Final success requires working equipment, not just historical flags."""
-        if self.task=='a':
-            s=self.by_id['A11'].state
-            return s['installed'] and s.get('engaged',False) and s['selected']==self.calibration and s['elapsed']>=5
-        wind,pump,engine,lock,flow=(self.by_id[k].state for k in ('B15','B16','B18','B21','B22'))
-        valid_flow=lambda s: s['inlet'] and s['outlets']==[k==s['expected'] for k in range(3)] and s['stable']>=5
-        return (wind['installed'] and wind['elapsed']>=5 and pump['installed'] and valid_flow(pump)
-                and engine['installed'] and engine['landed'] and engine['elapsed']>=5
-                and lock['installed'] and lock['released'] and lock['stable']>=2 and valid_flow(flow))
+        return system_operational(self)
 
     def _observation(self):
         obs=super()._observation()
