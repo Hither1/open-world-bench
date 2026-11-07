@@ -179,4 +179,17 @@ class Course:
                 "required":len(self.milestones),"scope":"compact native-simulator reference prototype"}
 
 
-__all__ = ["Course", "Milestone", "Operation"]
+def evaluator_events(events):
+    """Course events in the form ``MilestoneEvaluator``'s ``event`` predicate matches:
+    ``operation_complete`` carries its operation id, ``milestone_complete`` its milestone id,
+    as ``entity``. Accepts ``info["event_details"]`` dicts or :class:`Event` objects."""
+    out = []
+    for e in events:
+        if not isinstance(e, dict):
+            e = {"type": e.type, **e.payload}
+        key = {"operation_complete": "operation", "milestone_complete": "milestone"}.get(e.get("type"))
+        out.append(dict(e, entity=e[key]) if key else e)
+    return out
+
+
+__all__ = ["Course", "Milestone", "Operation", "evaluator_events"]

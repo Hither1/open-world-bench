@@ -1,0 +1,94 @@
+# Teyvat reference course A (compact demonstration course; docs/teyvat-reference-demos.md).
+# Mirrors the course built by setup `teyvat.reference_course` (owb/tasks/teyvat/setup.py);
+# tests/test_reference_specs.py checks it against that course and the recorded trace.
+# A milestone fires once every operation of it has emitted `operation_complete`
+# (owb.tasks.teyvat.course.evaluator_events puts the operation id in `entity`).
+# Operation ids are layout-only (cell index + milestone index); they do not depend on the seed.
+# The course is ordered: each milestone requires the previous one.
+# `stage`/`role` are memory-role annotations taken from docs/teyvat-long-horizon-tasks.md
+# (learning / interference / transfer / composition / adaptation); they do not affect scoring.
+# Fresh-context checkpoints (before A08 and A12) belong to the agent harness, not to milestones.
+# setup_params: `course` selects the build list; the setup RNG is default_rng(seed + 739).
+id: teyvat.reference_course_a
+version: 1
+sim: teyvat
+title: 'Teyvat reference course A: The Relay Keeper''s Apprenticeship (compact)'
+instruction: Restore Windrest's signal route and bring the summit beacon online. The relay keeper can
+  show you how the old machinery works.
+budget:
+  steps: 30000
+setup: teyvat.reference_course
+setup_params:
+  course: a
+milestones:
+- id: A01
+  title: "Guided relay repair"
+  stage: acquisition
+  role: learning
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op000_00]}, {kind: event, type: operation_complete, targets: [op001_00]}]}
+- id: A02
+  title: "Repair without coaching"
+  stage: acquisition
+  role: learning
+  requires: [A01]
+  done: {kind: event, type: operation_complete, targets: [op002_01]}
+- id: A03
+  title: "Recover from a fault"
+  stage: acquisition
+  role: learning
+  requires: [A02]
+  done: {kind: event, type: operation_complete, targets: [op003_02]}
+- id: A04
+  title: "Survey the marsh route"
+  stage: interference
+  role: interference
+  requires: [A03]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op005_03]}, {kind: event, type: operation_complete, targets: [op006_03]}]}
+- id: A05
+  title: "Recover the lift casing"
+  stage: interference
+  role: interference
+  requires: [A04]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op007_04]}, {kind: event, type: operation_complete, targets: [op008_04]}]}
+- id: A06
+  title: "Repair the ferry lift"
+  stage: interference
+  role: interference
+  requires: [A05]
+  done: {kind: event, type: operation_complete, targets: [op009_05]}
+- id: A07
+  title: "Supply the outpost"
+  stage: interference
+  role: interference
+  requires: [A06]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op010_06]}, {kind: event, type: operation_complete, targets: [op011_06]}]}
+- id: A08
+  title: "Restore a field relay"
+  stage: delayed transfer
+  role: transfer
+  requires: [A07]
+  done: {kind: event, type: operation_complete, targets: [op012_07]}
+- id: A09
+  title: "Stabilize a primed relay"
+  stage: delayed transfer
+  role: transfer
+  requires: [A08]
+  done: {kind: event, type: operation_complete, targets: [op013_08]}
+- id: A10
+  title: "Recover the service cap"
+  stage: intervening work
+  role: interference
+  requires: [A09]
+  done: {kind: all, preds: [{kind: event, type: operation_complete, targets: [op014_09]}, {kind: event, type: operation_complete, targets: [op015_09]}]}
+- id: A11
+  title: "Reopen summit access"
+  stage: intervening work
+  role: interference
+  requires: [A10]
+  done: {kind: event, type: operation_complete, targets: [op016_10]}
+- id: A12
+  title: "Commission the summit beacon"
+  stage: transfer with recovery
+  role: transfer
+  requires: [A11]
+  done: {kind: event, type: operation_complete, targets: [op017_11]}
