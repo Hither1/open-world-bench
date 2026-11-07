@@ -163,17 +163,19 @@ and [Teyvat renderer update](../assets/demos/teyvat-style.png).
 
 ```bash
 pip install -e ".[dev,video]"
-PYTHONDONTWRITEBYTECODE=1 python -m owb.scripts.benchmark \
-  --env teyvat wildlands --seed 7 --steps 60 --size 256 192 \
-  --policy demo --video gif --output /tmp/owb-shared-demo
+owb run configs/examples/demo-shared.yaml   # writes runs/demo-shared/<env>-7/
 ```
 
+The manifest schema and subcommands are in the [CLI guide](cli.md). The old
+`python -m owb.scripts.benchmark` flags still work (deprecated) and map one-to-one
+onto manifest keys.
+
 Teyvat and Wildlands videos default to Blender Cycles at 960×540 and 48 samples.
-Configure Blender using `--blender`, `OWB_BLENDER`, or the local configuration
-described in the [rendering guide](rendering.md). `--video-size` and `--samples`
-configure the video. `--size` and `--quality` configure policy observations.
-An explicit `--video-renderer cpu` selects diagnostic CPU output. There is no
-automatic fallback when Blender fails. Other worlds retain their native video
+Configure Blender using `record.blender`, `OWB_BLENDER`, or the local configuration
+described in the [rendering guide](rendering.md). `record.video_size` and
+`record.samples` configure the video. `env.image_size` and `env.render_quality`
+configure policy observations. An explicit `record.video_renderer: cpu` selects
+diagnostic CPU output. There is no automatic fallback when Blender fails. Other worlds retain their native video
 renderer until they have a Cycles scene exporter.
 
 Each `ENV-SEED/` contains `config.json` (schema, common/native configurations,
@@ -182,7 +184,7 @@ event records with proprioception/instruction), `summary.json`, and optional
 `episode.gif` or `episode.mp4`. Videos render the reset and decision states at
 the configured decision interval. Cycles frames are presentation output, not a
 copy of the policy's RGB observation. Existing run directories are never overwritten.
-Omit `--video` for JSON-only recording. Python callers can use
+Leave `record.video` null for JSON-only recording. Python callers can use
 `run_episode(..., output_dir=path, video="gif")`.
 
 Recording and presentation are separate (`owb.eval`). `EpisodeRecorder` writes

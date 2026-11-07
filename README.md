@@ -159,10 +159,13 @@ Set `OPENAI_API_KEY` in your environment, then run:
 
 ```bash
 pip install -e ".[agent,video]"
-python -B -m owb.scripts.benchmark --env skylands teyvat wildlands \
-  --seed 7 --steps 12 --size 320 240 --policy openai --model gpt-6-astra \
-  --max-model-calls 12 --video gif --output runs/astra-trial
+owb run configs/examples/openai-trial.yaml   # writes runs/astra-trial/<env>-7/
 ```
+
+Runs are described by a manifest ([CLI guide](docs/cli.md)); override any key with
+`--set`, e.g. `--set budget.max_steps=24`. The older
+`python -m owb.scripts.benchmark --env ... --policy ...` form still works (deprecated);
+the CLI guide maps each of its flags to a manifest key.
 
 This makes up to 12 paid model requests per environment and saves video, actions,
 memory notes, latency, and token usage. It checks the observation/action loop;
@@ -185,23 +188,20 @@ interface, mixed-environment batching, and recording. See the
 new construction course through the same interface (now schema version 2).
 
 ```bash
-python -B -m owb.scripts.benchmark --env skylands --seed 7 --steps 45 \
-  --size 384 216 --policy demo --video gif --output /tmp/owb-skylands-demo
+owb run configs/examples/demo-skylands.yaml
 ```
 
 Record both with the same policy and recorder, using the presentation preset:
 
 ```bash
 pip install -e ".[video]"
-PYTHONDONTWRITEBYTECODE=1 python -m owb.scripts.benchmark \
-  --env teyvat wildlands --seed 7 --steps 40 --size 384 216 \
-  --policy demo --quality presentation --video gif \
-  --output /tmp/owb-readme-demo
+owb run configs/examples/demo-presentation.yaml
 ```
 
 Each environment gets its own GIF, configuration, event log, and episode summary.
-Choose a new output directory for another run; existing recordings are preserved.
-Use `--quality fast` for lower-cost rendering.
+Choose a new output directory for another run (`--set record.output_dir=...`);
+existing recordings are preserved. Use `--set env.render_quality=fast` for
+lower-cost rendering.
 
 The native Wildlands demo is also available:
 
