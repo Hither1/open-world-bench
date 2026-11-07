@@ -1,0 +1,12 @@
+# Smoke test: seeded random policy on all three environments, 20 decisions each.
+# owb run configs/examples/random-smoke.yaml
+run: {name: random-smoke}
+env:
+  sim: [teyvat, wildlands, skylands]
+  variant: small
+  image_size: [96, 72]
+  decision_seconds: 0.2
+task: {seeds: [7]}
+agent: {policy: random}
+budget: {max_steps: 20}
+record: {trajectory: true, video: null}

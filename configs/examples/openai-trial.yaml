@@ -1,0 +1,12 @@
+# README "Try a GPT-6-Astra agent": all three sims, 12 decisions each, with GIFs
+# (Blender Cycles for Teyvat/Wildlands). Up to 12 paid requests per environment.
+run: {name: astra-trial}
+env:
+  sim: [skylands, teyvat, wildlands]
+  image_size: [320, 240]
+task: {seeds: [7]}
+agent:
+  policy: llm
+  harness: {kind: openai_api, model: gpt-6-astra, effort: low, max_output_tokens: 2048}
+budget: {max_steps: 12, max_model_calls: 12}
+record: {video: gif}

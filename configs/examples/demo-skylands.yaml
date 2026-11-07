@@ -1,0 +1,10 @@
+# The fixed Skylands bridge-course demonstration (not a task-solving baseline).
+# Skylands has no Cycles scene exporter: its GIF is the native observation renderer.
+run: {name: demo-skylands}
+env:
+  sim: skylands
+  image_size: [384, 216]
+task: {seeds: [7]}
+agent: {policy: demo}
+budget: {max_steps: 45}
+record: {video: gif}

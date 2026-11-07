@@ -1,0 +1,10 @@
+# Shared-pipeline recording (docs/framework.md): same policy and recorder on two sims.
+# Videos default to Blender Cycles for Teyvat/Wildlands.
+run: {name: demo-shared}
+env:
+  sim: [teyvat, wildlands]
+  image_size: [256, 192]
+task: {seeds: [7]}
+agent: {policy: demo}
+budget: {max_steps: 60}
+record: {video: gif}

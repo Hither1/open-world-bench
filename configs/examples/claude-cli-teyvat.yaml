@@ -1,0 +1,25 @@
+# Claude Opus 5.5 through a saved Claude Code login, one fresh `claude -p` per decision
+# (profile cli-stateless: no tools beyond StructuredOutput, empty temporary cwd).
+# Makes up to budget.max_model_calls subscription requests per episode.
+run: {name: claude-cli-teyvat}
+env:
+  sim: teyvat
+  image_size: [320, 240]
+  decision_seconds: 0.2
+task: {seeds: [7]}
+agent:
+  policy: llm
+  harness:
+    kind: claude_cli
+    model: claude-opus-5-5
+    effort: low
+    account_home: ~/.claude        # must contain .credentials.json
+    executable: claude
+    timeout: 60
+    profile: cli-stateless         # checked against the harness's fixed caps
+    network: model-endpoint
+    max_turns_per_decision: 3
+  history_steps: 6
+  memory_chars: 1600
+budget: {max_steps: 12, max_model_calls: 12}
+record: {video: null}

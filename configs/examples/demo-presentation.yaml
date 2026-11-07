@@ -1,0 +1,17 @@
+# README demo: Teyvat and Wildlands with the presentation observation preset.
+# The GIFs default to Blender Cycles at 960x540, 48 samples (set OWB_BLENDER or
+# record.blender). record.video_renderer: cpu is an explicit lightweight render.
+run: {name: demo-presentation}
+env:
+  sim: [teyvat, wildlands]
+  image_size: [384, 216]
+  render_quality: presentation
+task: {seeds: [7]}
+agent: {policy: demo}
+budget: {max_steps: 40}
+record:
+  video: gif
+  video_renderer: null   # null = Cycles for Teyvat/Wildlands
+  video_size: [960, 540]
+  samples: 48
+  threads: 8
