@@ -19,6 +19,7 @@ from ..physics.collide import box_collides
 from ..world.worldgen import generate, Landmark
 from owb.tasks.wildlands.mechanisms import MECHANISMS
 from owb.tasks.wildlands.mechanisms.counterweight import valid_load
+from owb.tasks.wildlands.mechanisms.thermal import install_updraft
 
 COMMANDS = BASE_COMMANDS + ('inspect', 'operate', 'grip', 'drag', 'drop', 'install')
 Y = 29.0
@@ -272,17 +273,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
         self.world.recompute_heightmaps()
         self.agent.pitch=-.08
         self.agent.inventory.add('rune_magnet',1)
-        base=self.elements.updraft_at
-        def updraft(pos):
-            best=base(pos)
-            for m in self.milestones:
-                if m.kind!='thermal': continue
-                x,z=m.site; s=m.state
-                if (s['vent'] and s['heat'] and s['safe'] and x-1<=pos[0]<=x+8
-                        and abs(pos[2]-(z+.5))<3 and Y<=pos[1]<Y+9):
-                    best=max(best,8.)
-            return best
-        self.elements.updraft_at=updraft
+        install_updraft(self)
 
     @property
     def current(self):
@@ -341,22 +332,11 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 if s['installed']: return self._fail('parts already installed')
                 blocked=MECHANISMS[m.kind].install_blocked(self,m) if m.kind in MECHANISMS else None
                 if blocked: return self._fail(blocked)
-                if m.kind=='thermal' and not s['landed']: return self._fail('reach service deck first')
                 if any(self.satchel[k]<1 for k in m.consumes): return self._fail('required repair parts missing')
                 for k in m.consumes: self.satchel[k]-=1
                 s['installed']=True
                 return [dict(type='parts_installed',milestone=m.id,parts=list(m.consumes))]
             if m.kind in MECHANISMS: return MECHANISMS[m.kind].operate(self,m,role,obj)
-            if m.kind=='thermal':
-                if role=='vent': s['vent']=not s['vent']
-                elif role=='heat':
-                    if not s['vent']: return [dict(type='draft_blocked',milestone=m.id)]
-                    if not s['safe']: return self._fail('plume above safe launch temperature')
-                    s['heat']=True
-                    x,z=m.site; self.elements.ignite(self.world,x+2,29,z+4)
-                elif role=='exposed_heat': return [dict(type='draft_failed',reason='exposed hearth cannot sustain this shaft')]
-                else: return self._fail('not a shaft control')
-                return [dict(type='thermal_control',milestone=m.id,control=role)]
             if m.kind in ('flow','cool','prepare'):
                 if role.startswith('outlet'):
                     if s['inlet']: return self._fail('isolate inlet before rerouting')
@@ -403,9 +383,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
         if m.id=='B19': return 'Storm report v2: wooden causeway bridge is closed. Use the north stone detour to the same reserve depot.'
         if m.kind in MECHANISMS: return MECHANISMS[m.kind].clue(self,m)
         roles={self.targets[v]['symbol']:k for k,v in m.targets.items() if k in ('brake','release','vent','heat','inlet')}
-        if m.kind=='thermal':
-            hint=f'Family thermal: {roles}. Open draft, protect heat, check temperature, then launch. Exposed hearths fail. ' if m.id in ('A03','B04') else ''
-            return hint+f'Plume launch safe: {m.state["safe"]}.'
         if m.kind in ('flow','cool','prepare'):
             if m.kind=='prepare': return 'Three outlet symbols. Consult the previously surveyed basin map and commission authorization.'
             hint=f'Family flow: {roles}. Isolate inlet, open authorized outlet, then feed. ' if m.id=='B06' else ''
@@ -421,18 +398,6 @@ class WildlandsReferenceEnv(WildlandsEnv):
             s=m.state; x,z=m.site
             if m.kind in MECHANISMS:
                 MECHANISMS[m.kind].update(self,m,events,kinds,dt); continue
-            if m.kind=='thermal':
-                if m.id=='B18': s['safe']=self.by_id['B17'].state['temperature']<=45
-                if 'updraft' in kinds and x-2<self.agent.pos[0]<x+10 and abs(self.agent.pos[2]-(z+.5))<4:
-                    s['updraft_seen']=True
-                if self.agent.gliding and x-2<self.agent.pos[0]<x+10 and abs(self.agent.pos[2]-(z+.5))<4:
-                    s['launch_seen']=True
-                target=np.asarray(s['landing'])
-                if (s['updraft_seen'] and self.agent.on_ground and self.agent.pos[1]>Y+3.8
-                    and np.linalg.norm((self.agent.pos-target)[[0,2]])<3):
-                    if not s['landed']: events.append(dict(type='thermal_landed',milestone=m.id))
-                    s['landed']=True
-                if s['landed'] and s['installed']: s['elapsed']+=dt
             if m.kind in ('flow','cool','prepare'):
                 valid=s['inlet'] and s['outlets']==[k==s['expected'] for k in range(3)]
                 s['stable']=s['stable']+dt if valid else 0.

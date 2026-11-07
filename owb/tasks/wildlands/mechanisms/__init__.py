@@ -23,7 +23,7 @@ def mechanism(kind: str) -> Mechanism:
     return MECHANISMS[kind]
 
 
-from . import counterweight  # noqa: E402,F401
+from . import counterweight, thermal  # noqa: E402,F401
 
 
 __all__ = ["MECHANISMS", "Mechanism", "fail", "mechanism", "register"]
