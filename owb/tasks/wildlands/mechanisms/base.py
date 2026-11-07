@@ -8,8 +8,20 @@ the course ledger (:mod:`owb.tasks.wildlands.course`) decides completion from
 """
 from __future__ import annotations
 
+import numpy as np
+
 #: walking level of the authored course pads (top of the brick floor at y=28)
 Y = 29.0
+
+
+def plain(x):
+    """JSON-ready copy of ``x`` (arrays/numpy scalars to Python, sets sorted)."""
+    if isinstance(x, np.ndarray): return x.tolist()
+    if isinstance(x, np.generic): return x.item()
+    if isinstance(x, dict): return {str(k): plain(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)): return [plain(v) for v in x]
+    if isinstance(x, set): return sorted(x)
+    return x
 
 
 def fail(reason, **kw):
@@ -39,7 +51,7 @@ class Mechanism:
         return False
 
 
-__all__ = ["Mechanism", "Y", "fail"]
+__all__ = ["Mechanism", "Y", "fail", "plain"]
 
 
 def family_roles(env, m):

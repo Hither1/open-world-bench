@@ -15,24 +15,15 @@ from gymnasium import spaces
 from .wildlands import WildlandsEnv, COMMANDS as BASE_COMMANDS
 from ..core.config import EnvConfig, WorldConfig, RenderConfig, SimConfig
 from ..core import blocks as B
-from ..physics.collide import box_collides
 from ..world.worldgen import generate, Landmark
 from owb.tasks.wildlands.mechanisms import MECHANISMS
+from owb.tasks.wildlands.mechanisms.base import Y, plain  # noqa: F401  (re-exported)
+from owb.tasks.wildlands.mechanisms.commands import COURSE_COMMANDS, dispatch
 from owb.tasks.wildlands.mechanisms.counterweight import valid_load
 from owb.tasks.wildlands.mechanisms.errands import survey_road
 from owb.tasks.wildlands.mechanisms.thermal import install_updraft
 
-COMMANDS = BASE_COMMANDS + ('inspect', 'operate', 'grip', 'drag', 'drop', 'install')
-Y = 29.0
-
-
-def plain(x):
-    if isinstance(x, np.ndarray): return x.tolist()
-    if isinstance(x, np.generic): return x.item()
-    if isinstance(x, dict): return {str(k): plain(v) for k,v in x.items()}
-    if isinstance(x, (list, tuple)): return [plain(v) for v in x]
-    if isinstance(x, set): return sorted(x)
-    return x
+COMMANDS = BASE_COMMANDS + COURSE_COMMANDS
 
 
 @dataclass
@@ -294,50 +285,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
 
     def _dispatch(self,command,ingredients,action):
         self.last_text = ''
-        tid=int(action['target']); obj=self.targets.get(tid)
-        if command=='drag':
-            if self.held is None: return self._fail('no held magnetic body')
-            body=self.bodies.get(self.held)
-            delta=np.asarray(action['vector'],float)*.4
-            candidate=body.pos+delta
-            if np.linalg.norm(candidate-self.agent.eye)>6: return self._fail('magnetic tether range')
-            if box_collides(self.world,candidate,body.half): return self._fail('body collision')
-            if any(np.all(np.abs(candidate-b.pos)<(body.half+b.half)-.02)
-                   for b in self.bodies.bodies.values() if b.id!=body.id):
-                return self._fail('another body blocks movement')
-            body.pos=candidate; body.vel[:]=0
-            return [dict(type='magnetic_move',body=body.id,pos=plain(candidate))]
-        if command=='drop':
-            if self.held is None: return self._fail('no held magnetic body')
-            bid=self.held; self.bodies.get(bid).held=False; self.held=None
-            return [dict(type='magnetic_drop',body=bid)]
-        if command in ('inspect','operate','grip','install') or (command=='interact' and tid):
-            if obj is None: return self._fail('unknown interaction target')
-            m=self.by_id[obj['milestone']]; role=obj['role']; s=m.state
-            if role.startswith('weight'):
-                body=self.bodies.get(s['bodies'][int(role[6:])]); pos=body.pos
-            else: pos=obj['pos']
-            if not self._reachable(pos,4 if command=='grip' else 3.2):
-                return self._fail('target out of reach or occluded',target=tid)
-            if command=='inspect':
-                text=self.clue(m)
-                self.last_text=text; s['observed']=True; self.exposed[m.id]=self.elapsed
-                return [dict(type='clue_exposed',milestone=m.id,text=text)]
-            if not self.eligible(m): return self._fail('mechanism prerequisites incomplete',target=tid)
-            if command=='grip':
-                if not role.startswith('weight') or self.held is not None: return self._fail('cannot grip target')
-                body.held=True; body.vel[:]=0; self.held=body.id
-                return [dict(type='magnetic_grip',body=body.id)]
-            if command=='install':
-                if role!='install': return self._fail('not an installation socket')
-                if s['installed']: return self._fail('parts already installed')
-                blocked=MECHANISMS[m.kind].install_blocked(self,m)
-                if blocked: return self._fail(blocked)
-                if any(self.satchel[k]<1 for k in m.consumes): return self._fail('required repair parts missing')
-                for k in m.consumes: self.satchel[k]-=1
-                s['installed']=True
-                return [dict(type='parts_installed',milestone=m.id,parts=list(m.consumes))]
-            return MECHANISMS[m.kind].operate(self,m,role,obj)
+        events=dispatch(self,command,action)
+        if events is not None: return events
         return super()._dispatch(command,ingredients,action)
 
     def clue(self,m):
