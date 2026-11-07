@@ -8,7 +8,8 @@ from pathlib import Path
 
 import numpy as np
 
-from .framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, SCHEMA_VERSION, jsonable, neutral_action
+from ..core import SCHEMA_VERSION, event_type, jsonable
+from .framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, neutral_action
 from ..sims.voxel.env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
 from ..sims.voxel.sim.construction import PART_COLUMNS, BUILD_STATE_NAMES
 
@@ -182,7 +183,7 @@ def run_episode(env, policy=None, *, seed=None, output_dir=None, video=None,
         while True:
             action = policy(observation)
             observation, reward, terminated, truncated, info = env.step(action)
-            counts.update(event["type"] for event in info["events"])
+            counts.update(event_type(event) for event in info["events"])
             if recorder:
                 recorder.record("step", observation, info, action=action, reward=reward,
                                 policy_decision=getattr(policy, "last_decision", None))

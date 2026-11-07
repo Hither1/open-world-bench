@@ -11,7 +11,8 @@ import json
 
 import numpy as np
 
-from ..bench.framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES, jsonable
+from ..bench.framework import BUTTONS, COMMANDS, MODALITIES, PROPRIO_NAMES
+from ..core import jsonable
 from ..sims.voxel.env import INVENTORY_COLUMNS, ITEM_IDS, SURVIVAL_NAMES
 from ..sims.voxel.sim.construction import BUILD_STATE_NAMES, PART_COLUMNS
 

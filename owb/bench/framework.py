@@ -15,10 +15,10 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 
+from ..core import SCHEMA_VERSION, jsonable
 from ..sims.voxel.env import INVENTORY_COLUMNS, SURVIVAL_NAMES
 from ..sims.voxel.sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS
 
-SCHEMA_VERSION = 2
 BUTTONS = ("jump", "sprint", "climb", "glide", "dive", "crouch")
 COMMANDS = ("none", "interact", "attack", "skill", "burst", "eat", "cook", "equip", "stow") + BUILD_COMMANDS
 MODALITIES = ("party", "inventory", "survival", "minimap", "goal", "construction", "build_state")
@@ -47,19 +47,6 @@ class BenchmarkConfig:
                 or not isinstance(self.max_steps, int) or self.max_steps <= 0
                 or not math.isfinite(self.decision_seconds) or self.decision_seconds <= 0):
             raise ValueError("image dimensions, max_steps, and decision_seconds must be positive")
-
-
-def jsonable(value):
-    """Detach simulator values and convert them to JSON-compatible data."""
-    if isinstance(value, np.ndarray):
-        return value.tolist()
-    if isinstance(value, np.generic):
-        return value.item()
-    if isinstance(value, dict):
-        return {str(k): jsonable(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [jsonable(v) for v in value]
-    return deepcopy(value)
 
 
 def neutral_action() -> dict:
