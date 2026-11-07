@@ -19,6 +19,7 @@ from ..physics.collide import box_collides
 from ..world.worldgen import generate, Landmark
 from owb.tasks.wildlands.mechanisms import MECHANISMS
 from owb.tasks.wildlands.mechanisms.counterweight import valid_load
+from owb.tasks.wildlands.mechanisms.errands import survey_road
 from owb.tasks.wildlands.mechanisms.thermal import install_updraft
 
 COMMANDS = BASE_COMMANDS + ('inspect', 'operate', 'grip', 'drag', 'drop', 'install')
@@ -330,37 +331,17 @@ class WildlandsReferenceEnv(WildlandsEnv):
             if command=='install':
                 if role!='install': return self._fail('not an installation socket')
                 if s['installed']: return self._fail('parts already installed')
-                blocked=MECHANISMS[m.kind].install_blocked(self,m) if m.kind in MECHANISMS else None
+                blocked=MECHANISMS[m.kind].install_blocked(self,m)
                 if blocked: return self._fail(blocked)
                 if any(self.satchel[k]<1 for k in m.consumes): return self._fail('required repair parts missing')
                 for k in m.consumes: self.satchel[k]-=1
                 s['installed']=True
                 return [dict(type='parts_installed',milestone=m.id,parts=list(m.consumes))]
-            if m.kind in MECHANISMS: return MECHANISMS[m.kind].operate(self,m,role,obj)
-            if m.kind=='exchange':
-                if s['done']: return self._fail('locker empty')
-                if any(self.satchel[k]<1 for k in m.consumes): return self._fail('exchange input missing')
-                if m.id in ('B10','B11') and not self.satchel['authorization']: return self._fail('commission required')
-                for k in m.consumes: self.satchel[k]-=1
-                for k in m.gives: self.satchel[k]+=1
-                s['done']=True
-                return [dict(type='item_exchange',milestone=m.id,inputs=m.consumes,outputs=m.gives)]
-            if m.kind=='report':
-                if not self.drained or self.road_seen!={'north','south'}: return self._fail('verify the drained road first')
-                s['done']=True; return [dict(type='completion_signal')]
-            return self._fail('inspect this source instead')
+            return MECHANISMS[m.kind].operate(self,m,role,obj)
         return super()._dispatch(command,ingredients,action)
 
     def clue(self,m):
-        if m.id=='A01': return 'Ranger cache: forked tree at the central court. Complete the workshop before collecting repair parts.'
-        if m.id=='A06': return f'Intake safe calibration mark: {self.calibration+1}. Coastal regulator locker is at the western coastal court.'
-        if m.id=='B01': return f'Protect Reedbank refuge. Authorized empty overflow basin: {self.authorized+1}.'
-        if m.id=='B08': return 'Reserve depot: stone arch at the eastern causeway. Normal approach crosses the wooden bridge. Shutter needs all three stations.'
-        if m.id=='B12': return f'Outlet symbols 1,2,3 lead to basins {[v+1 for v in self.basin_map]}. Furnace launch is safe only at 45 C or below.'
-        if m.id=='B19': return 'Storm report v2: wooden causeway bridge is closed. Use the north stone detour to the same reserve depot.'
-        if m.kind in MECHANISMS: return MECHANISMS[m.kind].clue(self,m)
-        roles={self.targets[v]['symbol']:k for k,v in m.targets.items() if k in ('brake','release','vent','heat','inlet')}
-        return m.title
+        return MECHANISMS[m.kind].clue(self,m)
 
     def _valid_load(self,m):
         return valid_load(self,m)
@@ -368,29 +349,12 @@ class WildlandsReferenceEnv(WildlandsEnv):
     def _task_outcome(self,events):
         reward=0.; kinds={e['type'] for e in events}; dt=self.cfg.frame_skip*self.cfg.sim_cfg.dt
         for m in self.milestones:
-            s=m.state; x,z=m.site
-            if m.kind in MECHANISMS:
-                MECHANISMS[m.kind].update(self,m,events,kinds,dt); continue
-            if m.kind=='cook':
-                for e in events:
-                    if e['type']=='cook': s['cooked'].extend(k for k in e['effects'] if k in ('cold_resist','heat_resist'))
-                s['done']={'cold_resist','heat_resist'}<=set(s['cooked']) and self.world.get(x-2,29,z+2)==B.CAMPFIRE_LIT
-        if self.drained:
-            x,_,z=self.agent.pos
-            if abs(x-24.5)<2:
-                if 48<z<53: self.road_seen.add('south')
-                if 37<z<42 and 'south' in self.road_seen: self.road_seen.add('north')
+            MECHANISMS[m.kind].update(self,m,events,kinds,dt)
+        survey_road(self)
         completed_ids={r['id'] for r in self.completed}
         for m in self.milestones:
             if m.id in completed_ids or not self.eligible(m): continue
-            s=m.state
-            if m.kind in MECHANISMS: ok=MECHANISMS[m.kind].complete(self,m)
-            else: ok={'clue':s['observed'],'balance':s['done'] and (not m.consumes or s['installed']),
-                'thermal':s.get('landed',False) and (not m.consumes or (s['installed'] and s['elapsed']>=5)),
-                'flow':s.get('stable',0)>=5 and (not m.consumes or s['installed']),
-                'cool':s.get('temperature',90)<=45, 'prepare':s.get('outlets')==[k==s.get('expected') for k in range(3)] and not s.get('inlet',False),
-                'calibrate':s['elapsed']>=5,'station':s['elapsed']>=5,
-                'cook':s['done'],'exchange':s['done'],'report':s['done']}[m.kind]
+            ok=MECHANISMS[m.kind].complete(self,m)
             if m.id=='B23':
                 flow=self.by_id['B22'].state
                 ok=ok and flow['stable']>=5 and {'B15','B16','B18','B21','B22'}<=completed_ids
