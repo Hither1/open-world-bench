@@ -1,6 +1,6 @@
 # 调研：开放世界 / 长程任务 benchmark 如何构造任务、说明什么问题
 
-调研日期 2026-11-06，覆盖 12 个 benchmark 家族、约 45 篇论文。除标注 **[未核实]** 的条目外，
+调研日期 2026-11-06（§5 定位章节 2026-11-07 补），覆盖 12 个 benchmark 家族、约 45 篇论文。除标注 **[未核实]** 的条目外，
 每条事实都对照了论文摘要 / 项目页 / 仓库。本文服务于 [重构方案](architecture-proposal.md) 第 5 节。
 
 ## 1. 总表
@@ -123,5 +123,50 @@
 9. **诊断而不只是排名。** EAI 式模块检查、EmbodiedBench 式能力子集、错误分类（感知/定位 vs 规划 vs 执行；知行差距；自我条件化）。
 10. **审计 benchmark 本身。** 跑平凡/随机/脚本基线抓任务有效性泄漏（ABC：平凡 agent 过了 τ-bench 38%）；每任务有人类参考完成；对世界和评测器做版本固定。
 11. **队伍 / NPC 机制是空白地带。** 调研的 benchmark 没有一个在 3D 开放世界里用程序化检查器评测队伍管理或 NPC 任务对话；最接近的是 TEACh（对话 → 状态改变）和 MineCollab（通信瓶颈）。把 NPC/任务状态定义成谓词，对话结果才可检查。
+
+## 5. 定位：与机器人 benchmark 和开放世界游戏的区别（2026-11-07）
+
+### 5.1 两类现有工作的难度各在哪
+
+| 家族 | 难度来源 | 不在难度里的 |
+|---|---|---|
+| BEHAVIOR-1K / RoboCasa365 / RoboMME | 接触物理与操作精度（抓取、铰接、液体/布料）、跨 60 布局 × 60 风格的视觉泛化、BDDL 谓词的组合 | 视野 1–25 分钟，单房间，所需信息要么可见要么马上可见；评测是瞬时几何谓词；对象由评测器摆好，agent 不需要自己建立任何绑定 |
+| Minecraft 系（MineDojo / JARVIS-1 / Optimus） | 科技树深度（ObtainDiamond 13+ 子目标）、像素控制、物品知识 | 世界规则 LLM 预训练全知道；agent 只需记住"做到哪一步"，而库存本身就是这份记忆 |
+| Crafter / Craftax / NLE | 探索与生存平衡、稀有成就、程序化地图 | 前馈 agent 读库存就能刷成就（§2.2）；固定规则下符号 bot 占优（§2.3） |
+| 商业开放世界（Pokémon / Zelda / 原神） | 真正的长程：剧情章节、跨区域回访、谜题要用早先学到的机制 | 没有可编程的 ground truth，所以没有一个成为标准 benchmark：PokéAgent 15 个里程碑、Lumine 人工评分、VGB 看检查点；harness 混杂压过模型差异；固定世界可被背下来 |
+
+机器人 benchmark 测的是**操作**，开放世界游戏测的是**信息与规划的时间跨度**，但后者缺评测器和可复现性。两者之间是空的。
+
+**关于"任务视野"图的量纲。** 把人类通关时长 × 20 Hz 换算成"等价控制步"对 agent 没有意义：76 小时原神大部分是对话、过场和走路，不是决策；BEHAVIOR 的 45k 步却是真实控制步。统一的量纲应是**决策数**（policy 被调用的次数）和**信息延迟**（关键信息从获得到使用之间隔了多少决策），两者在两类 benchmark 上都可计算。游戏那一组在图里应标为"无 ground truth、不可测量"，而不是画一个换算点。
+
+### 5.2 我们的差异：五个可量化、可消融的轴
+
+"更长程、更复杂、更开放"三个词单独都站不住：更长程只会更贵（§2.11 METR 的视野曲线说明长度本身不是新信息），更复杂无法度量，更开放没有定义。改为五条，每条都是一个能报数、能做消融的轴：
+
+1. **信息延迟而非墙钟长度。** 任务按"获得 → 使用"之间的决策数分档（10² / 10³ / 10⁴），并保证使用时刻信息不在观测里、重新获取代价高（一次性事件、远距离、消耗品）。机器人 benchmark 这个数约为 0，Minecraft 接近 0。
+2. **agent 自己创建的绑定。** 哪个容器放了什么、哪个 NPC 说了什么、哪条路线安全，都是 episode 内 agent 自己造成或观察到的世界状态；预训练和手册都给不了。RoboCasa 的物品由评测器摆放，Minecraft 的规则 LLM 已知，两者都没有这个性质。
+3. **规则按 seed 随机化 + 程序化世界。** 消掉背世界（Zelda / Pokémon 的问题）和先验知识（Minecraft、以及 Teyvat 元素反应来自原神的问题）；泛化定义为 held-out seed。手册只说"存在某类机制"，具体参数需在世界里发现。
+4. **记忆增长下的退化。** 同一探针电池在三个存储规模上跑、延迟保持不变（[mobile-robot 设计](mobile-robot-long-horizon-tasks.md) 的第二个问题）。EmbodiedMemory-Bench 等现有 memory benchmark 只做"存一次用一次"。
+5. **harness 作为受控变量而非混杂。** 每个任务固定跑四个条件：no-memory（短窗口，下界）、oracle-info（信息直接写进 prompt，上界，证明失败不是操控/感知问题）、full-context（整段历史入上下文；AMA-Bench 发现 memory agent 常输给它，必须作对照）、memory harness（被测变量，分数按 (score − no-memory)/(oracle − no-memory) 归一化）。配合统一沙箱与披露（[agent-sandbox.md](agent-sandbox.md)），这是对 PokéAgent "比的是脚手架"困境的直接回答。
+
+好任务的签名：oracle-info 高、no-memory 低、full-context 因长度或自我条件化（§2.11）退化。oracle-info 也低的任务测的是别的东西，应移出 memory 套件。
+
+### 5.3 主动放弃的
+
+接触物理精度（留给 BEHAVIOR）、像素级低层控制作为主要难度（Lumine 已做）、真实游戏时长（紧凑原型几小时模拟即可，AGENTS.md 的"紧凑原型"约定）。"开放性"操作化为两个数：里程碑 DAG 允许的合法完成顺序数、不被任务说明覆盖的隐藏前置数。
+
+### 5.4 知识不足与能力不足的分离
+
+对未见环境，一份固定手册能消掉大部分"讲述不够"的失败：SPRING 把 Crafter 论文 LaTeX 喂给 GPT-4，在 GPT-4 未见过的环境里零训练超过全部 RL 基线（[arXiv 2305.15486](https://arxiv.org/abs/2305.15486)）；Read and Reap the Rewards 用 Atari 官方说明书加速 RL（[arXiv 2302.04449](https://arxiv.org/abs/2302.04449)）。做法：
+
+- **世界手册**随 benchmark 发布、固定版本、所有 agent 同一份：控制语义与动作 schema、观测字段含义与单位、物理（滑翔、攀爬、体力）、生存规则、时间尺度、NPC 交互方式、"存在哪些类型的机制"但不含参数。标准是没玩过的人只读手册就能上手。
+- **任务说明**：目标、可见里程碑、预算，显式告知有隐藏里程碑。
+- **不给**：机制具体参数、评测器状态、地图。
+- **热身 episode**：同控制、不计分的小世界，把"学操控"与"做任务"分开。
+- **手册充分性校验**：oracle-info 条件和一个只读手册的人类在 memory 任务上应接近满分，否则是手册问题；"有手册 / 无手册"作为正式 ablation 报出。
+
+一句话：他们测的是机器人能不能做好一件事；我们测的是 agent 在一个它事先不认识、信息会过期的世界里，几千个决策之后还记不记得、还会不会用。
+
+相关 memory benchmark（2025–26）：[EmbodiedMemory-Bench](https://arxiv.org/abs/2609.28236v1)、[AMA-Bench](https://arxiv.org/html/2602.22769v4)、[MemoryAgentBench](https://arxiv.org/html/2507.05257v3)（四种能力：准确检索、测试时学习、长程理解、选择性遗忘）、[PM-Bench](https://arxiv.org/html/2607.12385v1)（前瞻记忆）、[EvoMemBench](https://arxiv.org/html/2605.18421)、[WorldLines](https://arxiv.org/pdf/2606.18847)、[LongMemEval-V2](https://arxiv.org/html/2605.12493v1)。
 
 **未核实 / 空白**：Optimus-1 会议；BEHAVIOR-1K 会议（凭记忆 CoRL 2022）；NLE 精确任务表；Cradle 成功检查细节；TeamCraft 仓库地址；未找到公开的原神专用 benchmark（Lumine 是唯一原神 agent 论文，人工评测，未发布 harness）。Obstacle Tower 和 Holodeck 细节仅来自摘要/仓库。
