@@ -315,6 +315,11 @@ def add_fixture(batch,kind,pos,yaw,used,obj_id,identity,role="",version=1):
 def add_detailed_entity(batch,kind,pos,yaw,used,obj_id,bob=0,*,identity=None,visual_role="",visual_version=1):
     from .meshes import _humanoid
     from .style import ENTITY_ALBEDO
+    if visual_role.startswith("campaign_"):
+        from .campaign_assets import add_campaign_fixture
+        add_campaign_fixture(batch,visual_role.removeprefix("campaign_"),pos,yaw,used,
+                             visual_version,identity,obj_id)
+        return
     p=np.asarray(pos,dtype=np.float32)
     identity=identity if identity is not None else (kind,tuple(np.round(p,3)))
     rng=np.random.default_rng(appearance_seed(identity))

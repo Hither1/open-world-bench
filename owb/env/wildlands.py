@@ -19,6 +19,7 @@ from ..physics.elements import ElementSystem, WEATHERS
 from ..render.camera import resolve_third_person
 from ..render import make_renderer
 from ..sim.inventory import EQUIP_SLOTS
+from ..sim import world_map as WM
 from ..sim.survival import SurvivalInteractions
 from ..world.worldgen import Landmark, generate
 
@@ -29,6 +30,9 @@ DISCRETE_ACTIONS = (
     "look_up", "look_down", "jump", "sprint", "climb", "glide", "dive",
     "interact", "eat", "cook", "equip", "attack", "stow", "next_slot", "prev_slot",
 )
+#: Appended to every discrete action list when the world map is enabled:
+#: clicks the on-screen map logo (opens or closes the map).
+MAP_ACTION = "map"
 ITEM_IDS = tuple(I.ITEMS)
 ITEM_INDEX = {item: i + 1 for i, item in enumerate(ITEM_IDS)}
 INVENTORY_COLUMNS = ("item", "count", "durability", "equipped_slot", "dish", "duration") + I.ALL_EFFECTS
@@ -41,6 +45,10 @@ class WildlandsEnv(gym.Env):
 
     The minimap records visited cells only. Milestone/dense rewards pay once per
     landmark; dense additionally pays exploration_bonus per new map cell.
+
+    With ``world_map`` enabled, the RGB view shows a map logo; ``click`` with
+    ``pointer`` on it opens a fog-of-war map of the whole world, pausing the
+    simulation until it is closed (see :mod:`owb.sim.world_map`).
     """
     metadata = {"render_modes": ["rgb_array"], "render_fps": 5}
     commands = COMMANDS
@@ -65,6 +73,8 @@ class WildlandsEnv(gym.Env):
         if min(c.frame_skip, c.max_steps, c.minimap_size, c.minimap_scale,
                r.width, r.height, r.max_dist, s.dt, s.max_health, s.max_stamina) <= 0:
             raise ValueError("step, map, render and vital limits must be positive")
+        if c.world_map and (c.map_cell <= 0 or (c.map_reveal_radius is not None and c.map_reveal_radius <= 0)):
+            raise ValueError("map_cell and map_reveal_radius must be positive")
         if s.dt > 0.1:
             raise ValueError("sim_cfg.dt must be at most 0.1 seconds for stable physics")
         if min(c.world_cfg.size_x, c.world_cfg.size_z, c.world_cfg.size_y) < 16:
@@ -74,6 +84,8 @@ class WildlandsEnv(gym.Env):
         self.renderer, self.controller = make_renderer(r), CharacterController(s)
         self.world, self._frame = None, None
         self._ended, self._seed = False, c.seed
+        if c.world_map and MAP_ACTION not in self.discrete_actions:
+            self.discrete_actions = tuple(self.discrete_actions) + (MAP_ACTION,)
         if c.action_space == "discrete":
             self.action_space = spaces.Discrete(len(self.discrete_actions))
         else:
@@ -85,6 +97,10 @@ class WildlandsEnv(gym.Env):
                 "slot": spaces.Discrete(32),
                 "ingredients": spaces.MultiDiscrete([33] * 5),  # 0 empty, 1..32 slots
             })
+            if c.world_map:
+                # Normalised screen position (u right, v down) and a click button.
+                self.action_space["pointer"] = spaces.Box(0, 1, (2,), np.float32)
+                self.action_space["click"] = spaces.Discrete(2)
         obs = {"survival": spaces.Box(-np.inf, np.inf, (len(SURVIVAL_NAMES),), np.float32)}
         if c.obs_rgb:
             obs["rgb"] = spaces.Box(0, 255, (r.height, r.width, 3), np.uint8)
@@ -136,6 +152,7 @@ class WildlandsEnv(gym.Env):
         self._ended, self._frame = False, None
         self._reset_mechanics()
         self._explore()
+        self._init_world_map()
         return self._observation(), self._info([])
 
     def _generate_world(self):
@@ -181,6 +198,12 @@ class WildlandsEnv(gym.Env):
         result.landmarks.append(Landmark("camp", "Trailhead camp", result.spawn, radius=4))
 
     def _decode(self, action):
+        self._click = (False, 0.0, 0.0)
+        if self.cfg.world_map and self.cfg.action_space == "multi" and isinstance(action, dict):
+            # Actions recorded before the map existed carry no pointer fields.
+            action = dict(action)
+            action.setdefault("pointer", np.zeros(2, np.float32))
+            action.setdefault("click", 0)
         if not self.action_space.contains(action):
             raise ValueError("action is outside action_space")
         intent, look, command, ingredients = MoveIntent(), np.zeros(2), "none", []
@@ -192,6 +215,8 @@ class WildlandsEnv(gym.Env):
             command = self.commands[int(action["command"])]
             self.selected_slot = int(action["slot"])
             ingredients = [int(i) - 1 for i in action["ingredients"] if i]
+            if self.cfg.world_map:
+                self._click = WM.parse_click(action["click"], action["pointer"])
         else:
             name = self.discrete_actions[int(action)]
             if name in ("forward", "back", "jump", "sprint", "climb", "glide"):
@@ -210,6 +235,10 @@ class WildlandsEnv(gym.Env):
             if name in ("next_slot", "prev_slot"):
                 self.selected_slot = (self.selected_slot + (1 if name == "next_slot" else -1)) % 32
             ingredients = [self.selected_slot]
+            if name == MAP_ACTION:
+                r = self.cfg.render_cfg
+                self._click = (True, *WM.logo_center(r.width, r.height))
+                command = "none"
         return intent, look, command, ingredients
 
     def step(self, action):
@@ -217,7 +246,10 @@ class WildlandsEnv(gym.Env):
             raise gym.error.ResetNeeded("call reset() before starting or after an episode ends")
         intent, look, command, ingredients = self._decode(action)
         c, a, elements = self.cfg, self.agent, self.elements
-        events = self._dispatch(command, ingredients, action)
+        ui_events = self._map_click()
+        if self.map_open:
+            return self._paused_step(ui_events)
+        events = ui_events + self._dispatch(command, ingredients, action)
         for tick in range(c.frame_skip):
             dt = c.sim_cfg.dt
             a.tick_effects(dt)
@@ -252,6 +284,7 @@ class WildlandsEnv(gym.Env):
         self.steps += 1
         new_cells, discoveries = self._explore()
         events.extend(discoveries)
+        self._reveal_map()
         success, task_reward = self._task_outcome(events)
         terminated = not a.alive or success
         truncated = self.steps >= c.max_steps and not terminated
@@ -319,6 +352,8 @@ class WildlandsEnv(gym.Env):
             for key in ("rgb", "depth", "semantic"):
                 if getattr(c, "obs_" + key):
                     obs[key] = frame[key].copy()
+            if c.obs_rgb:
+                obs["rgb"] = self._screen(frame["rgb"])
         if c.obs_proprio:
             obs["proprio"] = a.proprio()
         if c.obs_inventory:
@@ -338,7 +373,8 @@ class WildlandsEnv(gym.Env):
                     inventory=deepcopy(self.agent.inventory.to_dict()), selected_slot=self.selected_slot,
                     effects=[dict(kind=e.kind, magnitude=e.magnitude, ttl=e.ttl) for e in self.agent.effects],
                     visited_cells=int(np.count_nonzero(self.map_memory)),
-                    discovered_landmarks=[self.landmarks[i].name for i in sorted(self.discovered)])
+                    discovered_landmarks=[self.landmarks[i].name for i in sorted(self.discovered)],
+                    map_open=self.map_open, **self._map_info())
 
     def _render_buffers(self):
         if self._frame is None:
@@ -364,10 +400,97 @@ class WildlandsEnv(gym.Env):
                 draw_hud(self._frame["rgb"], a)
         return self._frame
 
+    # ------------------------------------------------------------ world map
+    @property
+    def map_open(self):
+        return bool(self.cfg.world_map and self.map_ui.open)
+
+    def _map_layers(self):
+        """(name, standing-height low, high, tab colour) per map layer."""
+        return (("world", 0, self.world.size_y, (120, 168, 96)),)
+
+    def _map_layer_index(self):
+        return 0
+
+    def _map_reveal_radius(self):
+        a, w = self.agent, self.world
+        x, z = np.clip(a.pos[[0, 2]].astype(int), (0, 0), (w.size_x - 1, w.size_z - 1))
+        return WM.reveal_radius(self.map_fog[0].radius, a.pos[1] - (w.height[x, z] + 1))
+
+    def _init_world_map(self):
+        self._map_cache = {}
+        if not self.cfg.world_map:
+            return
+        layers = self._map_layers()
+        self.map_ui = WM.WorldMapUI([name for name, *_ in layers], [color for *_, color in layers])
+        bounds = (0.0, 0.0, float(self.world.size_x), float(self.world.size_z))
+        radius = self.cfg.map_reveal_radius
+        if radius is None:
+            radius = float(np.clip(0.08 * min(self.world.size_x, self.world.size_z), 8.0, 24.0))
+        self.map_fog = [WM.FogOfWar(bounds, self.cfg.map_cell, radius) for _ in layers]
+        self._map_layer = None
+        self._reveal_map()
+
+    def _reveal_map(self):
+        if not self.cfg.world_map:
+            return
+        layer = self._map_layer_index()
+        if layer != self._map_layer:
+            self.map_fog[layer].reset_trail()  # no trail across a layer change
+            self._map_layer = layer
+        self.map_fog[layer].reveal(float(self.agent.pos[0]), float(self.agent.pos[2]), self._map_reveal_radius())
+
+    def _map_click(self):
+        if not self.cfg.world_map or not self._click[0]:
+            return []
+        r = self.cfg.render_cfg
+        return self.map_ui.click(self._click[1], self._click[2], r.width, r.height, self._map_layer_index())
+
+    def _paused_step(self, events):
+        """The map is open: no simulated time passes, but the decision counts."""
+        c = self.cfg
+        self.steps += 1
+        truncated = self.steps >= c.max_steps
+        self._ended = truncated
+        return self._observation(), float(-c.time_penalty), False, bool(truncated), self._info(events)
+
+    def _map_markers(self, layer):
+        _, lo, hi, _ = self._map_layers()[layer]
+        return [(lm.pos[0], lm.pos[2]) for i, lm in enumerate(self.landmarks)
+                if i in self.discovered and (len(self.map_fog) == 1 or lo <= lm.pos[1] + 1 < hi)]
+
+    def _map_base(self, layer):
+        key = (layer, self.world.rev)
+        if key not in self._map_cache:
+            _, lo, hi, _ = self._map_layers()[layer]
+            self._map_cache = {k: v for k, v in self._map_cache.items() if k[0] != layer}
+            self._map_cache[key] = WM.voxel_surface(self.world, lo, hi)
+        return self._map_cache[key]
+
+    def _render_open_map(self, width, height):
+        layer = self.map_ui.view_layer
+        here = layer == self._map_layer_index()
+        heading = (np.cos(self.agent.yaw), np.sin(self.agent.yaw))
+        return WM.render_map(width, height, self._map_base(layer),
+                             (0.0, 0.0, float(self.world.size_x), float(self.world.size_z)),
+                             self.map_fog[layer], agent=self.agent.pos[[0, 2]] if here else None,
+                             heading=heading, markers=self._map_markers(layer), tabs=self.map_ui.tabs())
+
+    def _screen(self, rgb):
+        """The policy's view: 3-D frame with the map logo, or the open map."""
+        if not self.cfg.world_map:
+            return rgb.copy()
+        return self.map_ui.compose(rgb, self._render_open_map)
+
+    def _map_info(self):
+        if not self.cfg.world_map:
+            return {}
+        return dict(explored_fraction=self.map_fog[self._map_layer_index()].fraction)
+
     def render(self):
         if self.world is None:
             raise gym.error.ResetNeeded("call reset() before render()")
-        return self._render_buffers()["rgb"].copy()
+        return self._screen(self._render_buffers()["rgb"])
 
     def close(self):
         self._frame = None

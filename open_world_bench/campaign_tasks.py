@@ -175,6 +175,20 @@ class Campaign:
             self.add_entity(sid, 'ice', site.center, EntityKind.PILLAR, f'Frozen foothill shard {i+1}', 'ice')
             self.add_entity(sid, 'quartz', np.asarray(site.center)+(8, 3), EntityKind.COLLECTIBLE, 'Crimson quartz outcrop', 'quartz')
             self.add_entity(sid, 'fire', np.asarray(site.center)+(-8, 7), EntityKind.BEACON, 'Sheltered brazier', 'campfire')
+            if i == 1:
+                site.solved = True
+                guard = self.add_entity(sid, 'guard', np.asarray(site.center)+(0,-7), EntityKind.ENEMY,
+                                        'Observatory shard guardian')
+                self.world.get(guard).hp = self.world.get(guard).max_hp = 84
+                self.world.get(guard).damage = 3
+            if i == 2:
+                site.installed = True
+                self.add_entity(sid, 'mural', np.asarray(site.center)+(0,8), EntityKind.PILLAR,
+                                'Ravine latch inscription', 'mural')
+                for element,offset in zip(ELEMENTS,((-6,-3),(6,-3),(0,-8))):
+                    role = element.name.lower()
+                    self.add_entity(sid, role, np.asarray(site.center)+offset, EntityKind.PILLAR,
+                                    f'Ravine {role} latch')
             self.milestone(sid, f'Thaw foothill shard {i+1}', ('charged_strike',))
         self.milestone('ascent', 'Release the summit wind seal', tuple(f'lower_{i}' for i in range(3)))
         self.add_entity('ascent', 'gate', self.point(0, -45), EntityKind.BEACON, 'Summit wind-seal console', 'seal')
@@ -201,7 +215,7 @@ class Campaign:
             self.milestone(sid, f'Cleanse shrine {i+1}', (sid+'_puzzle',))
         self.add_ritual('heart', self.point(0, -40), tuple(f'shrine_{i}' for i in range(5)), kind='boss')
         self.milestone('final', 'Defeat the Blightroot Heart', tuple(f'shrine_{i}' for i in range(5)))
-        self.gate('heart_ward', self.point(0, -25), 'final')
+        self.gate('heart_ward', self.point(0, -25), tuple(f'shrine_{i}' for i in range(5)))
 
     def _build_desert(self):
         self.milestone('slate', 'Recover the permission slate')
@@ -226,8 +240,8 @@ class Campaign:
         self.milestone('zenith_puzzle', 'Power the Zenith lock', ('atlas_key',))
         self.milestone('zenith', 'Defeat the archive custodian', ('zenith_puzzle',))
         self.milestone('final', 'Recover the star atlas', ('zenith',))
-        self.add_entity('final', 'atlas', self.point(0, -240), EntityKind.CHEST, 'Lost star atlas', 'slate')
-        self.gate('zenith_door', self.point(0, -230), 'zenith')
+        self.add_entity('final', 'atlas', np.asarray(self.sites['zenith'].center)+(0,-35), EntityKind.CHEST, 'Lost star atlas', 'slate')
+        self.gate('zenith_door', np.asarray(self.sites['zenith'].center)+(0,-24), 'zenith')
 
     def near(self, char, eid, radius=2.6):
         e = self.world.get(eid)
@@ -264,7 +278,8 @@ class Campaign:
         if sid in ('lens', 'slate'):
             if sid not in self.facts:
                 self.complete(sid); self.inventory[sid] = 1; e.used = True
-                if sid == 'slate': self.slate_energy = 6
+                if sid == 'slate':
+                    self.slate_energy = 6; self.inventory['clearance_rank'] = 1
             self.say('Recovered '+e.label+'.'); return
         if role == 'quartz':
             if self.world.elapsed < self._quartz_ready.get(e.id, 0):
@@ -358,7 +373,7 @@ class Campaign:
     def apply_element(self, char, element):
         receivers = []
         for site in self.sites.values():
-            if site.kind == 'ice' or not self.available(site) or not site.installed or site.finished:
+            if 'ember' not in site.entities or not self.available(site) or not site.installed or site.finished:
                 continue
             for role in ('ember', 'tide', 'gale'):
                 eid = site.entities[role]
@@ -374,13 +389,14 @@ class Campaign:
             self.emit('receiver_accepted', entity=eid)
             if site.progress == 3:
                 site.solved = True
-                self.world.get(site.entities['guard']).elemental.shield = 0
+                if 'guard' in site.entities:
+                    self.world.get(site.entities['guard']).elemental.shield = 0
                 if site.kind == 'boss':
                     site.vulnerable_until = self.world.elapsed+20
                     self.metrics['boss_windows'] += 1
-                else:
+                elif site.kind != 'ice':
                     self.complete(site.id+'_puzzle')
-                self.say('Pattern complete. The guardian is exposed.')
+                self.say('Pattern complete. The guardian or ice latches are released.')
             else:
                 self.say(f'Receiver accepted; {site.progress} lamps lit.')
         else:
@@ -397,6 +413,8 @@ class Campaign:
         site = min(candidates, key=lambda s: np.linalg.norm(self.world.get(s.entities['ice']).pos-char.pos))
         if not self.available(site):
             self.say('The upper shard is isolated by the wind seal.', blocked=True); return
+        if ('guard' in site.entities and self.world.get(site.entities['guard']).alive) or ('ember' in site.entities and not site.solved):
+            self.say('The guardian or elemental latches still seal this shard.', blocked=True); return
         delta = self.world.get(site.entities['ice']).pos-char.pos
         flat = delta[[0, 2]]
         forward = np.array((np.sin(char.yaw), -np.cos(char.yaw)))
@@ -406,6 +424,7 @@ class Campaign:
             self.say('The strike glances off strange ice.'); return
         self.charge_until = 0
         site.hits += 1
+        self.world.get(site.entities['ice']).visual_version = site.hits+1
         self.complete('charged_strike')
         self.emit('charged_ice_hit', entity=site.entities['ice'], hits=site.hits)
         self.say(f'Ice cracked ({site.hits}/2). The quartz coating is spent.')
@@ -472,22 +491,58 @@ class Campaign:
                     charge_until=self.charge_until, slate_energy=self.slate_energy,
                     quartz_ready=self._quartz_ready, locked_visits=sorted(self._visited_locked_archives),
                     metrics=self.metrics, feedback=self.feedback, feedback_time=self.feedback_time,
-                    discovered=sorted(self.discovered))
+                    discovered=sorted(self.discovered),last_position=self._last_pos,
+                    pending_events=self.events)
 
     def verify(self):
         failures = []
-        for key in self.facts:
-            if not set(self.milestones[key].requires) <= self.facts:
-                failures.append('missing prerequisite: '+key)
+        prior = set()
+        last_time = -1.
+        for entry in self.completed:
+            key = entry['id']
+            if key not in self.milestones or key in prior:
+                failures.append('unknown or repeated milestone: '+key)
+                continue
+            if not set(self.milestones[key].requires) <= prior:
+                failures.append('prerequisite completed out of order: '+key)
+            if entry['time'] < last_time:
+                failures.append('nonmonotonic milestone time: '+key)
+            prior.add(key); last_time = entry['time']
+        if prior != self.facts:
+            failures.append('milestone ledger disagrees with world facts')
         for sid, site in self.sites.items():
             if sid in self.facts and not site.finished:
                 failures.append('unfinished site: '+sid)
-            if site.finished and site.kind!='ice' and self.world.get(site.entities['guard']).alive:
+            if not site.finished:
+                continue
+            if 'guard' in site.entities and self.world.get(site.entities['guard']).alive:
                 failures.append('living guardian: '+sid)
-            if site.finished and site.kind=='ice' and site.hits<2:
-                failures.append('unthawed ice: '+sid)
+            if site.kind=='ice':
+                if site.hits<2: failures.append('unthawed ice: '+sid)
+                if 'ember' in site.entities and not site.solved:
+                    failures.append('sealed ice latches: '+sid)
+            elif not site.installed or not site.solved or site.progress!=3:
+                failures.append('incomplete ritual: '+sid)
+        if any(value<0 for value in self.inventory.values()):
+            failures.append('negative inventory')
+        if self.task=='cleansing':
+            for sid,site in self.sites.items():
+                if site.kind=='boss': continue
+                expected = int(sid+'_ward' in self.facts and not site.installed)
+                if self.inventory.get(sid+'_ward',0)!=expected:
+                    failures.append('ward accounting mismatch: '+sid)
+            heart = self.sites['heart']
+            if not heart.finished or heart.phase!=1:
+                failures.append('Heart phases incomplete')
+        if self.task=='desert':
+            expected_rank = 2 if 'rank_two' in self.facts else int('slate' in self.facts)
+            if self.inventory.get('clearance_rank',0)!=expected_rank or not 0<=self.slate_energy<=6:
+                failures.append('invalid clearance or slate charge')
+            for i in range(3):
+                key = f'temple_{i}_record'
+                if self.inventory.get(key,0)!=int(key in self.facts):
+                    failures.append('chart accounting mismatch: '+key)
         if 'final' not in self.facts: failures.append('final goal incomplete')
-        if self.task=='cleansing' and not self.sites['heart'].finished: failures.append('Heart still active')
         return dict(success=not failures, failures=failures, completed=len(self.facts),
                     required=len(self.milestones), metrics=dict(self.metrics),
                     scope='Procedural campaign; native-action feasibility, not a learned-agent score')

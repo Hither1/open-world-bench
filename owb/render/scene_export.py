@@ -7,6 +7,7 @@ Blender converts these to Z-up; its glTF exporter converts back to Y-up.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+from copy import deepcopy
 import json
 from pathlib import Path
 
@@ -178,16 +179,35 @@ def _add_batch(scene, batch):
                       normals=normals[mask], emission=emission[mask], material=name)
 
 
-def _teyvat(native, size):
+VIEWS = ("presentation", "first_person")
+
+
+def teyvat_camera(native, view="presentation"):
+    """Eye and target for a Teyvat presentation view; never changes the env.
+
+    ``presentation`` is the policy's own orbit camera. ``first_person`` puts the
+    eye at the active character's eye height, looking level along the
+    character's heading (its facing, not the freely orbiting camera yaw).
+    """
+    if view == "presentation":
+        return native.cam.eye.copy(), native.cam.pivot.copy()
+    if view == "first_person":
+        from open_world_bench.math3d import yaw_pitch_to_dir
+        eye = (native.char.pos + np.array([0.0, native.cfg.character.eye_height, 0.0])).astype(np.float32)
+        return eye, (eye + yaw_pitch_to_dir(native.char.yaw, 0.0)).astype(np.float32)
+    raise ValueError(f"view must be one of {VIEWS}")
+
+
+def _teyvat(native, size, view="presentation"):
     from open_world_bench.render.soft_renderer import SoftRenderer
     from open_world_bench.render.style import BIOME_ALBEDO, sky_keys_at
     from open_world_bench.terrain import MEADOW, FOREST, CLIFF, SNOW, BEACH
     from open_world_bench.math3d import smoothstep
 
     world, terrain = native.world, native.world.terrain
-    eye, target = native.cam.eye.copy(), native.cam.pivot.copy()
+    eye, target = teyvat_camera(native, view)
     keys = sky_keys_at(world.time_of_day)
-    scene = SceneSnapshot(dict(version=1, environment="teyvat", seed=native._episode_seed,
+    scene = SceneSnapshot(dict(version=1, environment="teyvat", seed=native._episode_seed, view=view,
         time_of_day=float(world.time_of_day), coordinates="Y-up, metres", size=list(size),
         camera=dict(eye=eye.tolist(), target=target.tolist(), fov_y=native.cfg.camera.fov_y),
         lighting=dict(direction=world.sun_direction.tolist(), color=list(keys.sun),
@@ -207,6 +227,14 @@ def _teyvat(native, size):
         (smoothstep(4.2, 0.6, p[:, 1]) * np.clip(1 - slope / np.radians(34), 0, 1), BIOME_ALBEDO[BEACH]),
     ):
         color = color * (1 - weight[:, None]) + albedo * weight[:, None]
+    if hasattr(world, "campaign"):
+        from open_world_bench.campaign_tasks import SUITE_VERSION
+        scene.metadata["campaign"] = dict(version=SUITE_VERSION, task=world.campaign.task,
+            geography_scale=native.geography_scale, state_digest=native.state_digest(),
+            active_seals=deepcopy(world.architecture.active()))
+        if world.campaign.task == "desert":
+            weight = smoothstep(np.radians(30), np.radians(52), slope)[:,None]
+            color = np.array((.66,.49,.29))*(1-weight)+np.array((.49,.36,.24))*weight
     scene.add("Island terrain", triangles, color, smooth=True, material="terrain")
     if world.architecture is not None:
         scene.metadata["architecture"] = dict(
@@ -218,7 +246,7 @@ def _teyvat(native, size):
     scene.add("Ocean", _grid_triangles(plane), (0.16, 0.61, 0.66), water=True)
     # Observation budgets must not reduce presentation geometry or vegetation.
     settings = replace(native.cfg.render, width=size[0], height=size[1],
-                       draw_props=True, draw_entities=True, draw_character=True,
+                       draw_props=True, draw_entities=True, draw_character=view != "first_person",
                        ground_cover=True, prop_draw_distance=max(260, native.cfg.render.prop_draw_distance))
     _add_batch(scene, SoftRenderer(settings)._build_meshes(
         world, native.char, eye, _unit(target - eye), batch=_presentation_batch(), full_detail=True))
@@ -287,7 +315,7 @@ def _wildlands(native, size):
     return scene
 
 
-def capture_scene(env, *, width=960, height=540):
+def capture_scene(env, *, width=960, height=540, view="presentation"):
     """Capture a reset Teyvat or Wildlands env, including a shared-framework env.
 
     This is a camera-specific presentation snapshot, not a complete savegame.
@@ -302,8 +330,13 @@ def capture_scene(env, *, width=960, height=540):
     native = getattr(base, "native", base)
     if getattr(native, "world", None) is None:
         raise gym.error.ResetNeeded("call reset() before exporting a scene")
+    if view not in VIEWS:
+        raise ValueError(f"view must be one of {VIEWS}")
     if isinstance(native, OpenWorldEnv):
-        return _teyvat(native, (width, height))
+        return _teyvat(native, (width, height), view)
+    if view != "presentation":
+        raise ValueError("first-person scene export is implemented for Teyvat here; "
+                         "Skylands campaigns use owb.render.skylands_campaign")
     # Deliberately exclude subclasses with extra scene content until adapted.
     from ..env.wildlands_reference import WildlandsReferenceEnv
     from ..env.skylands import SkylandsEnv
@@ -313,5 +346,5 @@ def capture_scene(env, *, width=960, height=540):
     raise ValueError("scene export currently supports teyvat, wildlands, and skylands")
 
 
-def export_scene(env, path, *, width=960, height=540):
-    return capture_scene(env, width=width, height=height).save(path)
+def export_scene(env, path, *, width=960, height=540, view="presentation"):
+    return capture_scene(env, width=width, height=height, view=view).save(path)

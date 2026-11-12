@@ -24,6 +24,15 @@ game assets or code are redistributed.
 | `skylands` | The Legend of Zelda: Tears of the Kingdom | Vertical, three-layer worlds plus construction: combining parts into contraptions, reusing recipes discovered much earlier, sky/surface/depths cross-referencing. |
 | `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. |
 
+[Teyvat branching campaigns](docs/teyvat-long-horizon-tasks.md) provide three
+Genshin-inspired final goals: restore a snowy summit, cleanse five shrines and
+defeat their sealed boss, or upgrade desert clearance and revisit ancient
+archives. Use `owb.make_env("teyvat", task="cleansing", variant="full",
+max_steps=40_000)`; tasks are `summit`, `cleansing`, and `desert`. The suite uses
+persistent prerequisites and local clues, with no policy waypoint oracle.
+[Native-action validation](docs/teyvat-campaign-validation.md) records feasibility
+and independent replay separately from model or memory performance.
+
 [Skylands long-horizon task designs](docs/skylands-long-horizon-tasks.md) outline
 two campaigns with 15 and 24 milestones. The
 [full-scale reference campaigns](docs/skylands-campaign-demos.md) now execute
@@ -38,6 +47,14 @@ travel timelapse. A separate
 objective-driven Skylands campaign with open and extended goals, optional regional
 preparation, three shutdown methods, persistent replay checkpoints, and 50 detailed
 industrial buildings across ten architectural families.
+
+[Tempest Restoration](docs/skylands-restoration.md) extends this world with
+32 private diagnostic checkpoints, seed-dependent regional calibration,
+tooling cached and recovered across the expedition, a fabricated heavy pressure
+manifold, and live refuge power commissioning. It provides separate restoration
+and open objectives through the native Gymnasium interface.
+Two independently replayed restoration references complete all 32 checkpoints
+in approximately 3.4 simulated hours; unprepared open routes remain possible.
 
 ## Evaluation results
 
@@ -182,7 +199,10 @@ the simulator.
 Use `owb.make_env("teyvat")` or `owb.make_env("wildlands")` for a shared agent
 interface, mixed-environment batching, and recording. See the
 [shared framework guide](docs/framework.md). `owb.make_env("skylands")` runs the
-new construction course through the same interface (now schema version 2).
+new construction course through the same interface (now schema version 3).
+In every environment the agent can click a small map logo on screen to open a
+[fog-of-war map of the whole world](docs/framework.md#world-map); regions it has
+not explored stay in shadow.
 
 ```bash
 python -B -m owb.scripts.benchmark --env skylands --seed 7 --steps 45 \

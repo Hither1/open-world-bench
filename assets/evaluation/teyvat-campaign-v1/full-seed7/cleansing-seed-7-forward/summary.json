@@ -1,0 +1,93 @@
+{
+  "success": true,
+  "failures": [],
+  "completed": 17,
+  "required": 17,
+  "metrics": {
+    "wrong_applications": 0,
+    "blocked_interactions": 0,
+    "quartz_expirations": 0,
+    "cold_damage": 0.0,
+    "distance_metres": 3326.4731408656735,
+    "recharge_visits": 0,
+    "archive_revisits": 0,
+    "boss_windows": 2
+  },
+  "scope": "Procedural campaign; native-action feasibility, not a learned-agent score",
+  "actions": 3246,
+  "simulated_seconds": 649.2000000000669,
+  "milestone_order": [
+    {
+      "id": "lens",
+      "time": 17.233333
+    },
+    {
+      "id": "shrine_0_ward",
+      "time": 59.633333
+    },
+    {
+      "id": "shrine_0_puzzle",
+      "time": 74.633333
+    },
+    {
+      "id": "shrine_0",
+      "time": 83.433333
+    },
+    {
+      "id": "shrine_1_ward",
+      "time": 185.633333
+    },
+    {
+      "id": "shrine_1_puzzle",
+      "time": 200.033333
+    },
+    {
+      "id": "shrine_1",
+      "time": 207.233333
+    },
+    {
+      "id": "shrine_2_ward",
+      "time": 321.833333
+    },
+    {
+      "id": "shrine_2_puzzle",
+      "time": 335.233333
+    },
+    {
+      "id": "shrine_2",
+      "time": 344.633333
+    },
+    {
+      "id": "shrine_3_ward",
+      "time": 460.833333
+    },
+    {
+      "id": "shrine_3_puzzle",
+      "time": 472.633333
+    },
+    {
+      "id": "shrine_3",
+      "time": 481.633333
+    },
+    {
+      "id": "shrine_4_ward",
+      "time": 548.633333
+    },
+    {
+      "id": "shrine_4_puzzle",
+      "time": 562.633333
+    },
+    {
+      "id": "shrine_4",
+      "time": 567.633333
+    },
+    {
+      "id": "final",
+      "time": 649.033333
+    }
+  ],
+  "final_digest": "d5a1f390496130dc48de83d658fe2e921a68fe2ac0bb4a4c7c9dc3442b40a96e",
+  "actions_sha256": "9e8344e902e708f26b1048b0de5b9928ae97a4349f0bf18018664f57bce203b8",
+  "geometry_digest": "4f05e26195d4c294452d134e4f144e50fdd00ee4eefe6ab492e7a7425cc0d6e9",
+  "wall_seconds": 112.74044417502591
+}

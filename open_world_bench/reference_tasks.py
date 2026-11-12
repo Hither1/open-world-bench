@@ -242,6 +242,54 @@ class Course:
     def local_entities(self):
         return self.op.entities if self.op else []
 
+    # Observable step description (no coordinates or rule tables).
+    _STEP_PHRASES={"lesson":"talk to the instructor","relay":"restore the relay","survey":"visit the landmark",
+                   "collect":"recover the item","exchange":"hand over or use mission items",
+                   "fight":"defeat the guard","sentinel":"defeat the sentinel","crossing":"cross by wind vent",
+                   "dive":"dive to recover the item","lift":"ride the service lift"}
+    _LESSON_TITLES={"Learn R":"relay lesson","Learn G":"sentinel lesson","Learn T":"wind lesson"}
+
+    def step_text(self):
+        op=self.op
+        if op is None:
+            return ""
+        title=self._LESSON_TITLES.get(op.title,op.title)
+        return (f"Step {self.operation_index+1}/{len(self.current.operations)}: "
+                f"{self._STEP_PHRASES[op.kind]} ({title})")
+
+    # Same proximity tests that interact/apply_element use below.
+    @staticmethod
+    def _in_reach(entity,char,radius,height):
+        d=entity.pos-char.pos
+        return float(np.linalg.norm(d[[0,2]]))<=radius and abs(float(d[1]))<height
+
+    def interact_hint(self,char):
+        """Label of a current-step entity that interact would act on, else None."""
+        op=self.op
+        if op is None or op.kind not in ("relay","lesson","survey","collect","exchange","dive","lift"):
+            return None
+        near=[self.world.get(eid) for eid in op.entities]
+        near=[e for e in near if self._in_reach(e,char,e.radius,2.8)]
+        return min(near,key=lambda e:float(np.linalg.norm(e.pos-char.pos))).label if near else None
+
+    def _off_step_entity(self,char,radius=None,height=2.8,kinds=None):
+        """Nearest course entity in reach that belongs to a different operation."""
+        current=set(self.op.entities) if self.op else set()
+        near=[]
+        for m in self.milestones:
+            for op in m.operations:
+                if kinds is not None and op.kind not in kinds:
+                    continue
+                for eid in op.entities:
+                    e=self.world.get(eid)
+                    if eid not in current and e.alive and self._in_reach(e,char,e.radius if radius is None else radius,height):
+                        near.append(e)
+        return min(near,key=lambda e:float(np.linalg.norm(e.pos-char.pos))) if near else None
+
+    def off_step_feedback(self,entity,what):
+        self.feedback(f"{entity.label}: no response; {what} is not part of the current step.",
+                      entity=entity.id,reason="off_step")
+
     def finish_operation(self):
         op=self.op
         if op is None or op.complete:
@@ -282,6 +330,9 @@ class Course:
         candidates=[self.world.get(eid) for eid in op.entities]
         candidates=[e for e in candidates if np.linalg.norm((e.pos-char.pos)[[0,2]])<=e.radius and abs(float(e.pos[1]-char.pos[1]))<2.8]
         if not candidates:
+            other=self._off_step_entity(char)
+            if other is not None:
+                self.off_step_feedback(other,"this object")
             return
         entity=min(candidates,key=lambda e:float(np.linalg.norm(e.pos-char.pos)))
         self.emit("interact",entity=entity.id,operation=op.id)
@@ -323,11 +374,14 @@ class Course:
 
     def apply_element(self,char,element):
         op=self.op
-        if op is None or op.kind not in ("relay","crossing"):
-            return
-        candidates=[self.world.get(e) for e in op.entities]
+        current=op is not None and op.kind in ("relay","crossing")
+        candidates=[self.world.get(e) for e in op.entities] if current else []
         candidates=[e for e in candidates if np.linalg.norm((e.pos-char.pos)[[0,2]])<2.6 and abs(float(e.pos[1]-char.pos[1]))<4.0]
         if not candidates:
+            # Elemental receivers of other steps respond visibly instead of silently ignoring casts.
+            other=self._off_step_entity(char,radius=2.6,height=4.0,kinds=("relay","crossing"))
+            if other is not None and op is not None:
+                self.off_step_feedback(other,"this receiver")
             return
         entity=min(candidates,key=lambda e:float(np.linalg.norm(e.pos-char.pos)))
         s=op.state
@@ -494,6 +548,12 @@ class CourseWorld(World):
         self.course.interact(char)
         return []
 
+    def _hint(self,char):
+        # The proprio interaction hint means "interact would act on the current step here";
+        # objects of other steps no longer raise it.
+        label=self.course.interact_hint(char)
+        return f"Interact: {label}" if label else None
+
     def _update_enemy(self,e,char,dt):
         op=self.course.op
         if not op or e.id not in op.entities:
@@ -578,6 +638,9 @@ class ReferenceTaskEnv(OpenWorldEnv):
                  "instruction":self.quests.instruction()}
         # Local dialogue/feedback is observable, but rule tables and target coordinates are private.
         obs["local_text"]=self.course.last_feedback
+        step=self.course.step_text()
+        if step and "instruction" in obs:
+            obs["instruction"]=f"{obs['instruction']} | {step}"
         return obs
 
     def _info(self,events=None):

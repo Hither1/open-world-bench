@@ -8,11 +8,12 @@ summaries. Adapters preserve the separate simulators and their native APIs.
 
 `owb.make_env("skylands")` runs the three-layer construction course; see the
 [Skylands guide](skylands.md). `owb.available_environments()` lists all three.
-The common interface is now **schema version 2**: construction commands, `part`,
-`build_move`, `construction`, and `build_state` have been added. Use
-`neutral_action()` to initialize every field. Version 1 action dictionaries and
-recordings need the new action fields filled with zero; native Wildlands and
-Teyvat APIs retain their existing schemas.
+The common interface is now **schema version 3**, which adds `pointer` and
+`click` for the on-screen world map (see [World map](#world-map)). Version 2
+added construction commands, `part`, `build_move`, `construction`, and
+`build_state`. Use `neutral_action()` to initialize every field. Version 2
+actions without `pointer`/`click` are accepted as "no click"; version 1 action
+dictionaries and recordings need the version 2 fields filled with zero.
 
 ## One pipeline
 
@@ -64,6 +65,7 @@ these sensor settings; see the [rendering guide](rendering.md).
 | `slot` | Inventory slot 0–31. |
 | `ingredients` | Five entries: 0 unused, 1–32 selects inventory slot 0–31. |
 | `part`, `build_move` | Part ID 0–8 and three floats for grid manipulation in Skylands; see its guide. |
+| `pointer`, `click` | Normalised screen point `[u, v]` in `[0, 1]` (u right, v down) and 0/1. A click on the map logo opens or closes the world map. |
 
 `command_mask`, `button_mask`, and `swap_mask` describe backend support, not
 current cooldown/proximity readiness. Unsupported but well-formed requests consume
@@ -72,6 +74,29 @@ Malformed actions fail before advancing. One command executes per decision.
 Teyvat swaps before skill logic, and translates glide/dive requests to its jump
 control only in the relevant movement states. Native APIs retain richer native
 simultaneous-button combinations.
+
+## World map
+
+Every `rgb` frame in Teyvat, Wildlands, and Skylands shows a small map logo in
+the top-right corner. Clicking it (`click=1`, `pointer` inside the logo) replaces
+the view with a north-up map of the whole world: +x to the right, +z down, and
+an arrow for the agent's position and heading. Regions the agent has not
+explored are covered in shadow that reveals nothing about the terrain. Explored
+ground is a disc around the agent's path, wider from high ground in Teyvat and
+Wildlands. Discovered Wildlands landmarks appear as markers. Skylands keeps
+separate depths, surface, and sky maps; tabs on the left of the open map switch
+layers (sky at the top).
+
+While the map is open the simulation is paused: each decision counts toward the
+step budget, but no simulated time passes and other controls are ignored.
+Clicking the logo again closes the map, and that step simulates normally. Any
+other click does nothing. `info["map_open"]` and `info["explored_fraction"]`
+report the state; events include `map_opened`, `map_closed`, and
+`map_layer_selected`. The map is drawn at the observation resolution, so small
+`image_size` values give a coarse map. Native APIs expose the same controls:
+Wildlands/Skylands `pointer`/`click` (plus a discrete `map` action), and Teyvat
+`pointer`/`click` (flat vectors may append click and pointer). Disable it with
+the native `world_map=False` option.
 
 ## Observations and batching
 

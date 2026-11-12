@@ -26,6 +26,9 @@ def checked_step(env,row):
     action=dict(row['action'])
     for key in ('move','look'): action[key]=np.asarray(action[key],np.float32)
     action['buttons']=np.asarray(action['buttons'],np.int8)
+    # Rows recorded before the world map carry no pointer fields.
+    action['pointer']=np.asarray(action.get('pointer',(0,0)),np.float32)
+    action.setdefault('click',0)
     assert env.action_space.contains(action)
     assert plain(env.char.pos)==row['position_before']
     _,reward,terminated,truncated,info=env.step(action)
@@ -94,7 +97,10 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                 initial_digest=env.state_digest(),sources=sources,
                 started_utc=datetime.now(timezone.utc).isoformat(),mission=MISSIONS[task],
                 scope='Single-seed compact-course pilot; no memory ablation or transfer claim.',
-                limitations=['Native observations lack local entity labels and valid quest target coordinates.'])
+                course_interface='step-feedback-v2: instruction names the current step; hint and '
+                                 'off-step feedback are scoped to the current operation',
+                limitations=['Native observations lack valid quest target coordinates (target_valid=0).',
+                             'Local feedback names an off-step object only after the agent interacts with it.'])
     save(directory/'config.json',config)
     (directory/'control-guide.txt').write_text(GUIDE)
     started=time.monotonic();reason='running';failure=None;transport_errors=0

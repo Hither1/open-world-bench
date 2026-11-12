@@ -1,0 +1,413 @@
+{
+  "title": "The Expedition of Three Arts",
+  "task": "B",
+  "scope": "Ordered task design with a compact executable reference course",
+  "edge_semantics": "Required task order; not skill-reuse or physical-distance edges",
+  "sources": {
+    "assets/design/teyvat-milestones/milestones.json": "47972c8dd51e8f68ab5b7e1bdc18a050605235b69c685a375fae7dcaec57cfa0",
+    "docs/teyvat-long-horizon-tasks.md": "24249ff00613093df764c50a0819d3aa891aa41d88b030373fe66efeb929ec62",
+    "open_world_bench/reference_tasks.py": "2eb93ad3f9629d0d378f5d13b4854cd6d85d51584a0bd6b834fea2fb5f1b81c8"
+  },
+  "renderer": {
+    "name": "Matplotlib",
+    "version": "3.10.8",
+    "kind": "2D vector diagram",
+    "dpi": 180,
+    "png_pixels": [
+      3996,
+      2466
+    ],
+    "svg_text": "editable",
+    "simulation_loaded": false
+  },
+  "nodes": [
+    {
+      "id": "B01",
+      "title": "Learn relay repair",
+      "action": "Follow the keeper's lesson on roles, elements, and progress.",
+      "done": "Training relay active.",
+      "memory": "Acquire R: relay repair.",
+      "phase": "Learn",
+      "skills": "R",
+      "visual": "relay",
+      "fresh_context": false
+    },
+    {
+      "id": "B02",
+      "title": "Recover a faulty relay",
+      "action": "Repair a rearranged unit through overload and interruption.",
+      "done": "Relay active; assistance recorded.",
+      "memory": "Establish R's acquisition baseline.",
+      "phase": "Practice",
+      "skills": "R",
+      "visual": "relay_fault",
+      "fresh_context": false
+    },
+    {
+      "id": "B03",
+      "title": "Learn sentinel combat",
+      "action": "Read the shield, expose the core, and interrupt its wind-up.",
+      "done": "Training sentinel defeated with coaching.",
+      "memory": "Acquire G: phase-dependent combat.",
+      "phase": "Learn",
+      "skills": "G",
+      "visual": "sentinel",
+      "fresh_context": false
+    },
+    {
+      "id": "B04",
+      "title": "Handle shield reformation",
+      "action": "Fight independently; re-diagnose when the shield reforms.",
+      "done": "Second sentinel defeated.",
+      "memory": "Establish G's recovery baseline.",
+      "phase": "Practice",
+      "skills": "G",
+      "visual": "sentinel_reset",
+      "fresh_context": false
+    },
+    {
+      "id": "B05",
+      "title": "Learn the vent crossing",
+      "action": "Charge the vent, read its pulse, and use a resting shelf.",
+      "done": "Guided crossing completed.",
+      "memory": "Acquire T: vent-assisted traversal.",
+      "phase": "Learn",
+      "skills": "T",
+      "visual": "wind",
+      "fresh_context": false
+    },
+    {
+      "id": "B06",
+      "title": "Reach a new overlook",
+      "action": "Cross without coaching using rearranged landing shelves.",
+      "done": "Second overlook reached.",
+      "memory": "Establish T's acquisition baseline.",
+      "phase": "Practice",
+      "skills": "T",
+      "visual": "wind_shuffle",
+      "fresh_context": false
+    },
+    {
+      "id": "B07",
+      "title": "Survey the supply depot",
+      "action": "Visit and register the depot's landmark; note its locked reserve.",
+      "done": "Depot landmark encountered.",
+      "memory": "Remember the location for B15.",
+      "phase": "Other work",
+      "skills": "",
+      "visual": "map",
+      "fresh_context": false
+    },
+    {
+      "id": "B08",
+      "title": "Recover the repair kit",
+      "action": "Retrieve the causeway kit from an ordinary raider camp.",
+      "done": "Repair kit in inventory.",
+      "memory": "Interference without R, G, or T.",
+      "phase": "Other work",
+      "skills": "",
+      "visual": "camp",
+      "fresh_context": false
+    },
+    {
+      "id": "B09",
+      "title": "Dive for the coupling",
+      "action": "Reach the marked submerged chest and retrieve its coupling.",
+      "done": "Ferry coupling in inventory.",
+      "memory": "Intervening navigation and diving.",
+      "phase": "Other work",
+      "skills": "",
+      "visual": "dive",
+      "fresh_context": false
+    },
+    {
+      "id": "B10",
+      "title": "Reopen the causeway",
+      "action": "Give kit and coupling to the mechanic; cross the repaired route.",
+      "done": "Causeway crossed; field trials accessible.",
+      "memory": "End the shared interference interval.",
+      "phase": "Other work",
+      "skills": "",
+      "visual": "bridge",
+      "fresh_context": false
+    },
+    {
+      "id": "B11",
+      "title": "Restore the signal station",
+      "action": "Repair a normal relay whose role positions have changed.",
+      "done": "Signal station active.",
+      "memory": "Delayed retrieval of R.",
+      "phase": "Transfer",
+      "skills": "R",
+      "visual": "relay_shuffle",
+      "fresh_context": true
+    },
+    {
+      "id": "B12",
+      "title": "Reach the cliff post",
+      "action": "Plan and execute an unfamiliar vent-and-shelf crossing.",
+      "done": "Post reached; vent use or shortcut logged.",
+      "memory": "Delayed retrieval of T.",
+      "phase": "Transfer",
+      "skills": "T",
+      "visual": "wind_shuffle",
+      "fresh_context": false
+    },
+    {
+      "id": "B13",
+      "title": "Recover the field seal",
+      "action": "Fight a new sentinel; skip shield breaking if already exposed.",
+      "done": "Sentinel defeated; field seal acquired.",
+      "memory": "Retrieve G from current phase cues.",
+      "phase": "Transfer",
+      "skills": "G",
+      "visual": "sentinel_open",
+      "fresh_context": false
+    },
+    {
+      "id": "B14",
+      "title": "Restore reserve power",
+      "action": "Use the field seal; repair a partly primed, overloaded relay.",
+      "done": "Depot's reserve compartment powered.",
+      "memory": "Apply R's conditional branch.",
+      "phase": "Transfer",
+      "skills": "R",
+      "visual": "relay_fault",
+      "fresh_context": false
+    },
+    {
+      "id": "B15",
+      "title": "Retrieve service tools",
+      "action": "Return to the depot without a new oracle location marker.",
+      "done": "Expedition service tools acquired.",
+      "memory": "Recall B07's landmark.",
+      "phase": "Recall",
+      "skills": "",
+      "visual": "supply",
+      "fresh_context": false
+    },
+    {
+      "id": "B16",
+      "title": "Open the sky-lift route",
+      "action": "Use the tools, repair the relay, then ride its powered vent route.",
+      "done": "Upper route exit reached.",
+      "memory": "Compose R → T without a recipe.",
+      "phase": "Compose",
+      "skills": "R → T",
+      "visual": "compose_rt",
+      "fresh_context": false
+    },
+    {
+      "id": "B17",
+      "title": "Restore the guarded gate",
+      "action": "Defeat the sentinel controlling the gate; repair its relay.",
+      "done": "Sentinel defeated and gate operational.",
+      "memory": "Compose G → R in a new setting.",
+      "phase": "Compose",
+      "skills": "G → R",
+      "visual": "compose_gr",
+      "fresh_context": false
+    },
+    {
+      "id": "B18",
+      "title": "Recover the shrine seal",
+      "action": "Traverse to a high platform and defeat its sentinel.",
+      "done": "Shrine access seal acquired.",
+      "memory": "Compose T → G in a new setting.",
+      "phase": "Compose",
+      "skills": "T → G",
+      "visual": "compose_tg",
+      "fresh_context": false
+    },
+    {
+      "id": "B19",
+      "title": "Discover the relay update",
+      "action": "Inspect the double-ring diagnostic; drain before priming.",
+      "done": "New-version relay commissioned.",
+      "memory": "Learn an exception scoped to version 2.",
+      "phase": "Adapt",
+      "skills": "R v2",
+      "visual": "relay_v2",
+      "fresh_context": false
+    },
+    {
+      "id": "B20",
+      "title": "Establish a landing route",
+      "action": "Complete an extended vent crossing and activate its signal.",
+      "done": "Next district accessible.",
+      "memory": "Use T while retaining the R update.",
+      "phase": "Other work",
+      "skills": "T",
+      "visual": "wind_shuffle",
+      "fresh_context": false
+    },
+    {
+      "id": "B21",
+      "title": "Reuse the updated rule",
+      "action": "Repair another double-ring relay without its lesson repeated.",
+      "done": "Initial drain precedes priming; relay active.",
+      "memory": "Retrieve the B19 update.",
+      "phase": "Transfer",
+      "skills": "R v2",
+      "visual": "relay_v2",
+      "fresh_context": true
+    },
+    {
+      "id": "B22",
+      "title": "Repair an older station",
+      "action": "Repair an ordinary, uncharged single-ring relay.",
+      "done": "Station active; needless drainage logged.",
+      "memory": "Preserve the original rule's scope.",
+      "phase": "Preserve",
+      "skills": "R v1",
+      "visual": "relay_v1",
+      "fresh_context": false
+    },
+    {
+      "id": "B23",
+      "title": "Recover the beacon heart",
+      "action": "Power the approach, cross by vent, then defeat the guardian.",
+      "done": "Heart retrieved from the reliquary.",
+      "memory": "Compose R v2 → T → G.",
+      "phase": "Compose",
+      "skills": "R → T → G",
+      "visual": "compose_rtg",
+      "fresh_context": false
+    },
+    {
+      "id": "B24",
+      "title": "Commission a distant outpost",
+      "action": "Defeat its guardian, cross, then install the heart using the visible relay version.",
+      "done": "Guardian defeated, route crossed, beacon on.",
+      "memory": "New order: G → T → R, from memory.",
+      "phase": "Compose",
+      "skills": "G → T → R",
+      "visual": "compose_gtr",
+      "fresh_context": true
+    }
+  ],
+  "edges": [
+    {
+      "source": "B01",
+      "target": "B02",
+      "kind": "task_order"
+    },
+    {
+      "source": "B02",
+      "target": "B03",
+      "kind": "task_order"
+    },
+    {
+      "source": "B03",
+      "target": "B04",
+      "kind": "task_order"
+    },
+    {
+      "source": "B04",
+      "target": "B05",
+      "kind": "task_order"
+    },
+    {
+      "source": "B05",
+      "target": "B06",
+      "kind": "task_order"
+    },
+    {
+      "source": "B06",
+      "target": "B07",
+      "kind": "task_order"
+    },
+    {
+      "source": "B07",
+      "target": "B08",
+      "kind": "task_order"
+    },
+    {
+      "source": "B08",
+      "target": "B09",
+      "kind": "task_order"
+    },
+    {
+      "source": "B09",
+      "target": "B10",
+      "kind": "task_order"
+    },
+    {
+      "source": "B10",
+      "target": "B11",
+      "kind": "task_order"
+    },
+    {
+      "source": "B11",
+      "target": "B12",
+      "kind": "task_order"
+    },
+    {
+      "source": "B12",
+      "target": "B13",
+      "kind": "task_order"
+    },
+    {
+      "source": "B13",
+      "target": "B14",
+      "kind": "task_order"
+    },
+    {
+      "source": "B14",
+      "target": "B15",
+      "kind": "task_order"
+    },
+    {
+      "source": "B15",
+      "target": "B16",
+      "kind": "task_order"
+    },
+    {
+      "source": "B16",
+      "target": "B17",
+      "kind": "task_order"
+    },
+    {
+      "source": "B17",
+      "target": "B18",
+      "kind": "task_order"
+    },
+    {
+      "source": "B18",
+      "target": "B19",
+      "kind": "task_order"
+    },
+    {
+      "source": "B19",
+      "target": "B20",
+      "kind": "task_order"
+    },
+    {
+      "source": "B20",
+      "target": "B21",
+      "kind": "task_order"
+    },
+    {
+      "source": "B21",
+      "target": "B22",
+      "kind": "task_order"
+    },
+    {
+      "source": "B22",
+      "target": "B23",
+      "kind": "task_order"
+    },
+    {
+      "source": "B23",
+      "target": "B24",
+      "kind": "task_order"
+    }
+  ],
+  "validation": {
+    "nodes": 24,
+    "edges": 23,
+    "course_titles_match": true,
+    "design_ids_match": true,
+    "text_within_bounds": true
+  }
+}

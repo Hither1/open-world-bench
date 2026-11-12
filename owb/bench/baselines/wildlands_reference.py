@@ -9,7 +9,8 @@ from ...env.wildlands_reference import COMMANDS, Y
 
 def neutral():
     return dict(move=np.zeros(2,np.float32),look=np.zeros(2,np.float32),buttons=np.zeros(5,np.int8),
-                command=0,slot=0,ingredients=np.zeros(5,np.int64),target=0,vector=np.zeros(3,np.float32))
+                command=0,slot=0,ingredients=np.zeros(5,np.int64),target=0,vector=np.zeros(3,np.float32),
+                pointer=np.zeros(2,np.float32),click=0)
 
 
 class WildlandsReferencePolicy:

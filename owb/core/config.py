@@ -160,6 +160,12 @@ class EnvConfig:
     obs_text: bool = False
     minimap_size: int = 32
     minimap_scale: int = 4          # voxels per minimap pixel
+    #: clickable map logo in the RGB view; see owb.sim.world_map
+    world_map: bool = True
+    map_cell: float = 2.0           # voxels per fog-of-war cell
+    #: metres revealed around the agent's path; None scales with the world
+    #: (8% of the shorter side, clamped to 8..24 m: 20 m on the default world)
+    map_reveal_radius: float | None = None
     reward_mode: str = "milestone"  # "milestone" | "sparse" | "dense"
     exploration_bonus: float = 0.0
     time_penalty: float = 0.0

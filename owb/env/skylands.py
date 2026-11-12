@@ -69,6 +69,26 @@ class SkylandsEnv(WildlandsEnv):
             events.append(dict(type="layer_changed", previous=LAYERS[old], layer=LAYERS[layer]))
         return fresh, events
 
+    def _map_layers(self):
+        """Separate depths, surface and sky maps, matching _layer()."""
+        _, surface, sky = self.world.meta["layer_heights"]
+        return (("depths", 0, surface - 2, (122, 92, 168)),
+                ("surface", surface - 2, sky - 4, (112, 170, 92)),
+                ("sky", sky - 4, self.world.size_y, (128, 186, 228)))
+
+    def _map_layer_index(self):
+        return self._layer()
+
+    def _map_reveal_radius(self):
+        # Column heights mix layers, so altitude does not widen the view here.
+        return self.map_fog[0].radius
+
+    def _map_info(self):
+        out = super()._map_info()
+        if self.cfg.world_map:
+            out["explored_fraction_by_layer"] = {name: fog.fraction for name, fog in zip(LAYERS, self.map_fog)}
+        return out
+
     def _dispatch(self, command, ingredients, action):
         self._beacon_requested = False
         events = self.construction.dispatch(command, int(action["part"]), action["build_move"])

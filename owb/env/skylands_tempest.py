@@ -350,7 +350,8 @@ class SkylandsTempestEnv(SkylandsCampaignEnv):
                          "cache_retrieved", "circuit_isolated", "capacitor_struck", "grounding_installed",
                          "engine_stopped", "storm_hit", "death", "station_engaged", "gallery_serviced",
                          "platform_landing_reached", "dock_lit", "outpost_opened", "service_part_recovered",
-                         "reversal_started", "reversal_cancelled", "lock_coupling_installed", "cargo_berth_opened"}
+                         "reversal_started", "reversal_cancelled", "lock_coupling_installed", "cargo_berth_opened",
+                         "map_opened", "map_closed", "map_layer_selected"}
         local_events = [e for e in events if e["type"] in visible_types]
         result = WildlandsEnv._info(self, local_events)
         result.update(success=self.success, objective=self.objective)

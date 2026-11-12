@@ -1,0 +1,85 @@
+{
+  "success": true,
+  "checked_actions": 3311,
+  "checked_positions": true,
+  "checked_events": true,
+  "checked_rewards": true,
+  "checked_termination": true,
+  "final_live_predicate": true,
+  "final_digest": "ef21a61041e441351f4500c13e7757020de3b13b4922f321bbcab058473d0b13",
+  "actions_sha256": "dbc020e73b10f9a80139de119bc3dc7b2b26077411892812d3bfae510e10fcff",
+  "sources": {
+    "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+    "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
+    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
+    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+    "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
+    "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80",
+    "owb/env/skylands_tempest.py": "7c25211fb65a76de445120382c670bb45fe1be23cf6daec6b9a1f132dcfbf412",
+    "owb/world/tempest.py": "f663a95de9f19a3f269c67928298a8ccf0410b410d25e60f57372b9e38cbb4ae",
+    "owb/bench/baselines/skylands_tempest.py": "48eebeb22b3e2cbe45813b4a07a16509905af6a32defce344a078d8c12f37e55",
+    "owb/scripts/skylands_tempest.py": "d7ce9e62580a2f656f8bf71812fa4a4fc74dce67e6eac782e9bc159789d48107",
+    "owb/env/skylands_restoration.py": "a4d5519073503fe1cc44ecbbe57ad0998a465512079b5142c001a71efcaca7b7",
+    "owb/bench/baselines/skylands_restoration.py": "8adb4c07ef10efdf377c02fee7d3f4e3f6827130da8d353193dbe0fa0f384c2f",
+    "owb/scripts/skylands_restoration.py": "3a38d033964e9b143cbaeb7dfeb49820db7b1832249579b0eaae9d74c6efda99"
+  },
+  "evaluation": {
+    "success": true,
+    "objective": "open",
+    "milestones": [],
+    "live_regions": {
+      "cooling": false,
+      "anchors": false,
+      "monitoring": false
+    },
+    "engine_disabled": true,
+    "engine_route": "capacitors",
+    "locks": [
+      true,
+      true,
+      true
+    ],
+    "capacitors": [
+      0,
+      0,
+      0
+    ],
+    "grounding_live": false,
+    "facts_seen": {
+      "machine_plate": 2985
+    },
+    "decisions": 3311,
+    "simulated_seconds": 662.200000000082,
+    "deaths": 0,
+    "architecture_count": 50,
+    "architecture_kinds": [
+      "archive",
+      "boathouse",
+      "cistern",
+      "foundry",
+      "gantry",
+      "observatory",
+      "pump_house",
+      "shelter",
+      "signal_tower",
+      "workshop"
+    ],
+    "suite": "skylands-restoration-v1",
+    "diagnostic_checkpoint_count": 32,
+    "campaign_milestones": [
+      {
+        "id": "R07",
+        "step": 3311,
+        "seconds": 662.2
+      }
+    ],
+    "tooling_location": "depot",
+    "manifold_live": false,
+    "refuge_power_available": false,
+    "refuge_stable_seconds": 0.0
+  }
+}

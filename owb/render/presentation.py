@@ -41,11 +41,17 @@ class PresentationRenderer:
     """Render actual states at presentation resolution without stepping the env."""
 
     def __init__(self, *, backend="cycles", width=960, height=540,
-                 blender=None, samples=48, threads=8, device=None):
+                 blender=None, samples=48, threads=8, device=None, view="presentation"):
+        from .scene_export import VIEWS
         if backend not in ("cycles", "cpu"):
             raise ValueError("renderer must be 'cycles' or 'cpu'")
         if any(not isinstance(n, int) or n <= 0 for n in (width, height, samples, threads)):
             raise ValueError("render dimensions, samples, and threads must be positive integers")
+        if view not in VIEWS:
+            raise ValueError(f"view must be one of {VIEWS}")
+        if view != "presentation" and backend != "cycles":
+            raise ValueError("first-person presentation is only implemented for Cycles")
+        self.view = view
         self.backend = backend
         self.width, self.height = width, height
         self.samples, self.threads = samples, threads
@@ -58,6 +64,8 @@ class PresentationRenderer:
     @property
     def metadata(self):
         result = dict(backend=self.backend, width=self.width, height=self.height)
+        if self.view != "presentation":
+            result["view"] = self.view
         if self.backend == "cycles":
             result.update(samples=self.samples, threads=self.threads, device=self.device)
         return result
@@ -73,7 +81,7 @@ class PresentationRenderer:
         snapshot, output, log = (directory / name for name in ("scene.npz", "frame.png", "blender.log"))
         snapshot.unlink(missing_ok=True)
         output.unlink(missing_ok=True)
-        export_scene(native, snapshot, width=self.width, height=self.height)
+        export_scene(native, snapshot, width=self.width, height=self.height, view=self.view)
         script = Path(__file__).with_name("blender_scene.py")
         command = [self.blender, "--background", "--factory-startup", "--python-exit-code", "1",
                    "--python", str(script), "--", "--scene", str(snapshot), "--output", str(output),

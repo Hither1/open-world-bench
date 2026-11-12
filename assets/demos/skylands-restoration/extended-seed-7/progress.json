@@ -1,0 +1,11 @@
+{
+  "step": 61000,
+  "stage": "refuge_power",
+  "position": [
+    1028.5,
+    48.000999450683594,
+    1126.9912109375
+  ],
+  "explanation": "Walk the physical route",
+  "wall_seconds": 241.67280821409076
+}

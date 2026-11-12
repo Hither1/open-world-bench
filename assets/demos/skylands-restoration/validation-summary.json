@@ -1,0 +1,225 @@
+{
+  "format": "owb-restoration-validation-v1",
+  "success": true,
+  "source_hashes_match": true,
+  "tests": {
+    "tests": 114,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "sha256": "c75a22184e26e2019380fed253b15a6968d480415f9b68ae1babbfd59d7aaf49"
+  },
+  "runs": [
+    {
+      "directory": "extended-grounding-seed-23",
+      "objective": "extended",
+      "seed": 23,
+      "shutdown_method": "grounding",
+      "regional_order": [
+        "anchors",
+        "cooling",
+        "monitoring"
+      ],
+      "success": true,
+      "deaths": 0,
+      "actions": 61803,
+      "simulated_seconds": 12360.600000027436,
+      "checkpoints": 32,
+      "live_regions": {
+        "cooling": true,
+        "anchors": true,
+        "monitoring": true
+      },
+      "manifold_live": true,
+      "refuge_stable_seconds": 30.199999999999925,
+      "profile_reuse_delays": {
+        "anchors": {
+          "read_step": 23215,
+          "use_step": 33491,
+          "intervening_actions": 10276,
+          "simulated_seconds": 2055.2000000000003
+        },
+        "cooling": {
+          "read_step": 7042,
+          "use_step": 37598,
+          "intervening_actions": 30556,
+          "simulated_seconds": 6111.200000000001
+        },
+        "monitoring": {
+          "read_step": 14138,
+          "use_step": 41672,
+          "intervening_actions": 27534,
+          "simulated_seconds": 5506.8
+        }
+      },
+      "tooling_cache_delay_actions": 42941,
+      "actions_sha256": "83b77accd310620f4f22a30e56e732c3488364e2db8a1fee9d0eb1e1c5fbcc42",
+      "manifest_sha256": "5be2ce3fba5a58fe950a175d64fc0f554ad70a41b7369a16232de22848deae43",
+      "verification_sha256": "f1a59991321fffc227d6d7c1a0e0706cc5b34f01d6c6faefa704d3a3c7c29acc",
+      "action_command_counts": {
+        "11": 7,
+        "0": 59745,
+        "12": 24,
+        "13": 24,
+        "15": 7,
+        "17": 1905,
+        "16": 7,
+        "10": 24,
+        "18": 27,
+        "19": 3,
+        "22": 4,
+        "23": 4,
+        "20": 3,
+        "24": 9,
+        "25": 7,
+        "21": 3
+      }
+    },
+    {
+      "directory": "extended-seed-7",
+      "objective": "extended",
+      "seed": 7,
+      "shutdown_method": "synchronization",
+      "regional_order": [
+        "monitoring",
+        "anchors",
+        "cooling"
+      ],
+      "success": true,
+      "deaths": 0,
+      "actions": 61214,
+      "simulated_seconds": 12242.800000027008,
+      "checkpoints": 32,
+      "live_regions": {
+        "cooling": true,
+        "anchors": true,
+        "monitoring": true
+      },
+      "manifold_live": true,
+      "refuge_stable_seconds": 30.199999999999925,
+      "profile_reuse_delays": {
+        "monitoring": {
+          "read_step": 13914,
+          "use_step": 33500,
+          "intervening_actions": 19586,
+          "simulated_seconds": 3917.2000000000003
+        },
+        "anchors": {
+          "read_step": 27316,
+          "use_step": 37438,
+          "intervening_actions": 10122,
+          "simulated_seconds": 2024.4
+        },
+        "cooling": {
+          "read_step": 7042,
+          "use_step": 41545,
+          "intervening_actions": 34503,
+          "simulated_seconds": 6900.6
+        }
+      },
+      "tooling_cache_delay_actions": 42511,
+      "actions_sha256": "5826fee057e7a6af1f704f2943b51431b2af536d3bbe63c870354b53e54cf3df",
+      "manifest_sha256": "729f0aab338a1d17afbd13c5e2d85d60f051b78532c76fb51abead2b9d776283",
+      "verification_sha256": "375923ce1dcdb2910e2481a2658dce837806eae1f6ed221362261cd16538248f",
+      "action_command_counts": {
+        "11": 7,
+        "0": 59479,
+        "12": 24,
+        "13": 24,
+        "15": 6,
+        "17": 1586,
+        "16": 6,
+        "10": 24,
+        "18": 29,
+        "19": 3,
+        "22": 4,
+        "23": 4,
+        "20": 3,
+        "24": 7,
+        "25": 5,
+        "21": 3
+      }
+    },
+    {
+      "directory": "open-capacitors-seed-7",
+      "objective": "open",
+      "seed": 7,
+      "shutdown_method": "capacitors",
+      "regional_order": [
+        "monitoring",
+        "anchors",
+        "cooling"
+      ],
+      "success": true,
+      "deaths": 0,
+      "actions": 3311,
+      "simulated_seconds": 662.200000000082,
+      "checkpoints": 1,
+      "live_regions": {
+        "cooling": false,
+        "anchors": false,
+        "monitoring": false
+      },
+      "manifold_live": false,
+      "refuge_stable_seconds": 0.0,
+      "profile_reuse_delays": {},
+      "tooling_cache_delay_actions": null,
+      "actions_sha256": "dbc020e73b10f9a80139de119bc3dc7b2b26077411892812d3bfae510e10fcff",
+      "manifest_sha256": "15f45d0a3b4a6f8791ef674cf1ae3f7d5c329757129cd64bedd859206cd6d746",
+      "verification_sha256": "5db15f660e6a6d6dff7ee6017e0f8e0757a45386fc3f90cd05bb113363a6a756",
+      "action_command_counts": {
+        "0": 3279,
+        "10": 3,
+        "11": 1,
+        "5": 27,
+        "18": 1
+      }
+    },
+    {
+      "directory": "open-grounding-seed-23",
+      "objective": "open",
+      "seed": 23,
+      "shutdown_method": "grounding",
+      "regional_order": [
+        "monitoring",
+        "anchors",
+        "cooling"
+      ],
+      "success": true,
+      "deaths": 0,
+      "actions": 3942,
+      "simulated_seconds": 788.4000000001107,
+      "checkpoints": 1,
+      "live_regions": {
+        "cooling": false,
+        "anchors": false,
+        "monitoring": false
+      },
+      "manifold_live": false,
+      "refuge_stable_seconds": 0.0,
+      "profile_reuse_delays": {},
+      "tooling_cache_delay_actions": null,
+      "actions_sha256": "1efd3ae44f8779e71c8abfdb984461d1e123f5317fa8d1ce11be227d14eeea7b",
+      "manifest_sha256": "053db32a3b77f79aa34c29b95bffb3efeb8efd3b0615684c07be4fea5ea4824d",
+      "verification_sha256": "cb3039ed4dee6cd1d1aae0be78282b3c99b30c23ee4318868baded63be4dc16d",
+      "action_command_counts": {
+        "0": 3763,
+        "10": 3,
+        "11": 1,
+        "12": 4,
+        "13": 4,
+        "24": 2,
+        "25": 2,
+        "15": 1,
+        "17": 159,
+        "16": 1,
+        "18": 2
+      }
+    }
+  ],
+  "limitations": [
+    "Scripted references; no model scores or memory-ablation claim.",
+    "Measured itineraries, not minimum successful horizon bounds.",
+    "Seeded service profiles in authored geometry; finite settings can be searched."
+  ]
+}

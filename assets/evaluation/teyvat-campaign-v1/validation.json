@@ -1,0 +1,172 @@
+{
+  "suite_version": "teyvat-campaign-v1",
+  "runs": [
+    {
+      "task": "cleansing",
+      "seed": 19,
+      "scale": 0.5,
+      "order": "reverse",
+      "actions": 1499,
+      "simulated_seconds": 299.80000000002286,
+      "distance_metres": 1419.1114206381026,
+      "milestones": 17,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 0,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 1419.1114206381026,
+        "recharge_visits": 0,
+        "archive_revisits": 0,
+        "boss_windows": 2
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/alternate-seed19/cleansing-seed-19-reverse"
+    },
+    {
+      "task": "desert",
+      "seed": 19,
+      "scale": 0.5,
+      "order": "reverse",
+      "actions": 1633,
+      "simulated_seconds": 326.6000000000442,
+      "distance_metres": 1643.3415509095648,
+      "milestones": 15,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 3,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 1643.3415509095648,
+        "recharge_visits": 2,
+        "archive_revisits": 3,
+        "boss_windows": 0
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/alternate-seed19/desert-seed-19-reverse"
+    },
+    {
+      "task": "summit",
+      "seed": 19,
+      "scale": 0.5,
+      "order": "reverse",
+      "actions": 999,
+      "simulated_seconds": 199.79999999999123,
+      "distance_metres": 796.252385447151,
+      "milestones": 9,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 0,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 796.252385447151,
+        "recharge_visits": 0,
+        "archive_revisits": 0,
+        "boss_windows": 0
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/alternate-seed19/summit-seed-19-reverse"
+    },
+    {
+      "task": "desert",
+      "seed": 7,
+      "scale": 0.5,
+      "order": "forward",
+      "actions": 1602,
+      "simulated_seconds": 320.40000000003926,
+      "distance_metres": 1614.2175730344898,
+      "milestones": 15,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 3,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 1614.2175730344898,
+        "recharge_visits": 2,
+        "archive_revisits": 3,
+        "boss_windows": 0
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/compact-seed7/desert-seed-7-forward"
+    },
+    {
+      "task": "cleansing",
+      "seed": 7,
+      "scale": 2.0,
+      "order": "forward",
+      "actions": 3246,
+      "simulated_seconds": 649.2000000000669,
+      "distance_metres": 3326.4731408656735,
+      "milestones": 17,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 0,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 3326.4731408656735,
+        "recharge_visits": 0,
+        "archive_revisits": 0,
+        "boss_windows": 2
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/full-seed7/cleansing-seed-7-forward"
+    },
+    {
+      "task": "desert",
+      "seed": 7,
+      "scale": 2.0,
+      "order": "forward",
+      "actions": 5052,
+      "simulated_seconds": 1010.3999999997384,
+      "distance_metres": 5339.801967259264,
+      "milestones": 15,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 3,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 5339.801967259264,
+        "recharge_visits": 2,
+        "archive_revisits": 3,
+        "boss_windows": 0
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/full-seed7/desert-seed-7-forward"
+    },
+    {
+      "task": "summit",
+      "seed": 7,
+      "scale": 2.0,
+      "order": "forward",
+      "actions": 2529,
+      "simulated_seconds": 505.8000000001868,
+      "distance_metres": 2513.131625858834,
+      "milestones": 9,
+      "success": true,
+      "exact_replay": true,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 0,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 2513.131625858834,
+        "recharge_visits": 0,
+        "archive_revisits": 0,
+        "boss_windows": 0
+      },
+      "path": "assets/evaluation/teyvat-campaign-v1/full-seed7/summit-seed-7-forward"
+    }
+  ],
+  "checked_actions": 16560,
+  "validation": "Native-action feasibility; no learned-agent or memory scores",
+  "focused_tests": 19,
+  "broader_regression_tests": 200,
+  "reward_check": "Exactly +1 on final success and zero at every earlier action",
+  "rendering": "Headless zero RGB for logic checks; no user-facing images generated"
+}

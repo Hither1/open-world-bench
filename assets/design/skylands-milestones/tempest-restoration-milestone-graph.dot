@@ -1,0 +1,96 @@
+digraph milestones {
+graph [rankdir=TB, bgcolor="#ffffff", pad=0.4, nodesep=0.35, ranksep=0.48, splines=polyline, compound=true, newrank=true, outputorder=edgesfirst, fontname="Helvetica", fontsize=24, labelloc=t, labeljust=l];
+node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=15, margin="0.14,0.10", penwidth=1.3];
+edge [color="#81909a", arrowsize=0.65, penwidth=1.25, fontname="Helvetica", fontsize=10];
+label=<<FONT POINT-SIZE="30" COLOR="#173329"><B>SKYLANDS / TEMPEST RESTORATION</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="17" COLOR="#52646c">32 milestone nodes across preparation, three regional services and the finale</FONT><BR ALIGN="LEFT"/><BR ALIGN="LEFT"/><FONT POINT-SIZE="13" COLOR="#52646c">Solid arrows: physical input / output flow. Dashed arrows: optional route or practice progression.</FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="13" COLOR="#52646c">Branches can be reordered. Shutdown may happen early. Labels identify record and cache links.</FONT><BR ALIGN="LEFT"/><BR ALIGN="LEFT"/>>;
+subgraph cluster_prepare { label="1   PREPARE & DISCOVER"; fontsize=15; fontcolor="#536677"; color="#53667755"; style="rounded"; margin=18;
+B01 [id="milestone-B01", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B01</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Accept the commission</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Remember the designated refuge</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B01: Accept the commission. Remember the designated refuge"];
+B02 [id="milestone-B02", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B02</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Commission the training barge</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Loaded craft / trim trial</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B02: Commission the training barge. Loaded craft / trim trial"];
+B03 [id="milestone-B03", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B03</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Deliver the practice load</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Independent cargo construction</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B03: Deliver the practice load. Independent cargo construction"];
+B04 [id="milestone-B04", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B04</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Open the maintenance loft</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Learn an ascent route</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B04: Open the maintenance loft. Learn an ascent route"];
+B05 [id="milestone-B05", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B05</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Recover the depot service kit</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Lamp kit + final-lock coupling</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B05: Recover the depot service kit. Lamp kit + final-lock coupling"];
+B06 [id="milestone-B06", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B06</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Restore the training platform</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Learn motion reversal</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B06: Restore the training platform. Learn motion reversal"];
+B07 [id="milestone-B07", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B07</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Retrieve the survey pack</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Independent platform route</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B07: Retrieve the survey pack. Independent platform route"];
+B08 [id="milestone-B08", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B08</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Survey at the weather archive</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Local record: cooling profile</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B08: Survey at the weather archive. Local record: cooling profile"];
+B09 [id="milestone-B09", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>B09</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Distribute expedition reserves</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Remember the two chosen caches</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="B09: Distribute expedition reserves. Remember the two chosen caches"];
+R01 [id="milestone-R01", label=<<FONT COLOR="#536677" POINT-SIZE="13"><B>R01</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Recover the original tooling</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Upper depot; may cache and retrieve</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f1f4f7", color="#536677", tooltip="R01: Recover the original tooling. Upper depot; may cache and retrieve"];
+}
+subgraph cluster_cooling { label="2a   DEPTHS / COOLING"; fontsize=15; fontcolor="#146d84"; color="#146d8455"; style="rounded"; margin=18;
+B12 [id="milestone-B12", label=<<FONT COLOR="#146d84" POINT-SIZE="13"><B>B12</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Establish the deep outpost</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Lamp kit from B05 / cache B09</FONT><BR ALIGN="LEFT"/>>, fillcolor="#edf7fa", color="#146d84", tooltip="B12: Establish the deep outpost. Lamp kit from B05 / cache B09"];
+B13 [id="milestone-B13", label=<<FONT COLOR="#146d84" POINT-SIZE="13"><B>B13</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Ferry the power module</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Loaded craft through flooded works</FONT><BR ALIGN="LEFT"/>>, fillcolor="#edf7fa", color="#146d84", tooltip="B13: Ferry the power module. Loaded craft through flooded works"];
+B14 [id="milestone-B14", label=<<FONT COLOR="#146d84" POINT-SIZE="13"><B>B14</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Open the regulator gallery</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Reach the upper service controls</FONT><BR ALIGN="LEFT"/>>, fillcolor="#edf7fa", color="#146d84", tooltip="B14: Open the regulator gallery. Reach the upper service controls"];
+B15 [id="milestone-B15", label=<<FONT COLOR="#146d84" POINT-SIZE="13"><B>B15</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Restore cooling equipment</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Install module; sustain output 5 s</FONT><BR ALIGN="LEFT"/>>, fillcolor="#edf7fa", color="#146d84", tooltip="B15: Restore cooling equipment. Install module; sustain output 5 s"];
+R02 [id="milestone-R02", label=<<FONT COLOR="#146d84" POINT-SIZE="13"><B>R02</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Balance the cooling flow</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Set dials from the B08-area record</FONT><BR ALIGN="LEFT"/>>, fillcolor="#edf7fa", color="#146d84", tooltip="R02: Balance the cooling flow. Set dials from the B08-area record"];
+}
+subgraph cluster_anchors { label="2b   SURFACE / ANCHORS"; fontsize=15; fontcolor="#39753d"; color="#39753d55"; style="rounded"; margin=18;
+B10 [id="milestone-B10", label=<<FONT COLOR="#39753d" POINT-SIZE="13"><B>B10</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Recover the anchor coupling</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Original load from abandoned yard</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f0f7ec", color="#39753d", tooltip="B10: Recover the anchor coupling. Original load from abandoned yard"];
+B16 [id="milestone-B16", label=<<FONT COLOR="#39753d" POINT-SIZE="13"><B>B16</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Deliver the anchor coupling</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Adapt the craft for reed channels</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f0f7ec", color="#39753d", tooltip="B16: Deliver the anchor coupling. Adapt the craft for reed channels"];
+B17 [id="milestone-B17", label=<<FONT COLOR="#39753d" POINT-SIZE="13"><B>B17</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Restore anchor equipment</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Install coupling; output for 5 s</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f0f7ec", color="#39753d", tooltip="B17: Restore anchor equipment. Install coupling; output for 5 s"];
+R03 [id="milestone-R03", label=<<FONT COLOR="#39753d" POINT-SIZE="13"><B>R03</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Tune anchor load distribution</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Set dials from the B12-area record</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f0f7ec", color="#39753d", tooltip="R03: Tune anchor load distribution. Set dials from the B12-area record"];
+}
+subgraph cluster_monitoring { label="2c   SKY / MONITORING"; fontsize=15; fontcolor="#6551a2"; color="#6551a255"; style="rounded"; margin=18;
+B11 [id="milestone-B11", label=<<FONT COLOR="#6551a2" POINT-SIZE="13"><B>B11</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Charge the shuttle power cell</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Local record: monitoring profile</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f4f0fb", color="#6551a2", tooltip="B11: Charge the shuttle power cell. Local record: monitoring profile"];
+B18 [id="milestone-B18", label=<<FONT COLOR="#6551a2" POINT-SIZE="13"><B>B18</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Recover the sky spindle</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Power the observatory shuttle</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f4f0fb", color="#6551a2", tooltip="B18: Recover the sky spindle. Power the observatory shuttle"];
+B19 [id="milestone-B19", label=<<FONT COLOR="#6551a2" POINT-SIZE="13"><B>B19</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Restore monitoring equipment</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Upper controls; output for 5 s</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f4f0fb", color="#6551a2", tooltip="B19: Restore monitoring equipment. Upper controls; output for 5 s"];
+R04 [id="milestone-R04", label=<<FONT COLOR="#6551a2" POINT-SIZE="13"><B>R04</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Synchronize the monitoring clock</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Set dials from the B11-area record</FONT><BR ALIGN="LEFT"/>>, fillcolor="#f4f0fb", color="#6551a2", tooltip="R04: Synchronize the monitoring clock. Set dials from the B11-area record"];
+}
+subgraph cluster_relief { label="3a   RELIEF DELIVERY"; fontsize=15; fontcolor="#9a641a"; color="#9a641a55"; style="rounded"; margin=18;
+B20 [id="milestone-B20", label=<<FONT COLOR="#9a641a" POINT-SIZE="13"><B>B20</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Survey the changed approach</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Bridge closes after equipment repair</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff7e9", color="#9a641a", tooltip="B20: Survey the changed approach. Bridge closes after equipment repair"];
+B21 [id="milestone-B21", label=<<FONT COLOR="#9a641a" POINT-SIZE="13"><B>B21</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Recover &amp; fit the drive coupling</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Original part from B05 / cache B09</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff7e9", color="#9a641a", tooltip="B21: Recover & fit the drive coupling. Original part from B05 / cache B09"];
+B22 [id="milestone-B22", label=<<FONT COLOR="#9a641a" POINT-SIZE="13"><B>B22</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Reach the lock service terrace</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Three balanced services required</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff7e9", color="#9a641a", tooltip="B22: Reach the lock service terrace. Three balanced services required"];
+B23 [id="milestone-B23", label=<<FONT COLOR="#9a641a" POINT-SIZE="13"><B>B23</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Commission the cargo lock &amp; barge</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Fit drive; open berth; test loaded craft</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff7e9", color="#9a641a", tooltip="B23: Commission the cargo lock & barge. Fit drive; open berth; test loaded craft"];
+B24 [id="milestone-B24", label=<<FONT COLOR="#9a641a" POINT-SIZE="13"><B>B24</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Deliver the relief shipment</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Original load at commissioned refuge</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff7e9", color="#9a641a", tooltip="B24: Deliver the relief shipment. Original load at commissioned refuge"];
+}
+subgraph cluster_manifold { label="3b   FABRICATE & INSTALL"; fontsize=15; fontcolor="#ad5845"; color="#ad584555"; style="rounded"; margin=18;
+R05 [id="milestone-R05", label=<<FONT COLOR="#ad5845" POINT-SIZE="13"><B>R05</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Fabricate the pressure manifold</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Tooling + all 3 balanced services</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff1ed", color="#ad5845", tooltip="R05: Fabricate the pressure manifold. Tooling + all 3 balanced services"];
+R06 [id="milestone-R06", label=<<FONT COLOR="#ad5845" POINT-SIZE="13"><B>R06</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Transport &amp; install the manifold</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">280 kg original load to engine bus</FONT><BR ALIGN="LEFT"/>>, fillcolor="#fff1ed", color="#ad5845", tooltip="R06: Transport & install the manifold. 280 kg original load to engine bus"];
+}
+subgraph cluster_finish { label="4   ENGINE & REFUGE POWER"; fontsize=15; fontcolor="#17594e"; color="#17594e55"; style="rounded"; margin=18;
+R07 [id="milestone-R07", label=<<FONT COLOR="#17594e" POINT-SIZE="13"><B>R07</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Sustain engine shutdown</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">5 s / synchronization, grounding or capacitors</FONT><BR ALIGN="LEFT"/>>, fillcolor="#eaf5ef", color="#17594e", tooltip="R07: Sustain engine shutdown. 5 s / synchronization, grounding or capacitors"];
+R08 [id="milestone-R08", label=<<FONT COLOR="#17594e" POINT-SIZE="13"><B>R08</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="16"><B>Commission stable refuge power</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">All 3 services live + relief + manifold</FONT><BR ALIGN="LEFT"/><FONT COLOR="#52646c" POINT-SIZE="11">Engine stopped + local switch armed / 30 s</FONT><BR ALIGN="LEFT"/>>, fillcolor="#eaf5ef", color="#17594e", tooltip="R08: Commission stable refuge power. All 3 services live + relief + manifold. Engine stopped + local switch armed / 30 s"];
+}
+{rank=same; B08; B09; R01;}
+{rank=same; B12; B10; B11;}
+{rank=same; R02; R03; R04;}
+{rank=same; B20; B21; R05;}
+{rank=same; B24; R06; R07;}
+B08 -> B10 [style=invis]; B08 -> B11 [style=invis];
+R02 -> B20 [style=invis]; R03 -> B20 [style=invis]; R04 -> B20 [style=invis];
+B01 -> B02 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Begin cargo practice"];
+B02 -> B03 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Apply the cargo construction procedure"];
+B01 -> B04 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Begin ascent practice"];
+B04 -> B05 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Apply ascent at the depot"];
+B01 -> B06 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Begin reversal practice"];
+B06 -> B07 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Apply motion reversal"];
+B07 -> B08 [style=solid, tooltip="Survey pack enables archive survey"];
+B05 -> B09 [style=solid, tooltip="Service kit provides both reserve items"];
+B05 -> R01 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Tooling is at the upper expedition depot"];
+B09 -> B12 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Retrieve the cached lamp kit; caching itself is optional"];
+B09 -> B21 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Retrieve the cached drive coupling; caching itself is optional"];
+B12 -> B13 [style=solid, tooltip="Released original power module"];
+B13 -> B14 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Reach the gallery after the cargo crossing"];
+B13 -> B15 [style=solid, tooltip="Deliver the original module to cooling works"];
+B14 -> B15 [style=solid, tooltip="Gallery opens the installation shutter"];
+B15 -> R02 [style=solid, tooltip="Installed intact cooling equipment plus correct dials"];
+B10 -> B16 [style=solid, tooltip="Released original anchor coupling"];
+B16 -> B17 [style=solid, tooltip="Delivered coupling can be installed"];
+B17 -> R03 [style=solid, tooltip="Installed intact anchor equipment plus correct dials"];
+B11 -> B18 [style=solid, tooltip="Charged cell powers shuttle equipment"];
+B18 -> B19 [style=solid, tooltip="Original spindle for monitoring installation"];
+B19 -> R04 [style=solid, tooltip="Installed monitoring equipment plus correct dials"];
+B15 -> B20 [style=solid, tooltip="All three equipment outputs trigger bridge closure"];
+B17 -> B20 [style=solid, tooltip="All three equipment outputs trigger bridge closure"];
+B19 -> B20 [style=solid, tooltip="All three equipment outputs trigger bridge closure"];
+B20 -> B22 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Discover the replacement approach"];
+B21 -> B23 [style=solid, tooltip="Installed original drive coupling enables the cargo lock"];
+B22 -> B23 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Platform provides access; alternatives are permitted"];
+B23 -> B24 [style=dashed, color="#a3aeb6", penwidth=1.1, tooltip="Reference barge delivery; alternative physical routes are permitted"];
+R01 -> R05 [style=solid, tooltip="Bring original tooling to the workbench; it is consumed"];
+R02 -> R05 [style=solid, tooltip="Cooling must currently be balanced"];
+R03 -> R05 [style=solid, tooltip="Anchors must currently be balanced"];
+R04 -> R05 [style=solid, tooltip="Monitoring must currently be balanced"];
+R05 -> R06 [style=solid, tooltip="Fabricated original manifold becomes physical cargo"];
+R06 -> R08 [style=solid, tooltip="Intact original manifold currently installed at engine bus"];
+R07 -> R08 [style=solid, tooltip="Sustained engine shutdown"];
+B24 -> R08 [style=solid, tooltip="Original intact relief load currently at commissioned refuge"];
+}

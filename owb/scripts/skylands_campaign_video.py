@@ -90,7 +90,7 @@ def verified_images(entries,render_dir,trace_sha256):
             yield result
 
 
-def assemble(directory,render_dir,output):
+def assemble(directory,render_dir,output,*,view_label=None,min_repeats=2,preview_index=None):
     from PIL import Image,ImageDraw,ImageFont
     import matplotlib
     from owb.render.video import H264Writer
@@ -110,12 +110,12 @@ def assemble(directory,render_dir,output):
             canvas=Image.new('RGB',(1600,900),(12,28,35));draw=ImageDraw.Draw(canvas)
             canvas.paste(rgb,(0,90))
             draw.text((22,16),entry['milestone']+'  '+entry['title'],font=fonts[30],fill=(244,235,209))
-            draw.text((22,57),'SKYLANDS  |  Full-scale executed campaign  |  Privileged reference policy  |  Cycles GPU',font=fonts[19],fill=(159,211,195))
+            draw.text((22,57),'SKYLANDS  |  Full-scale executed campaign  |  Privileged reference policy  |  Cycles GPU'+(f'  |  {view_label}' if view_label else ''),font=fonts[19],fill=(159,211,195))
             x=1300;draw.text((x,105),'CAMPAIGN PROGRESS',font=fonts[19],fill=(159,211,195))
             draw.text((x,143),f"{int(entry['milestone'][1:])} / {15 if data['task']=='a' else 24} milestones",font=fonts[22],fill='white')
             t=entry['seconds'];draw.text((x,190),f"Sim time  {int(t//60):02}:{int(t%60):02}",font=fonts[22],fill='white')
             draw.text((x,224),f"Decision  {entry['step']:,}",font=fonts[19],fill=(207,220,221))
-            label=f"Travel {entry['speed']}x" if entry['speed']>1 else 'Mechanism 1x'
+            label=entry.get('playback_label') or (f"Travel {entry['speed']}x" if entry['speed']>1 else 'Mechanism 1x')
             if entry['annotation_pause']: label+=' + pause'
             draw.text((x,265),label,font=fonts[19],fill=(246,200,114))
             p=entry['position'];layer='SKY' if p[1]>100 else 'DEPTHS' if p[1]<40 else 'SURFACE'
@@ -135,11 +135,11 @@ def assemble(directory,render_dir,output):
                 chapters.append(dict(id=entry['milestone'],title=entry['title'],video_seconds=round(video_seconds,3),
                                      source_seconds=entry['seconds'],step=entry['step']))
                 last=entry['milestone']
-            repeats=max(2,int(round(entry['duration']*10)))
+            repeats=max(min_repeats,int(round(entry['duration']*10)))
             arr=np.asarray(canvas)
             for _ in range(repeats):writer.append_data(arr)
             frame_count+=repeats;video_seconds+=repeats/10
-            if entry['index']==(24 if data['task']=='a' else 112):canvas.save(output/'preview.png')
+            if entry['index']==(preview_index if preview_index is not None else 24 if data['task']=='a' else 112):canvas.save(output/'preview.png')
     finally:writer.close()
     partial.rename(final)
     save(output/'chapters.json',chapters)

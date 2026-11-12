@@ -104,6 +104,8 @@ def action_schema(observation, memory_chars):
         "ingredients": vector(5, "integer", 0, 32),
         "part": {"type": "integer", "minimum": 0, "maximum": 8},
         "build_move": vector(3),
+        # [] for no click, or [u, v]: a normalised screen point (u right, v down).
+        "click": {"type": "array", "maxItems": 2, "items": {"type": "number", "minimum": 0, "maximum": 1}},
         "memory": {"type": "string", "maxLength": memory_chars},
     }
     return dict(type="object", properties=properties, required=list(properties), additionalProperties=False)
@@ -131,6 +133,12 @@ def decode_action(payload, observation, memory_chars):
                                      else not spec["minimum"] <= value <= spec["maximum"]):
             raise ValueError(f"invalid {key}")
         action[key] = value
+    click = payload["click"]
+    if (not isinstance(click, list) or len(click) not in (0, 2)
+            or any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in click)):
+        raise ValueError("click must be [] or [u, v] in [0, 1]")
+    if click:
+        action.update(pointer=np.asarray(click, np.float32), click=1)
     if payload["command"] not in schema["properties"]["command"]["enum"]:
         raise ValueError("unsupported command")
     action["command"] = COMMANDS.index(payload["command"])
@@ -164,6 +172,10 @@ anchor one voxel on each axis with magnitude>=0.5, once per decision, before com
 Part positions and cursor offsets are world-axis-relative to your feet. place needs can_place=1;
 rotate turns a held beam 90 degrees. Beams are solid after placement. Ascend passes through a
 thin overhead ceiling within 32m and costs 20 stamina. Avoid walking off an unbridged edge.
+World map: the small map logo in the image's top-right corner opens a map of the whole world
+when clicked (click=[u, v], u right and v down in [0, 1] of the image). Unexplored regions are
+shadowed; the arrow is you, facing its point, with +x right and +z down. While the map is open the
+world is paused and other controls are ignored; click the logo again to close it. click=[] otherwise.
 Use the next observation to check whether your action worked. A command can fail silently.
 """
 

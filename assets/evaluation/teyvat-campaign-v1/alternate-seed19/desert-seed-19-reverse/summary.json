@@ -1,0 +1,85 @@
+{
+  "success": true,
+  "failures": [],
+  "completed": 15,
+  "required": 15,
+  "metrics": {
+    "wrong_applications": 0,
+    "blocked_interactions": 3,
+    "quartz_expirations": 0,
+    "cold_damage": 0.0,
+    "distance_metres": 1643.3415509095648,
+    "recharge_visits": 2,
+    "archive_revisits": 3,
+    "boss_windows": 0
+  },
+  "scope": "Procedural campaign; native-action feasibility, not a learned-agent score",
+  "actions": 1633,
+  "simulated_seconds": 326.6000000000442,
+  "milestone_order": [
+    {
+      "id": "slate",
+      "time": 3.033333
+    },
+    {
+      "id": "temple_2_puzzle",
+      "time": 42.033333
+    },
+    {
+      "id": "temple_2",
+      "time": 49.833333
+    },
+    {
+      "id": "temple_1_puzzle",
+      "time": 89.033333
+    },
+    {
+      "id": "temple_1",
+      "time": 98.233333
+    },
+    {
+      "id": "temple_0_puzzle",
+      "time": 136.633333
+    },
+    {
+      "id": "temple_0",
+      "time": 146.233333
+    },
+    {
+      "id": "rank_two",
+      "time": 160.233333
+    },
+    {
+      "id": "temple_2_record",
+      "time": 198.433333
+    },
+    {
+      "id": "temple_1_record",
+      "time": 221.433333
+    },
+    {
+      "id": "temple_0_record",
+      "time": 248.433333
+    },
+    {
+      "id": "atlas_key",
+      "time": 262.633333
+    },
+    {
+      "id": "zenith_puzzle",
+      "time": 310.233333
+    },
+    {
+      "id": "zenith",
+      "time": 319.633333
+    },
+    {
+      "id": "final",
+      "time": 326.433333
+    }
+  ],
+  "final_digest": "9902f8152adf73f77840412eb3601e591d49f34e296a4cc7066fcd41f1ef4d5a",
+  "actions_sha256": "f94d58b62fbebb4496a661743fa8abd4d919fe9fa526295ae7dcb47834821090",
+  "geometry_digest": "60340f33a3124ee69a2d3d7ddb235e2e53a0f2a447fd408182ce89935745571e",
+  "wall_seconds": 43.40725662797922
+}

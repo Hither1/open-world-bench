@@ -1,0 +1,164 @@
+{
+  "suite_version": "teyvat-campaign-v1",
+  "task": "desert",
+  "seed": 7,
+  "geography_scale": 2.0,
+  "max_steps": 40000,
+  "reverse": false,
+  "decision_seconds": 0.2,
+  "sources": {
+    "open_world_bench/__init__.py": "5395bc047ad8d5e3f7cc631bce9ab8bf8be8f32c0db2cb5a06d0c60403e8f9b1",
+    "open_world_bench/architecture.py": "ab0f1d6fb3f5f2caa28957f60859cd75c263d47e1aecaef6e4c1398d4c143772",
+    "open_world_bench/camera.py": "a1669aa0d09375f8771d8d601d7f877a441b669fdf7da2ac16bd02528b4cb0b8",
+    "open_world_bench/campaign_env.py": "ccf27c25d6cf349ead3c685bc4be3cd18c840e6bccebb7ced8ccfa60244d2aaf",
+    "open_world_bench/campaign_policy.py": "5adb1e44d5cca3dbdeed759c2c4f71ddc9a3975785f05e84cfebf18809dd4f8d",
+    "open_world_bench/campaign_tasks.py": "bcc23db34278a36e4ba6e3a3b633498536443e281ff13ef9173af99ecc2576e7",
+    "open_world_bench/character.py": "89b169a174af06df3307e46f0a824e15bc7b76bd2bb08ae5e8b318da9eddc072",
+    "open_world_bench/elements.py": "04e371edf0579a051409747b33f22c9601c1bf311f47bcb8051531bc95af118b",
+    "open_world_bench/env.py": "08246496be1a3a4c89af7691574b801fa62b34e92534b1d262be0023fe17a2f9",
+    "open_world_bench/events.py": "d96d33e798017ae7904efb4ccf36b56993467c7eda5170d7c054403ba931b4ec",
+    "open_world_bench/math3d.py": "0af565bdccfba69c84e2c89c95bd8e6a3d63f4feefcbb92874959e245e22c8af",
+    "open_world_bench/noise.py": "b99ae1f423b8fe311dc69bd43e5d5672563bea95cda6dcc8f39326fed3f3a8fc",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/quests/__init__.py": "17d3cc376050bd7b91b8493599add3e2904d9101dc0f6d2aa43f9cbe60e5f9bd",
+    "open_world_bench/quests/engine.py": "c6db76a69c52667550ca58a32eabb55e6cf98336a389d8111f5be4757aaf0ff6",
+    "open_world_bench/quests/library.py": "3669950e933ba0f2f0f3138885817bb12355f66ba34c2d3143142a52a8a24088",
+    "open_world_bench/quests/schema.py": "8a745159cc469c48c006c62eefdc53c7fd529cfff193ec660598675140b87ab9",
+    "open_world_bench/reference_policy.py": "69ee29c39aa42eb30bf1141226cdaa528aae46e11e1de62601573ef7f882574f",
+    "open_world_bench/reference_tasks.py": "2eb93ad3f9629d0d378f5d13b4854cd6d85d51584a0bd6b834fea2fb5f1b81c8",
+    "open_world_bench/render/__init__.py": "bdf55adfb0bae4641ded9669e4693269a648229647ce96e42dc8f3efd480e02c",
+    "open_world_bench/render/architecture.py": "8df5b2e18fd82339a7223d983160eaf790c59d346aa98bdc10e937919f3ffec7",
+    "open_world_bench/render/assets.py": "27e4afee53ff9d11a98006dfbb2c6eaf0aa1bce2fabe023a432f36ad88d42dba",
+    "open_world_bench/render/base.py": "5b07ca91b3213c3ee3020c7883b9c4c8ce568950e3b7b2132d50a4618810241a",
+    "open_world_bench/render/campaign_assets.py": "7c28ae69df5dfd963435b0d6cdb047d6467779b58bec87b4366b4a95639f7b7f",
+    "open_world_bench/render/hud.py": "067e00e1c90016e8e553667e0375dc9bf9c0f555dbfd4ed55c5d591b527037ea",
+    "open_world_bench/render/meshes.py": "c0f014a2f1fc6570d49834c6718b8d84e26104d62a3708d5a9fccd804d946231",
+    "open_world_bench/render/raster.py": "bdf38b4a6e394242a0a7f13b7f31db3a898662f9873762dbbc30cfaa0a7b4f8a",
+    "open_world_bench/render/soft_renderer.py": "f5e4d49cd048a62b7d5ef328aa19a149526db2ff8ea693646687009c2241d0cb",
+    "open_world_bench/render/style.py": "c85c6122f71e260b99650eb95096ae252bb3a8028a0dcd811307c075560bc856",
+    "open_world_bench/scatter.py": "51542646055dc279417940ea34f2bb86942bfd20447742c8e522ea4d66a874f4",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425",
+    "owb/scripts/teyvat_campaign.py": "ea948a17498d58eae277d605489cb904b64fc4b46bbd3b21786e08095eb01e48",
+    "owb/render/scene_export.py": "fc4e11cce7a0f261c8a4dd2afeadbed02bfa547bfa3df6482d5f031530ca9362"
+  },
+  "initial_digest": "b25da1eb00dff30ead4e7f925635e41d819278df28a01b95efdd4c5367ebdeb5",
+  "geometry_digest": "1c2421c2e6c31253daf8d72dfdab9aca46acd7ff6d8b714110f6f2a3dcdfeb18",
+  "goal": "Recover the lost star atlas from the sealed Zenith Archive.",
+  "milestones": [
+    {
+      "id": "slate",
+      "title": "Recover the permission slate",
+      "requires": []
+    },
+    {
+      "id": "temple_0_puzzle",
+      "title": "Restore temple 1 circuit",
+      "requires": [
+        "slate"
+      ]
+    },
+    {
+      "id": "temple_0",
+      "title": "Attune temple 1 permission",
+      "requires": [
+        "temple_0_puzzle"
+      ]
+    },
+    {
+      "id": "temple_0_record",
+      "title": "Recover temple 1 star chart",
+      "requires": [
+        "rank_two"
+      ]
+    },
+    {
+      "id": "temple_1_puzzle",
+      "title": "Restore temple 2 circuit",
+      "requires": [
+        "slate"
+      ]
+    },
+    {
+      "id": "temple_1",
+      "title": "Attune temple 2 permission",
+      "requires": [
+        "temple_1_puzzle"
+      ]
+    },
+    {
+      "id": "temple_1_record",
+      "title": "Recover temple 2 star chart",
+      "requires": [
+        "rank_two"
+      ]
+    },
+    {
+      "id": "temple_2_puzzle",
+      "title": "Restore temple 3 circuit",
+      "requires": [
+        "slate"
+      ]
+    },
+    {
+      "id": "temple_2",
+      "title": "Attune temple 3 permission",
+      "requires": [
+        "temple_2_puzzle"
+      ]
+    },
+    {
+      "id": "temple_2_record",
+      "title": "Recover temple 3 star chart",
+      "requires": [
+        "rank_two"
+      ]
+    },
+    {
+      "id": "rank_two",
+      "title": "Upgrade slate clearance",
+      "requires": [
+        "temple_0",
+        "temple_1",
+        "temple_2"
+      ]
+    },
+    {
+      "id": "atlas_key",
+      "title": "Assemble the archive cipher",
+      "requires": [
+        "temple_0_record",
+        "temple_1_record",
+        "temple_2_record"
+      ]
+    },
+    {
+      "id": "zenith_puzzle",
+      "title": "Power the Zenith lock",
+      "requires": [
+        "atlas_key"
+      ]
+    },
+    {
+      "id": "zenith",
+      "title": "Defeat the archive custodian",
+      "requires": [
+        "zenith_puzzle"
+      ]
+    },
+    {
+      "id": "final",
+      "title": "Recover the star atlas",
+      "requires": [
+        "zenith"
+      ]
+    }
+  ],
+  "observation": "Headless zero RGB for logic validation only; final goal plus local text",
+  "controller": "Privileged reference controller; native actions only; no world writes",
+  "artifact_visibility": "Evaluator only: contains hidden graph and state hashes",
+  "runtime": {
+    "python": "3.12.7",
+    "numpy": "2.1.3"
+  }
+}

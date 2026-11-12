@@ -93,8 +93,18 @@ def camera_obscures_traveler(env,camera):
     return abs(np.dot(relative,up))>halfheight*.75 or abs(np.dot(relative,right))>halfheight*16/9*.8
 
 
-def metadata(env,width=1280,height=720):
-    camera=safe_camera(env)
+def first_person_camera(env,width=1280,height=720):
+    """The traveler's own eyes: eye height, its yaw and pitch, the policy's FOV."""
+    from .camera import Camera
+    eye=env.agent.pos.astype(float)+np.array((0.,env.cfg.sim_cfg.eye_height,0.))
+    forward=Camera(eye.astype(np.float32),float(env.agent.yaw),float(env.agent.pitch)).basis()[0].astype(float)
+    # The policy camera's FOV is horizontal; Blender needs the vertical angle.
+    fov_y=np.degrees(2*np.arctan(np.tan(np.radians(env.cfg.render_cfg.fov)/2)*height/width))
+    return dict(eye=eye.tolist(),target=(eye+forward).tolist(),fov_y=float(fov_y))
+
+
+def metadata(env,width=1280,height=720,camera=None):
+    camera=safe_camera(env) if camera is None else camera
     keys=P.sky_colors(env.elements.climate.time,env.elements.climate.weather)
     lights=env.presentation_lights()+[dict(pos=list(pos),color=[.28,.75,.85],power=500.,radius=1.3) for pos in env.world.meta['crystal_lights']]
     return dict(version=1,environment=getattr(env,'presentation_kind','skylands_campaign'),seed=env._seed,
@@ -154,8 +164,12 @@ def static_scene(env):
     return scene,points,variants
 
 
-def dynamic_scene(env):
-    scene=SceneSnapshot(metadata(env)); batch=_presentation_batch()
+def dynamic_scene(env,first_person=False):
+    """Replay-state meshes. ``first_person`` views from the traveler's eyes and
+    omits its own body; every material then gets a slot (possibly empty) in a
+    fixed order, because the Blender replay loader keys meshes by slot index."""
+    camera=first_person_camera(env) if first_person else None
+    scene=SceneSnapshot(metadata(env,camera=camera)); batch=_presentation_batch()
     env.presentation_meshes(batch)
     for obj in [*env.movers.values(),*env.rafts.values()]:
         if obj['under']: batch.box(obj['pos']+(.5,-.5,.5),(3,1,3),P.COLOR_F[B.PLANK])
@@ -167,6 +181,16 @@ def dynamic_scene(env):
                     block=env.world.get(x,y,z)
                     if B.SOLID[block]: batch.box((x+.5,y+.5,z+.5),(1,1,1),P.COLOR_F[block])
     _add_batch(scene,batch)
+    if first_person:
+        from open_world_bench.render.meshes import MATERIAL_NAMES
+        names=['Characters and props: '+name for name in MATERIAL_NAMES]
+        by_name={mesh['name']:mesh for mesh in scene.meshes}
+        if len(by_name)!=len(scene.meshes) or set(by_name)-set(names): raise RuntimeError('Unexpected dynamic mesh slots')
+        empty=lambda name,material: dict(name=name,triangles=np.empty((0,3,3),np.float32),colors=np.empty((0,3),np.float32),
+            normals=np.empty((0,3,3),np.float32),emission=np.empty(0,np.float32),smooth=False,water=False,material=material)
+        scene.meshes=[by_name.get(name) or empty(name,material) for name,material in zip(names,MATERIAL_NAMES)]
+        scene.metadata['view']='first_person'
+        return scene
     character=models.ModelBatch()
     models.traveler(character,env.agent.pos,env.agent.yaw,phase=env.agent.distance_travelled*2.5,gliding=env.agent.gliding)
     _add_batch(scene,character)

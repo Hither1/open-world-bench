@@ -20,7 +20,7 @@ class ReferencePolicy:
     @staticmethod
     def neutral():
         return {"move":np.zeros(2,np.float32),"look":np.zeros(2,np.float32),
-                "buttons":np.zeros(7,np.int8),"swap":0}
+                "buttons":np.zeros(7,np.int8),"swap":0,"pointer":np.zeros(2,np.float32),"click":0}
 
     def move_to(self, action, target, stop=1.1):
         env=self.env

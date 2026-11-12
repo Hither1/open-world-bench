@@ -187,3 +187,34 @@ def test_reference_recovers_from_landing_too_close_to_sentinel(env):
         if not enemy.alive:
             break
     assert not enemy.alive
+
+
+def test_instruction_names_current_step_without_location(env):
+    obs,_=env.reset(seed=7)
+    assert obs["instruction"].endswith("| Step 1/2: talk to the instructor (relay lesson)")
+    assert obs["task"][4]==0  # still no privileged waypoint
+
+
+def test_hint_is_scoped_to_current_step(env):
+    env.reset(seed=7)
+    future=select(env,"B02","relay").state["roles"]["source"]
+    env.course.index=env.course.operation_index=0
+    stand_at(env,future)
+    assert env.world._hint(env.char) is None
+    stand_at(env,env.course.op.entities[0])
+    assert env.world._hint(env.char)=="Interact: Learn R"
+
+
+def test_off_step_objects_give_feedback_without_progress(env):
+    env.reset(seed=7)
+    future=select(env,"B02","relay")
+    env.course.index=env.course.operation_index=0
+    before=env.course.state()
+    stand_at(env,future.state["roles"]["core"])
+    env.course.interact(env.char)
+    assert "not part of the current step" in env.course.last_feedback
+    stand_at(env,future.state["roles"]["source"])
+    env.course.last_feedback=""
+    env.course.apply_element(env.char,Element(int(env.course.relay_elements["source"])))
+    assert "not part of the current step" in env.course.last_feedback
+    assert env.course.state()==before

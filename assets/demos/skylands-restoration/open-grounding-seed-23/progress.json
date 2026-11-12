@@ -1,0 +1,11 @@
+{
+  "step": 3000,
+  "stage": "grounding_canal",
+  "position": [
+    1060.6126708984375,
+    112.0009994506836,
+    1170.5001220703125
+  ],
+  "explanation": "Walk the physical route",
+  "wall_seconds": 31.082545985933393
+}

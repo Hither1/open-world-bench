@@ -1,0 +1,250 @@
+{
+  "suite_version": "teyvat-campaign-v1",
+  "runs": [
+    {
+      "task": "summit",
+      "seed": 19,
+      "success": true,
+      "failures": [],
+      "completed": 9,
+      "required": 9,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 0,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 796.252385447151,
+        "recharge_visits": 0,
+        "archive_revisits": 0,
+        "boss_windows": 0
+      },
+      "scope": "Procedural campaign; native-action feasibility, not a learned-agent score",
+      "actions": 999,
+      "simulated_seconds": 199.79999999999123,
+      "milestone_order": [
+        {
+          "id": "charged_strike",
+          "time": 20.833333
+        },
+        {
+          "id": "lower_2",
+          "time": 27.633333
+        },
+        {
+          "id": "lower_1",
+          "time": 60.833333
+        },
+        {
+          "id": "lower_0",
+          "time": 91.633333
+        },
+        {
+          "id": "ascent",
+          "time": 115.233333
+        },
+        {
+          "id": "upper_2",
+          "time": 148.833333
+        },
+        {
+          "id": "upper_1",
+          "time": 170.233333
+        },
+        {
+          "id": "upper_0",
+          "time": 189.433333
+        },
+        {
+          "id": "final",
+          "time": 199.633333
+        }
+      ],
+      "final_digest": "443f30b7fc2ad4a63b79ce0a603a1a506da5c84112a409e9fb753f419d562e23",
+      "actions_sha256": "6cb6300c3822dec45955ffba564b64c2bf34b01886c3311462b4ba64c19aff55",
+      "geometry_digest": "df427a47d8a6e453f012d30479b435cf6e6966c571e6f782eabb2c87e7660242",
+      "wall_seconds": 47.96657852403587
+    },
+    {
+      "task": "cleansing",
+      "seed": 19,
+      "success": true,
+      "failures": [],
+      "completed": 17,
+      "required": 17,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 0,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 1419.1114206381026,
+        "recharge_visits": 0,
+        "archive_revisits": 0,
+        "boss_windows": 2
+      },
+      "scope": "Procedural campaign; native-action feasibility, not a learned-agent score",
+      "actions": 1499,
+      "simulated_seconds": 299.80000000002286,
+      "milestone_order": [
+        {
+          "id": "lens",
+          "time": 4.433333
+        },
+        {
+          "id": "shrine_4_ward",
+          "time": 31.233333
+        },
+        {
+          "id": "shrine_4_puzzle",
+          "time": 44.833333
+        },
+        {
+          "id": "shrine_4",
+          "time": 53.633333
+        },
+        {
+          "id": "shrine_3_ward",
+          "time": 73.233333
+        },
+        {
+          "id": "shrine_3_puzzle",
+          "time": 85.233333
+        },
+        {
+          "id": "shrine_3",
+          "time": 94.233333
+        },
+        {
+          "id": "shrine_2_ward",
+          "time": 120.833333
+        },
+        {
+          "id": "shrine_2_puzzle",
+          "time": 136.433333
+        },
+        {
+          "id": "shrine_2",
+          "time": 144.433333
+        },
+        {
+          "id": "shrine_1_ward",
+          "time": 177.233333
+        },
+        {
+          "id": "shrine_1_puzzle",
+          "time": 191.833333
+        },
+        {
+          "id": "shrine_1",
+          "time": 201.033333
+        },
+        {
+          "id": "shrine_0_ward",
+          "time": 223.033333
+        },
+        {
+          "id": "shrine_0_puzzle",
+          "time": 236.433333
+        },
+        {
+          "id": "shrine_0",
+          "time": 245.833333
+        },
+        {
+          "id": "final",
+          "time": 299.633333
+        }
+      ],
+      "final_digest": "7986da951e383a9170e4f2329bc4ade2990da90810538b65eacee603446a43cd",
+      "actions_sha256": "bda60aa2a45f9c0a62ff70396b43838fbde607e8e1048b8619242bbbfb70777f",
+      "geometry_digest": "339bb2fe0161639336ae3d50c0976c1dd8022a11de5d2e2f9a51c6110096cee3",
+      "wall_seconds": 99.77945029799594
+    },
+    {
+      "task": "desert",
+      "seed": 19,
+      "success": true,
+      "failures": [],
+      "completed": 15,
+      "required": 15,
+      "metrics": {
+        "wrong_applications": 0,
+        "blocked_interactions": 3,
+        "quartz_expirations": 0,
+        "cold_damage": 0.0,
+        "distance_metres": 1643.3415509095648,
+        "recharge_visits": 2,
+        "archive_revisits": 3,
+        "boss_windows": 0
+      },
+      "scope": "Procedural campaign; native-action feasibility, not a learned-agent score",
+      "actions": 1633,
+      "simulated_seconds": 326.6000000000442,
+      "milestone_order": [
+        {
+          "id": "slate",
+          "time": 3.033333
+        },
+        {
+          "id": "temple_2_puzzle",
+          "time": 42.033333
+        },
+        {
+          "id": "temple_2",
+          "time": 49.833333
+        },
+        {
+          "id": "temple_1_puzzle",
+          "time": 89.033333
+        },
+        {
+          "id": "temple_1",
+          "time": 98.233333
+        },
+        {
+          "id": "temple_0_puzzle",
+          "time": 136.633333
+        },
+        {
+          "id": "temple_0",
+          "time": 146.233333
+        },
+        {
+          "id": "rank_two",
+          "time": 160.233333
+        },
+        {
+          "id": "temple_2_record",
+          "time": 198.433333
+        },
+        {
+          "id": "temple_1_record",
+          "time": 221.433333
+        },
+        {
+          "id": "temple_0_record",
+          "time": 248.433333
+        },
+        {
+          "id": "atlas_key",
+          "time": 262.633333
+        },
+        {
+          "id": "zenith_puzzle",
+          "time": 310.233333
+        },
+        {
+          "id": "zenith",
+          "time": 319.633333
+        },
+        {
+          "id": "final",
+          "time": 326.433333
+        }
+      ],
+      "final_digest": "9902f8152adf73f77840412eb3601e591d49f34e296a4cc7066fcd41f1ef4d5a",
+      "actions_sha256": "f94d58b62fbebb4496a661743fa8abd4d919fe9fa526295ae7dcb47834821090",
+      "geometry_digest": "60340f33a3124ee69a2d3d7ddb235e2e53a0f2a447fd408182ce89935745571e",
+      "wall_seconds": 43.40725662797922
+    }
+  ]
+}

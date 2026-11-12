@@ -1,0 +1,592 @@
+{
+  "title": "Skylands: Tempest Restoration",
+  "environment": "OpenWorldBench/Skylands-Tempest-Restoration-v0",
+  "scope": "Largest implemented Skylands checkpoint set: 24 inherited logistics + 8 restoration outcomes. No minimum-duration claim.",
+  "interpretation": "Schematic of physical flows and optional routes, not exhaustive low-level preconditions or a mandatory milestone checklist. Records name information sources; reading them is not mechanically required to set correct dials.",
+  "final_live_conditions": [
+    "Agent alive",
+    "All three regional services currently balanced with original intact equipment",
+    "Original intact manifold installed at engine pressure bus",
+    "Engine stopped for at least five seconds",
+    "Original intact relief load at commissioned refuge",
+    "Local refuge transfer switch armed",
+    "All power conditions sustained for 30 seconds"
+  ],
+  "omitted_cross_edges": [
+    "B05 supplies lamp kit at B12 and drive coupling at B21; storage at B09 is optional",
+    "B22 needs all three balanced services",
+    "B23 needs installed regional equipment and the repaired B21 drive",
+    "R08 still needs all three balanced services after R05",
+    "B08-area record -> R02; B12-area record -> R03; B11-area record -> R04",
+    "B01 identifies the commissioned B24 refuge"
+  ],
+  "sources": {
+    "docs/skylands-restoration.md": "57d081fb74f143c97210e9ae4c8fef799b30ed93d7f01ca2551e3d577662b2b7",
+    "docs/skylands-tempest.md": "6028e4de140578890188ac203b035cfec3b262b8b8a0f472b1c183a64ff6860b",
+    "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
+    "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
+    "owb/env/skylands_tempest.py": "7c25211fb65a76de445120382c670bb45fe1be23cf6daec6b9a1f132dcfbf412",
+    "owb/env/skylands_restoration.py": "a4d5519073503fe1cc44ecbbe57ad0998a465512079b5142c001a71efcaca7b7"
+  },
+  "renderer": {
+    "name": "Graphviz dot",
+    "version": "dot - graphviz version 2.40.1 (0)",
+    "kind": "2D vector diagram",
+    "png_dpi": 160,
+    "simulation_loaded": false
+  },
+  "nodes": [
+    {
+      "id": "B01",
+      "title": "Accept the commission",
+      "source_title": "Accept the lifeline commission",
+      "site": "Landing office",
+      "group": "prepare",
+      "notes": [
+        "Remember the designated refuge"
+      ]
+    },
+    {
+      "id": "B02",
+      "title": "Commission the training barge",
+      "source_title": "Commission the training barge",
+      "site": "Shipwright's load trial",
+      "group": "prepare",
+      "notes": [
+        "Loaded craft / trim trial"
+      ]
+    },
+    {
+      "id": "B03",
+      "title": "Deliver the practice load",
+      "source_title": "Deliver the independent practice load",
+      "site": "Supply inlet",
+      "group": "prepare",
+      "notes": [
+        "Independent cargo construction"
+      ]
+    },
+    {
+      "id": "B04",
+      "title": "Open the maintenance loft",
+      "source_title": "Open the ascent workshop",
+      "site": "Maintenance loft",
+      "group": "prepare",
+      "notes": [
+        "Learn an ascent route"
+      ]
+    },
+    {
+      "id": "B05",
+      "title": "Recover the depot service kit",
+      "source_title": "Recover the upper depot service kit",
+      "site": "Expedition depot",
+      "group": "prepare",
+      "notes": [
+        "Lamp kit + final-lock coupling"
+      ]
+    },
+    {
+      "id": "B06",
+      "title": "Restore the training platform",
+      "source_title": "Restore the moving-platform training route",
+      "site": "Recirculating service platform",
+      "group": "prepare",
+      "notes": [
+        "Learn motion reversal"
+      ]
+    },
+    {
+      "id": "B07",
+      "title": "Retrieve the survey pack",
+      "source_title": "Retrieve the shuttle survey pack",
+      "site": "Survey pack store",
+      "group": "prepare",
+      "notes": [
+        "Independent platform route"
+      ]
+    },
+    {
+      "id": "B08",
+      "title": "Survey at the weather archive",
+      "source_title": "Survey the three freight regions",
+      "site": "Weather archive",
+      "group": "prepare",
+      "notes": [
+        "Local record: cooling profile"
+      ]
+    },
+    {
+      "id": "B09",
+      "title": "Distribute expedition reserves",
+      "source_title": "Distribute the expedition reserves",
+      "site": "Regional reserve lockers",
+      "group": "prepare",
+      "notes": [
+        "Remember the two chosen caches"
+      ]
+    },
+    {
+      "id": "R01",
+      "title": "Recover the original tooling",
+      "source_title": "Recover the original manifold tooling",
+      "site": null,
+      "group": "prepare",
+      "notes": [
+        "Upper depot; may cache and retrieve"
+      ]
+    },
+    {
+      "id": "B12",
+      "title": "Establish the deep outpost",
+      "source_title": "Establish the depths freight outpost",
+      "site": "Deep pump intake",
+      "group": "cooling",
+      "notes": [
+        "Lamp kit from B05 / cache B09"
+      ]
+    },
+    {
+      "id": "B13",
+      "title": "Ferry the power module",
+      "source_title": "Transport the depths power module",
+      "site": "Flooded cooling gallery",
+      "group": "cooling",
+      "notes": [
+        "Loaded craft through flooded works"
+      ]
+    },
+    {
+      "id": "B14",
+      "title": "Open the regulator gallery",
+      "source_title": "Reach the depths regulator gallery",
+      "site": "Regulator mezzanine",
+      "group": "cooling",
+      "notes": [
+        "Reach the upper service controls"
+      ]
+    },
+    {
+      "id": "B15",
+      "title": "Restore cooling equipment",
+      "source_title": "Restore the depths station",
+      "site": "Cooling works",
+      "group": "cooling",
+      "notes": [
+        "Install module; sustain output 5 s"
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "Balance the cooling flow",
+      "source_title": "Balance the cooling flow",
+      "site": null,
+      "group": "cooling",
+      "notes": [
+        "Set dials from the B08-area record"
+      ]
+    },
+    {
+      "id": "B10",
+      "title": "Recover the anchor coupling",
+      "source_title": "Recover the marsh coupling",
+      "site": "Abandoned anchor foundry",
+      "group": "anchors",
+      "notes": [
+        "Original load from abandoned yard"
+      ]
+    },
+    {
+      "id": "B16",
+      "title": "Deliver the anchor coupling",
+      "source_title": "Deliver the marsh coupling",
+      "site": "Reed-channel freight",
+      "group": "anchors",
+      "notes": [
+        "Adapt the craft for reed channels"
+      ]
+    },
+    {
+      "id": "B17",
+      "title": "Restore anchor equipment",
+      "source_title": "Restore the surface station",
+      "site": "Anchor works",
+      "group": "anchors",
+      "notes": [
+        "Install coupling; output for 5 s"
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "Tune anchor load distribution",
+      "source_title": "Tune the anchor load distribution",
+      "site": null,
+      "group": "anchors",
+      "notes": [
+        "Set dials from the B12-area record"
+      ]
+    },
+    {
+      "id": "B11",
+      "title": "Charge the shuttle power cell",
+      "source_title": "Charge the sky shuttle power cell",
+      "site": "Quarry charging yard",
+      "group": "monitoring",
+      "notes": [
+        "Local record: monitoring profile"
+      ]
+    },
+    {
+      "id": "B18",
+      "title": "Recover the sky spindle",
+      "source_title": "Recover the sky station spindle",
+      "site": "Observatory shuttle",
+      "group": "monitoring",
+      "notes": [
+        "Power the observatory shuttle"
+      ]
+    },
+    {
+      "id": "B19",
+      "title": "Restore monitoring equipment",
+      "source_title": "Restore the sky station",
+      "site": "Sky monitoring station",
+      "group": "monitoring",
+      "notes": [
+        "Upper controls; output for 5 s"
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "Synchronize the monitoring clock",
+      "source_title": "Synchronize the monitoring clock",
+      "site": null,
+      "group": "monitoring",
+      "notes": [
+        "Set dials from the B11-area record"
+      ]
+    },
+    {
+      "id": "B20",
+      "title": "Survey the changed approach",
+      "source_title": "Survey the replacement lock approach",
+      "site": "Damaged relief approach",
+      "group": "relief",
+      "notes": [
+        "Bridge closes after equipment repair"
+      ]
+    },
+    {
+      "id": "B21",
+      "title": "Recover & fit the drive coupling",
+      "source_title": "Recover and fit the reserved coupling",
+      "site": "Relief drive housing",
+      "group": "relief",
+      "notes": [
+        "Original part from B05 / cache B09"
+      ]
+    },
+    {
+      "id": "B22",
+      "title": "Reach the lock service terrace",
+      "source_title": "Reach the lock service terrace",
+      "site": "Lock service platform",
+      "group": "relief",
+      "notes": [
+        "Three balanced services required"
+      ]
+    },
+    {
+      "id": "B23",
+      "title": "Commission the cargo lock & barge",
+      "source_title": "Commission the final cargo lock and barge",
+      "site": "Relief berth",
+      "group": "relief",
+      "notes": [
+        "Fit drive; open berth; test loaded craft"
+      ]
+    },
+    {
+      "id": "B24",
+      "title": "Deliver the relief shipment",
+      "source_title": "Deliver the relief shipment",
+      "site": "Refuge receiving dock",
+      "group": "relief",
+      "notes": [
+        "Original load at commissioned refuge"
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "Fabricate the pressure manifold",
+      "source_title": "Fabricate the pressure manifold",
+      "site": null,
+      "group": "manifold",
+      "notes": [
+        "Tooling + all 3 balanced services"
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "Transport & install the manifold",
+      "source_title": "Transport and install the original manifold",
+      "site": null,
+      "group": "manifold",
+      "notes": [
+        "280 kg original load to engine bus"
+      ]
+    },
+    {
+      "id": "R07",
+      "title": "Sustain engine shutdown",
+      "source_title": "Sustain engine shutdown",
+      "site": null,
+      "group": "finish",
+      "notes": [
+        "5 s / synchronization, grounding or capacitors"
+      ]
+    },
+    {
+      "id": "R08",
+      "title": "Commission stable refuge power",
+      "source_title": "Commission stable refuge power",
+      "site": null,
+      "group": "finish",
+      "notes": [
+        "All 3 services live + relief + manifold",
+        "Engine stopped + local switch armed / 30 s"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B01",
+      "target": "B02",
+      "kind": "route",
+      "meaning": "Begin cargo practice"
+    },
+    {
+      "source": "B02",
+      "target": "B03",
+      "kind": "route",
+      "meaning": "Apply the cargo construction procedure"
+    },
+    {
+      "source": "B01",
+      "target": "B04",
+      "kind": "route",
+      "meaning": "Begin ascent practice"
+    },
+    {
+      "source": "B04",
+      "target": "B05",
+      "kind": "route",
+      "meaning": "Apply ascent at the depot"
+    },
+    {
+      "source": "B01",
+      "target": "B06",
+      "kind": "route",
+      "meaning": "Begin reversal practice"
+    },
+    {
+      "source": "B06",
+      "target": "B07",
+      "kind": "route",
+      "meaning": "Apply motion reversal"
+    },
+    {
+      "source": "B07",
+      "target": "B08",
+      "kind": "flow",
+      "meaning": "Survey pack enables archive survey"
+    },
+    {
+      "source": "B05",
+      "target": "B09",
+      "kind": "flow",
+      "meaning": "Service kit provides both reserve items"
+    },
+    {
+      "source": "B05",
+      "target": "R01",
+      "kind": "route",
+      "meaning": "Tooling is at the upper expedition depot"
+    },
+    {
+      "source": "B09",
+      "target": "B12",
+      "kind": "route",
+      "meaning": "Retrieve the cached lamp kit; caching itself is optional"
+    },
+    {
+      "source": "B09",
+      "target": "B21",
+      "kind": "route",
+      "meaning": "Retrieve the cached drive coupling; caching itself is optional"
+    },
+    {
+      "source": "B12",
+      "target": "B13",
+      "kind": "flow",
+      "meaning": "Released original power module"
+    },
+    {
+      "source": "B13",
+      "target": "B14",
+      "kind": "route",
+      "meaning": "Reach the gallery after the cargo crossing"
+    },
+    {
+      "source": "B13",
+      "target": "B15",
+      "kind": "flow",
+      "meaning": "Deliver the original module to cooling works"
+    },
+    {
+      "source": "B14",
+      "target": "B15",
+      "kind": "flow",
+      "meaning": "Gallery opens the installation shutter"
+    },
+    {
+      "source": "B15",
+      "target": "R02",
+      "kind": "flow",
+      "meaning": "Installed intact cooling equipment plus correct dials"
+    },
+    {
+      "source": "B10",
+      "target": "B16",
+      "kind": "flow",
+      "meaning": "Released original anchor coupling"
+    },
+    {
+      "source": "B16",
+      "target": "B17",
+      "kind": "flow",
+      "meaning": "Delivered coupling can be installed"
+    },
+    {
+      "source": "B17",
+      "target": "R03",
+      "kind": "flow",
+      "meaning": "Installed intact anchor equipment plus correct dials"
+    },
+    {
+      "source": "B11",
+      "target": "B18",
+      "kind": "flow",
+      "meaning": "Charged cell powers shuttle equipment"
+    },
+    {
+      "source": "B18",
+      "target": "B19",
+      "kind": "flow",
+      "meaning": "Original spindle for monitoring installation"
+    },
+    {
+      "source": "B19",
+      "target": "R04",
+      "kind": "flow",
+      "meaning": "Installed monitoring equipment plus correct dials"
+    },
+    {
+      "source": "B15",
+      "target": "B20",
+      "kind": "flow",
+      "meaning": "All three equipment outputs trigger bridge closure"
+    },
+    {
+      "source": "B17",
+      "target": "B20",
+      "kind": "flow",
+      "meaning": "All three equipment outputs trigger bridge closure"
+    },
+    {
+      "source": "B19",
+      "target": "B20",
+      "kind": "flow",
+      "meaning": "All three equipment outputs trigger bridge closure"
+    },
+    {
+      "source": "B20",
+      "target": "B22",
+      "kind": "route",
+      "meaning": "Discover the replacement approach"
+    },
+    {
+      "source": "B21",
+      "target": "B23",
+      "kind": "flow",
+      "meaning": "Installed original drive coupling enables the cargo lock"
+    },
+    {
+      "source": "B22",
+      "target": "B23",
+      "kind": "route",
+      "meaning": "Platform provides access; alternatives are permitted"
+    },
+    {
+      "source": "B23",
+      "target": "B24",
+      "kind": "route",
+      "meaning": "Reference barge delivery; alternative physical routes are permitted"
+    },
+    {
+      "source": "R01",
+      "target": "R05",
+      "kind": "flow",
+      "meaning": "Bring original tooling to the workbench; it is consumed"
+    },
+    {
+      "source": "R02",
+      "target": "R05",
+      "kind": "flow",
+      "meaning": "Cooling must currently be balanced"
+    },
+    {
+      "source": "R03",
+      "target": "R05",
+      "kind": "flow",
+      "meaning": "Anchors must currently be balanced"
+    },
+    {
+      "source": "R04",
+      "target": "R05",
+      "kind": "flow",
+      "meaning": "Monitoring must currently be balanced"
+    },
+    {
+      "source": "R05",
+      "target": "R06",
+      "kind": "flow",
+      "meaning": "Fabricated original manifold becomes physical cargo"
+    },
+    {
+      "source": "R06",
+      "target": "R08",
+      "kind": "flow",
+      "meaning": "Intact original manifold currently installed at engine bus"
+    },
+    {
+      "source": "R07",
+      "target": "R08",
+      "kind": "flow",
+      "meaning": "Sustained engine shutdown"
+    },
+    {
+      "source": "B24",
+      "target": "R08",
+      "kind": "flow",
+      "meaning": "Original intact relief load currently at commissioned refuge"
+    }
+  ],
+  "validation": {
+    "source_ids_match": true,
+    "unique_nodes": 32,
+    "rendered_nodes": 32,
+    "edges": 37,
+    "acyclic": true
+  }
+}

@@ -196,13 +196,13 @@ def frame_plan(rows,stride,fps):
 
 
 class Overlay:
-    def __init__(self,task,manifest,render_stride,fps,*,renderer="cycles",blender=None,samples=48,threads=8):
-        self.task,self.manifest=task,manifest
+    def __init__(self,task,manifest,render_stride,fps,*,renderer="cycles",blender=None,samples=48,threads=8,view="presentation"):
+        self.task,self.manifest,self.view=task,manifest,view
         self.speed=.2*render_stride*fps
         self.fonts={n:load_font(n) for n in (14,16,18,20,23,28)}
         self.bold={n:load_font(n,True) for n in (16,18,20,23,28)}
         self.renderer=PresentationRenderer(backend=renderer,width=864,height=486,
-                                          blender=blender,samples=samples,threads=threads)
+                                          blender=blender,samples=samples,threads=threads,view=view)
 
     def close(self):
         self.renderer.close()
@@ -221,13 +221,16 @@ class Overlay:
         title=f"{row['milestone']}  {row['title']}"
         draw.text((26,17),title,font=self.bold[28],fill=(243,243,232))
         label="Blender Cycles" if self.renderer.backend=="cycles" else "CPU diagnostic render"
+        if self.view=="first_person":
+            label+="  |  First-person view (character's eyes)"
         draw.text((27,55),f"TASK {self.task.upper()}  |  Verified reference course  |  Oracle controller  |  {label}",font=self.fonts[16],fill=(174,206,202))
         rgb=self.renderer.render(env)
         image.paste(Image.fromarray(rgb),(24,94))
         # World-anchored annotations explain the actual mechanism state to viewers.
         op=env.course.op
         if op:
-            view=math3d.look_at(env.cam.eye,env.cam.pivot)
+            from owb.render.scene_export import teyvat_camera
+            view=math3d.look_at(*teyvat_camera(env,self.view))
             projection=math3d.perspective(env.cfg.camera.fov_y,env.cfg.render.aspect,.08,900)
             for eid in op.entities:
                 entity=env.world.get(eid)
@@ -405,7 +408,7 @@ def verify_recording(directory):
         env.close()
 
 
-def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",blender=None,samples=48,threads=8,max_frames=None):
+def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",blender=None,samples=48,threads=8,max_frames=None,view="presentation"):
     """Replay an interval, resuming only frames matching its source/state contract."""
     from PIL import Image
     manifest=json.loads((directory/"reference-manifest.json").read_text())
@@ -417,7 +420,7 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
     folder=cache/f"{directory.name}-{first:02d}-{last:02d}"
     folder.mkdir(parents=True,exist_ok=True)
     env=ReferenceTaskEnv(task,seed,render_enabled=False)
-    overlay=Overlay(task,manifest,stride,fps,renderer=renderer,blender=blender,samples=samples,threads=threads)
+    overlay=Overlay(task,manifest,stride,fps,renderer=renderer,blender=blender,samples=samples,threads=threads,view=view)
     entries=[]
     previous=None
     plan=frame_plan(rows,stride,fps)
@@ -571,6 +574,8 @@ def main():
     parser.add_argument("--fps",type=int,default=10)
     parser.add_argument("--max-steps",type=int,default=9000)
     parser.add_argument("--max-render-frames",type=int,help="Save this many new frames per chunk invocation, then resume with the same command")
+    parser.add_argument("--view",choices=("presentation","first_person"),default="presentation",
+                        help="presentation: the policy's orbit camera; first_person: the character's eyes (--render-chunk only)")
     add_render_arguments(parser)
     args=parser.parse_args()
     if min(args.render_stride,args.fps,args.max_steps,args.samples,args.threads)<=0:
@@ -582,7 +587,7 @@ def main():
         if not args.milestones:
             parser.error("--render-chunk requires --milestones FIRST LAST")
         render_chunk(args.render_chunk,args.cache,*args.milestones,args.render_stride,args.fps,
-                     max_frames=args.max_render_frames,**rendering)
+                     max_frames=args.max_render_frames,view=args.view,**rendering)
         return
     if args.assemble:
         assemble_chunks(args.assemble,args.cache,renderer=args.renderer)

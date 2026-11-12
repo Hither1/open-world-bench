@@ -29,6 +29,11 @@ def register_envs() -> None:
     """Register the gymnasium ids: OpenWorldBench/Genshin-v0 and -Small-v0."""
     from gymnasium.envs.registration import register, registry
 
+    for task in ("summit", "cleansing", "desert"):
+        campaign_id = f"OpenWorldBench/Teyvat-{task.title()}-v1"
+        if campaign_id not in registry:
+            register(id=campaign_id, entry_point="open_world_bench.campaign_env:TeyvatCampaignEnv",
+                     kwargs={"task": task}, max_episode_steps=None)
     if "OpenWorldBench/Genshin-v0" in registry:
         return
     register(id="OpenWorldBench/Genshin-v0", entry_point="open_world_bench.env:OpenWorldEnv",

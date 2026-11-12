@@ -30,7 +30,7 @@ def request():
 
 def completed(*, model="claude-opus-5-5", tool="StructuredOutput", error=None):
     action = dict(move=[0.5, 0], look=[0, 0], buttons=[], command="none", swap=0,
-                  slot=0, ingredients=[0] * 5, part=0, build_move=[0] * 3, memory="Starting area.")
+                  slot=0, ingredients=[0] * 5, part=0, build_move=[0] * 3, click=[], memory="Starting area.")
     events = [dict(type="system", subtype="init", tools=["StructuredOutput"], model=model),
               dict(type="assistant", message=dict(model=model, content=[dict(type="tool_use", name=tool)])),
               dict(type="result", subtype="success", is_error=bool(error), result=error or "",

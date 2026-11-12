@@ -128,6 +128,10 @@ class SoftRenderer(Renderer):
         sand_w = (mth.smoothstep(4.2, 0.6, y) * np.clip(1.0 - slope / np.radians(34.0), 0.0, 1.0))[:, None]
         albedo = albedo * (1.0 - sand_w) + BIOME_ALBEDO[BEACH][None, :] * sand_w
 
+        if getattr(getattr(world, "campaign", None), "task", None) == "desert":
+            albedo = np.broadcast_to((.66, .49, .29), albedo.shape).copy()
+            albedo = albedo * (1-rock_w) + np.array((.49,.36,.24))*rock_w
+
         # Gentle macro variation only -- enough to break up flat fields.
         var = nz.fbm(x / 34.0, z / 34.0, world.cfg.seed + 601, octaves=3)
         albedo = albedo * (1.0 + 0.11 * var)[:, None]
@@ -323,6 +327,8 @@ class SoftRenderer(Renderer):
             from .architecture import add_architecture
             add_architecture(batch, world.architecture, eye, s.prop_draw_distance)
         if s.draw_entities:
+            from .campaign_assets import add_campaign_seals
+            add_campaign_seals(batch, world)
             from ..world import ENTITY_NAMES
             from ..elements import Element, ELEMENT_COLORS
             for n, e in enumerate(world.entities.values()):

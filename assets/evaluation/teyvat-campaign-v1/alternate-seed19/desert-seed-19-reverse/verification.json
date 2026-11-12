@@ -1,0 +1,11 @@
+{
+  "verified": true,
+  "success": true,
+  "checked_actions": 1633,
+  "checked_positions": true,
+  "checked_events": true,
+  "checked_state_digests": true,
+  "geometry_digest": "60340f33a3124ee69a2d3d7ddb235e2e53a0f2a447fd408182ce89935745571e",
+  "actions_sha256": "f94d58b62fbebb4496a661743fa8abd4d919fe9fa526295ae7dcb47834821090",
+  "scope": "Feasibility and deterministic replay; not evidence of learned planning or memory"
+}

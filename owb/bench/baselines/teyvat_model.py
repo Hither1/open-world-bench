@@ -25,7 +25,10 @@ about 2m proximity; elemental puzzle skills about 2.6m. Attack uses facing.
 Hold jump while falling to glide; hold it while swimming to dive. Release jump
 before starting another jump. swap=0 keeps character; 1=Kestrel/ember (6s skill
 cooldown), 2=Maren/tide (8s), 3=Wren/gale (9s). Wren's skill launches you upward.
-Swaps stay at the same location. Party vector has four padded slots of seven:
+Swaps stay at the same location. The instruction names the milestone and its
+current step (no location). interaction_hint=1 only when interact would act on
+the current step; objects of other steps answer "no response" in local text.
+Party vector has four padded slots of seven:
 active,hp_fraction,energy_fraction,skill_readiness,burst_cooldown_readiness,
 element_div6,alive; then shield_div100,swap_ready. Readiness=1 means ready;
 bursts also need full energy. Task vector is camera direction(3),log1p(distance)/7,
@@ -34,6 +37,9 @@ Proprio has: camera-side/vertical/camera-z velocity divided by10, speed/10,
 stamina_fraction,hp_fraction,grounded,airborne,gliding,climbing,swimming,
 height_above_ground/20,altitude/100,sin/cos(heading-camera_yaw),sin/cos(time_of_day),
 daylight,slope/(pi/2),water_depth/10,sin/cos(heading),interaction_hint,step_fraction.
+click=[u,v] (u right, v down, in [0,1] of the image) clicks there, else click=[]. The map logo
+in the image's top-right corner opens a map of the whole island (unexplored regions shadowed,
+arrow = you, +x right, +z down); the world pauses until you click the logo again.
 repeat=1..30 applies the same action without observing. Interact,skill,burst,
 and nonzero swap require repeat=1. Repetition stops on changed local text,
 milestone completion or episode end. Time pauses during inference. Old images
@@ -54,6 +60,8 @@ def schema(memory_chars=6000):
     props=dict(move=vec,look=vec,
         buttons=dict(type='array',maxItems=7,items=dict(type='string',enum=list(PARTY_BUTTONS))),
         swap=dict(type='integer',minimum=0,maximum=3),repeat=dict(type='integer',minimum=1,maximum=30),
+        # [] for no click, or [u, v]: a normalised image point (u right, v down).
+        click=dict(type='array',maxItems=2,items=dict(type='number',minimum=0,maximum=1)),
         memory=dict(type='string',maxLength=memory_chars))
     return dict(type='object',properties=props,required=list(props),additionalProperties=False)
 
@@ -73,7 +81,12 @@ def decode(payload,memory_chars=6000):
     if not isinstance(b,list) or len(b)>7 or any(x not in PARTY_BUTTONS for x in b): raise ValueError('Invalid buttons')
     if payload['repeat']>1 and (payload['swap'] or set(b)&{'interact','skill','burst'}): raise ValueError('Discrete actions cannot repeat')
     if not isinstance(payload['memory'],str) or len(payload['memory'])>memory_chars: raise ValueError('Invalid memory')
-    action.update(buttons=np.array([int(x in b) for x in PARTY_BUTTONS],np.int8),swap=payload['swap'])
+    c=payload['click']
+    if not isinstance(c,list) or len(c) not in (0,2) or any(type(x) not in (int,float) or not math.isfinite(x) or not 0<=x<=1 for x in c):
+        raise ValueError('Invalid click')
+    if c and payload['repeat']>1: raise ValueError('Clicks cannot repeat')
+    action.update(buttons=np.array([int(x in b) for x in PARTY_BUTTONS],np.int8),swap=payload['swap'],
+                  pointer=np.asarray(c or (0,0),np.float32),click=int(bool(c)))
     return action,payload['repeat']
 
 

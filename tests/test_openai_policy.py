@@ -19,7 +19,7 @@ from PIL import Image
 
 def payload(**overrides):
     return dict(move=[0.5, 0], look=[0, 0], buttons=[], command="none", swap=0,
-                slot=0, ingredients=[0] * 5, part=0, build_move=[0] * 3,
+                slot=0, ingredients=[0] * 5, part=0, build_move=[0] * 3, click=[],
                 memory="Remember the starting area.", **overrides)
 
 

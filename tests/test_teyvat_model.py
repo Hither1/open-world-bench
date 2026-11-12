@@ -11,7 +11,7 @@ from owb.scripts.teyvat_model import run, verify_run
 
 
 def payload(**changes):
-    out=dict(move=[0,0],look=[0,0],buttons=[],swap=0,repeat=1,memory='My observed note.')
+    out=dict(move=[0,0],look=[0,0],buttons=[],swap=0,repeat=1,click=[],memory='My observed note.')
     out.update(changes)
     return out
 
@@ -97,4 +97,8 @@ def test_policy_image_refreshes_headless_cache():
     with ReferenceTaskEnv('a',render_enabled=False) as env:
         env._last_frame=np.full((216,384,3),255,np.uint8)
         env._renderer.render=lambda *args,**kwargs: np.zeros((216,384,3),np.uint8)
-        assert not policy_image(env).any()
+        from owb.sim.world_map import logo_box
+        image=policy_image(env); c0,r0,c1,r1=logo_box(384,216)
+        assert image[r0:r1,c0:c1].any()  # the clickable map logo
+        image[r0:r1,c0:c1]=0
+        assert not image.any()

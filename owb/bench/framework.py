@@ -18,7 +18,7 @@ import numpy as np
 from ..env import INVENTORY_COLUMNS, SURVIVAL_NAMES
 from ..sim.construction import MAX_PARTS, PART_COLUMNS, BUILD_STATE_NAMES, BUILD_COMMANDS
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3  # 3: pointer/click controls for the on-screen world map
 BUTTONS = ("jump", "sprint", "climb", "glide", "dive", "crouch")
 COMMANDS = ("none", "interact", "attack", "skill", "burst", "eat", "cook", "equip", "stow") + BUILD_COMMANDS
 MODALITIES = ("party", "inventory", "survival", "minimap", "goal", "construction", "build_state")
@@ -37,8 +37,11 @@ class BenchmarkConfig:
     decision_seconds: float = 0.2
     include_goal_hint: bool = False
     render_quality: str = "fast"
+    task: str | None = None  # Teyvat campaign: summit, cleansing, or desert.
 
     def __post_init__(self):
+        if self.task not in (None, "summit", "cleansing", "desert"):
+            raise ValueError("task must be summit, cleansing, desert, or None")
         if self.variant not in ("small", "full"):
             raise ValueError("variant must be 'small' or 'full'")
         if self.render_quality not in ("fast", "presentation"):
@@ -66,7 +69,16 @@ def neutral_action() -> dict:
     """A new, valid no-op action in the common schema."""
     return dict(move=np.zeros(2, np.float32), look=np.zeros(2, np.float32),
                 buttons=np.zeros(len(BUTTONS), np.int8), command=0, swap=0, slot=0,
-                ingredients=np.zeros(5, np.int64), part=0, build_move=np.zeros(3, np.float32))
+                ingredients=np.zeros(5, np.int64), part=0, build_move=np.zeros(3, np.float32),
+                pointer=np.zeros(2, np.float32), click=0)
+
+
+def _map_controls(native, action):
+    """Pointer and click for the native map logo, when that env has one."""
+    cfg = getattr(native, "cfg", None)
+    if not getattr(cfg, "world_map", False):
+        return {}
+    return dict(pointer=np.asarray(action["pointer"], np.float32).copy(), click=int(action["click"]))
 
 
 def _repeat(seconds, dt):
@@ -137,6 +149,7 @@ class TeyvatAdapter(NativeAdapter):
                    buttons=np.asarray(buttons, np.int8))
         if self.native.party:
             out["swap"] = int(action["swap"])
+        out.update(_map_controls(self.native, action))
         return out
 
     def state(self):
@@ -154,6 +167,8 @@ class TeyvatAdapter(NativeAdapter):
 
     def project(self, observation):
         out = dict(instruction=self.native.instruction)
+        if hasattr(self.native, "campaign"):
+            out["instruction"] += "\n" + observation["local_text"]
         if self.native.party:
             out["party"] = observation["party"]
         if self.config.include_goal_hint:
@@ -188,7 +203,8 @@ class WildlandsAdapter(NativeAdapter):
         return dict(move=np.asarray(action["move"]).copy(), look=np.asarray(action["look"]).copy(),
                     buttons=np.array([jump, sprint, climb, glide, bool(dive or crouch)], np.int8),
                     command=NATIVE_COMMANDS.index(COMMANDS[int(action["command"])]),
-                    slot=int(action["slot"]), ingredients=np.asarray(action["ingredients"]).copy())
+                    slot=int(action["slot"]), ingredients=np.asarray(action["ingredients"]).copy(),
+                    **_map_controls(self.native, action))
 
     def state(self):
         a = self.native.agent
@@ -237,6 +253,16 @@ class SkylandsAdapter(WildlandsAdapter):
 
 def _teyvat(config, native_config):
     from open_world_bench import EnvConfig, OpenWorldEnv, TerrainConfig, WorldConfig, RenderSettings
+
+    if config.task is not None:
+        from open_world_bench.campaign_env import TeyvatCampaignEnv
+        if native_config is not None:
+            raise ValueError("campaign task selection cannot be combined with a legacy native_config")
+        env = TeyvatCampaignEnv(config.task, config.seed, width=config.image_size[0], height=config.image_size[1],
+                               geography_scale=.5 if config.variant == "small" else 2.0,
+                               max_steps=config.max_steps)
+        env.cfg.action_repeat = _repeat(config.decision_seconds, env.cfg.dt)
+        return env
 
     if native_config is not None and not isinstance(native_config, EnvConfig):
         raise TypeError("teyvat native_config must be open_world_bench.EnvConfig")
@@ -341,6 +367,8 @@ def make_env(environment: str, *, config: BenchmarkConfig | None = None,
     if not spec.implemented:
         raise NotImplementedError(f"{environment} is planned but has no runnable backend yet")
     cfg = replace(config or BenchmarkConfig(), **overrides)
+    if cfg.task is not None and environment != "teyvat":
+        raise ValueError("campaign task selection currently applies only to teyvat")
     native = spec.factory(cfg, native_config)
     try:
         return BenchmarkEnv(spec.name, native, spec.adapter(native, cfg), cfg)
@@ -367,6 +395,10 @@ class BenchmarkEnv(gym.Env):
             "ingredients": spaces.MultiDiscrete([33] * 5),
             "part": spaces.Discrete(MAX_PARTS + 1),
             "build_move": spaces.Box(-1, 1, (3,), np.float32),
+            # Click at a normalised screen point (u right, v down). Clicking the
+            # map logo in the top-right corner of `rgb` opens or closes the map.
+            "pointer": spaces.Box(0, 1, (2,), np.float32),
+            "click": spaces.Discrete(2),
         })
         width, height = config.image_size
         self.observation_space = spaces.Dict({
@@ -404,6 +436,11 @@ class BenchmarkEnv(gym.Env):
     def step(self, action):
         if self._needs_reset:
             raise gym.error.ResetNeeded("call reset() before starting or after an episode ends")
+        if isinstance(action, dict) and not {"pointer", "click"} <= action.keys():
+            # Schema-2 actions predate the map controls.
+            action = dict(action)
+            action.setdefault("pointer", np.zeros(2, np.float32))
+            action.setdefault("click", 0)
         if not self.action_space.contains(action):
             raise ValueError("action is outside the common action_space")
         action = deepcopy(action)
@@ -461,6 +498,8 @@ class BenchmarkEnv(gym.Env):
                     health=float(hp), stamina=float(stamina), success=success, task_progress=progress,
                     success_defined=success is not None, task_progress_defined=progress is not None,
                     terminated=terminated, truncated=truncated, termination_reason=reason,
+                    map_open=bool(native_info.get("map_open", False)),
+                    explored_fraction=native_info.get("explored_fraction"),
                     events=jsonable(events), metrics=jsonable(metrics), native=jsonable(native_info))
         if terminated or truncated:
             info["episode"] = {key: info[key] for key in (

@@ -1,355 +1,271 @@
-# Teyvat: long-horizon memory and reusable skills
-
-Status: the full task suite remains a design; [compact executable reference
-courses and demonstration videos](teyvat-reference-demos.md) are now available.
-The two tasks
-retain exactly **12** and **24** milestones in the Genshin-inspired environment.
-A milestone is a verifiable accomplishment requiring many actions, not a button
-press or a claim that the agent has learned something.
-
-The central question is: **Can an agent turn experience into a useful procedure,
-retain it through intervening work, and retrieve and adapt it in a new setting?**
-Remembering a location remains a secondary measure. The main tests require
-conditional action selection, binding procedures to new objects, recognizing
-when a procedure applies, and recovering from interruptions. Learning here means
-adaptation through agent-owned memory with model weights held fixed.
-
-| Task | Milestones | Hypothesis to test |
-| --- | --- | --- |
-| A: The Relay Keeper's Apprenticeship | 12 | One procedure can be retained and applied to new layouts, initial states, and interruptions after a long delay. |
-| B: The Expedition of Three Arts | 24 | Several procedures can be retained, selected, composed, and revised while preserving older knowledge that remains valid. |
-
-## Milestone graphics
-
-Each illustrated card shows the action, completion condition, and memory role.
-Colors label learning, intervening work, transfer, composition, and adaptation;
-fresh-context checkpoints are explicitly marked. These are designer-facing
-diagrams, not observations or solution hints supplied to the agent.
-
-| Sheet | Coverage | Exports |
-| --- | --- | --- |
-| Relay Keeper's Apprenticeship | A01–A12 | [PNG](../assets/design/teyvat-milestones/task-a-01-12.png) · [SVG](../assets/design/teyvat-milestones/task-a-01-12.svg) |
-| Expedition of Three Arts, first half | B01–B12 | [PNG](../assets/design/teyvat-milestones/task-b-01-12.png) · [SVG](../assets/design/teyvat-milestones/task-b-01-12.svg) |
-| Expedition of Three Arts, second half | B13–B24 | [PNG](../assets/design/teyvat-milestones/task-b-13-24.png) · [SVG](../assets/design/teyvat-milestones/task-b-13-24.svg) |
-
-[Printable three-page PDF](../assets/design/teyvat-milestones/teyvat-milestone-storyboards.pdf)
-· [Full graphics bundle, including 36 individual cards](../assets/design/teyvat-milestones/teyvat-milestone-graphics.zip).
-The bundle also includes editable SVGs, the caption manifest, and the renderer.
-Regenerate from the repository root with
-`python -B assets/design/teyvat-milestones/render.py` (Matplotlib and Pillow).
-
-## What counts as a reusable skill
-
-Structure the tasks around **experience -> abstraction -> delay -> retrieval ->
-transfer -> revision**. Memory writing is permitted throughout; it is neither a
-rewarded milestone nor proof of learning. Infer competence from behavior on
-previously unseen encounters.
-
-A useful stored procedure could include applicability, visible preconditions,
-object roles, conditional actions, a success signal, recovery, and supporting
-experiences. For example:
-
-> On a single-ring relay, inspect charge and progress. If overloaded, discharge
-> the drain. Prime the source and route the vane with the family's learned
-> elements, skipping stages already complete. Confirm at the core. If
-> interrupted, inspect again and resume from the surviving state.
-
-This is an illustrative description, not a supplied agent skill. The agent must
-derive its own memory from observation. Fixed coordinates and button sequences
-will not solve every instance. No scripted macro action is granted after
-training: the agent continues using movement, interaction, party swaps, and
-elemental controls.
-
-## Procedures to acquire
-
-Start with Kestrel, Maren, and Wren: ember, tide, and gale are all available.
-The receivers, guardian phases, and vent trials below are new authored mechanics;
-existing combat and traversal provide foundations, not complete implementations.
-
-### R: Diagnose and commission an elemental relay
-
-Each relay has a source, vane, drain, and core with consistent visible role
-markings. Their positions, identities, orientation, and appearance vary across
-sites. Indicators expose unprimed, primed, routed, or active progress, plus an
-independent overload flag.
-
-For a **single-ring** relay:
-
-1. Inspect progress and overload.
-2. If overloaded, apply the discharge element to the drain.
-3. If unprimed, apply the priming element to the source.
-4. If primed but not routed, apply the driving element to the vane.
-5. Once routed and not overloaded, interact with the core and verify activation.
-
-Sample the element-role assignments as a permutation of ember, tide, and gale.
-They remain stable within a task's family and are taught through demonstrations
-and practice. Different task instances can have different assignments; ordinary
-combat and movement physics remain consistent.
-
-Wrong applications produce categorical feedback and a reversible fault.
-Draining clears overload without erasing completed stages. A scripted
-interruption can introduce overload after priming; recovery requires inspecting
-retained state. Teach this case before testing it. Do not reward partial action
-prefixes during transfer.
-
-Task B introduces visibly **double-ring** relays, which additionally require
-initial drainage even when not overloaded. At the adaptation encounter, an
-inspectable service indicator explains that the inlet retains residual charge.
-Trying to prime first produces that diagnostic. The correction can be inferred
-without forcing an error. Single-ring rules remain unchanged; unnecessary
-drainage is safe but costs actions. This tests whether an update is stored with
-the right scope.
-
-### G: Expose and interrupt a sentinel
-
-Learn to inspect a shield emblem, apply its learned shield-breaking element,
-wait for the visible exposed phase, interrupt its wind-up with the learned
-second element, and finish with ordinary attacks. If its shield reforms, return
-to diagnosis. If already exposed, skip shield breaking.
-
-Sample valid emblem/element assignments within an authored sentinel family and
-demonstrate every required cue/action relation. Later sentinels change arena,
-appearance, health, orientation, and starting phase while retaining those rules.
-The procedure exposes a damageable core, preventing brute force against the
-shield from bypassing the trial. Ordinary enemies retain normal combat.
-
-Phase windows must tolerate the declared decision interval. Record shield
-cycles, unnecessary casts, and correct interrupts separately from eventual
-defeat, so control difficulty does not masquerade as forgetting.
-
-### T: Plan and execute a vent-assisted crossing
-
-Learn to inspect a vent's family mark and pulse, charge it with the learned
-element, launch during the safe pulse, land on a resting shelf, and recover
-enough visible stamina for the next leg. Sample charge-element and safe-pulse
-cue assignments per family; demonstrate them in a safe training route.
-
-Transfer sites rearrange vents, shelves, orientations, and distances. The agent
-must choose reachable landings and sufficient stamina from current observations,
-rather than replay movement vectors. All falls have reachable recovery terrain;
-controls and cues are visible before committing.
-
-Accept any valid traversal. Validate that a scored skill probe actually requires
-the taught interaction; if a legal shortcut bypasses it, count task success
-without claiming evidence of skill reuse. Vent forces and pulse behavior are
-bounded new mechanics, not assumed current simulator capabilities.
-
-## Task A: The Relay Keeper's Apprenticeship — 12 milestones
-
-**Player-facing goal:** "Restore Windrest's signal route and bring the summit
-beacon online. The relay keeper can show you how the old machinery works."
-
-One procedure is acquired early, followed by useful work that does not rehearse
-it, then transfer tests with changed objects and initial states.
-
-| ID | Milestone | Completion predicate and memory role |
-| --- | --- | --- |
-| A01 | Complete the keeper's guided relay repair. | Activate a single-ring relay with stepwise instruction. Record observed cues, actions, and state transitions: supported acquisition of R. |
-| A02 | Repair a second training relay independently. | Activate a normal relay with rearranged role positions and no stepwise hints. Establish immediate transfer; record any return for help. |
-| A03 | Recover an overloaded training relay. | Activate an initially overloaded relay that also receives one signaled interruption after priming. Diagnostic feedback teaches conditional recovery and preserved progress. |
-| A04 | Survey the marsh supply route. | Visit and register marked route junctions for the quartermaster; learn a distinct cache landmark. No relay practice occurs here. |
-| A05 | Recover the ferry-lift casing. | Retrieve the unique casing from an ordinary raider camp by combat or another legal approach. |
-| A06 | Deliver the casing to the mechanic. | Exchange the casing for repair of the ferry lift and verify it operational. This is an NPC exchange, not an R puzzle. |
-| A07 | Supply the highland outpost. | Retrieve supplies from A04's cache, cross the repaired lift route, and deliver them. This ends the interference interval and opens the signal corridor. |
-| A08 | Restore the first field relay. | Activate an unseen single-ring relay with new IDs, orientation, and role positions, without a recipe or skill-selection hint. First delayed R transfer probe. |
-| A09 | Stabilize the second field relay. | Activate a new relay starting overloaded and partly primed. Apply R's condition checks and skip completed stages. |
-| A10 | Recover the summit service cap. | Retrieve the unique cap from a separate ruin through ordinary exploration and combat. No relay demonstration is repeated. |
-| A11 | Reopen the summit service platform. | Install the cap in a visibly matching mechanical-lift socket and reach the work platform. |
-| A12 | Commission the summit beacon. | Activate a differently shaped beacon bearing the same role markings, recovering from one state-preserving interruption. Verify both field relays and the summit beacon active. |
-
-**Dependencies:** A01 through A12 form the initial chain. Supply and physical
-access gates enforce major dependencies. Valid early actions remain credited
-through persistent world facts; progress counters do not manufacture items.
-
-**Memory schedule:** start fresh agent contexts before A08 and A12, retaining
-only memory permitted by the evaluation condition. These are not milestones and
-do not reset the world. A03 to A08 contains four intervening milestones without
-R practice. A09 rehearses part of R before A12, so report delay since that reuse
-as well as delay since acquisition.
-
-A08 measures near transfer, A09 conditional transfer, and A12 transfer across
-appearance with recovery. Report acquisition failures separately: an agent that
-never mastered A02/A03 has not necessarily forgotten a previously learned skill.
-
-## Task B: The Expedition of Three Arts — 24 milestones
-
-**Player-facing goal:** "Reopen the valley's expedition route, recover the
-beacon heart, and bring the distant outpost online. Train with the relay keeper,
-sentinel warden, and wind guide before setting out."
-
-Acquire a repertoire, retrieve from current cues, compose for unfamiliar goals,
-and update one mechanism version without overwriting another. This is independent
-of Task A: start with empty memory and independently sampled family assignments.
-
-| ID | Milestone | Completion predicate and memory role |
-| --- | --- | --- |
-| B01 | Complete the relay lesson. | Commission a single-ring relay with guidance; expose R's role/element relations and progress indicators. |
-| B02 | Repair the workshop's faulty relay. | Activate a rearranged unit with overload and a signaled interruption. Record independent performance and assistance: R's acquisition baseline. |
-| B03 | Complete the sentinel lesson. | Defeat a demonstration sentinel with coaching; expose G's shield and interrupt rules. |
-| B04 | Clear the second training arena. | Defeat a sentinel independently through one authored shield reformation. Establish G's acquisition and recovery baseline. |
-| B05 | Complete the wind guide's crossing. | Traverse a coached vent route; expose T's charging, pulse, landing, and stamina conditions. |
-| B06 | Reach the second training overlook. | Complete an uncoached crossing with rearranged shelves and different leg length. Establish T's acquisition baseline. |
-| B07 | Survey the expedition cache. | Visit and register a depot landmark. Its reserve compartment remains visibly locked pending field-relay restoration. |
-| B08 | Recover the causeway repair kit. | Retrieve a kit from an ordinary raider camp, providing interference without R, G, or T practice. |
-| B09 | Retrieve the submerged ferry coupling. | Dive for a separate marked chest and recover its coupling. |
-| B10 | Reopen the expedition causeway. | Deliver kit and coupling to the mechanic and cross the repaired causeway. End the shared interference interval. |
-| B11 | Restore the valley signal station. | Apply R at a normal relay with rearranged roles: delayed retrieval of the earliest learned procedure. |
-| B12 | Reach the cliff observation post. | Apply T to an unfamiliar vent/shelf layout. Record actual vent use and any valid shortcut separately. |
-| B13 | Recover the warden's field seal. | Defeat a differently presented G-family sentinel starting in a seeded taught phase; skip shield breaking if already exposed. |
-| B14 | Stabilize the reserve-power relay. | Unlock its service panel with B13's field seal, then apply R to a partly primed, overloaded unit, powering B07's reserve compartment. |
-| B15 | Retrieve the expedition service tools. | Return to B07's depot without a new oracle marker and recover the tools. Standalone spatial-memory probe. |
-| B16 | Open the sky-lift route. | Use the tools to access its controls, commission its relay, and traverse the powered vent route. Requires R then T without a supplied decomposition. |
-| B17 | Restore the guarded causeway gate. | Defeat the sentinel holding the gate controls and commission the relay. Requires G then R, with new object bindings. |
-| B18 | Recover the high shrine's access seal. | Traverse a new high-platform approach and defeat its sentinel. Requires T then G. |
-| B19 | Commission a double-ring relay. | Beyond B18's seal gate, inspect its badge and residual-charge diagnostic, infer the initial-drain precondition, and activate it. Record adaptation; failure is not compulsory. |
-| B20 | Establish the remote landing route. | Complete an extended T crossing and activate its destination signal. Open the next district without rehearsing the relay update. |
-| B21 | Repair another double-ring relay. | Apply B19's update in a new layout without the service explanation repeated. Check initial drainage before priming on the first attempt. |
-| B22 | Restore an older single-ring station. | Repair an ordinary, uncharged unit after the update. Unnecessary drainage is safe but logged, testing preservation of the rule's scope. |
-| B23 | Recover the summit beacon heart. | B22's station restores access to a double-ring relay powering a vent approach to a guarded reliquary. Retrieve the heart using R, T, and G with no intermediate recipes or named skill suggestions. |
-| B24 | Commission a distant outpost from saved memory. | After a fresh agent context, defeat its sentinel, traverse its vent route, and commission its beacon with the heart. Use a held-out layout and visibly marked seeded relay version; verify all three outcomes. |
-
-**Dependencies:** B01 through B24 are ordered in this first version, making
-retention delays comparable. Local routes, retries, experiments, and revisits
-remain flexible. Branchable campaign order can be a later variant with measured
-rather than assumed delays. Each acquired mission item must be consumed or
-checked by a specified gate; optional loot cannot create fictitious dependencies.
-
-**Memory schedule:** fresh contexts before B11, B21, and B24 preserve only the
-allowed store. B24 requires G -> T -> R, unlike B23's R -> T -> G. The agent must
-plan from new constraints instead of replaying the previous mission's script.
-
-| Evidence acquired | Evaluation encounters | What must transfer |
-| --- | --- | --- |
-| B01–B02: R | B11, B14, B16–B17 | Role-based conditional procedure and recovery, not IDs or coordinates. |
-| B03–B04: G | B13, B17–B18 | Phase diagnosis, timing, and skipping unnecessary stages. |
-| B05–B06: T | B12, B16, B18, B20 | Local route planning, pulse recognition, and stamina checks. |
-| B07: depot landmark | B15 | Episodic/spatial recall, separate from procedural transfer. |
-| Individual skills and pairwise combinations | B23–B24 | Selection, ordering, and composition for a new goal. |
-| B19: double-ring exception | B21, B23, and applicable B24 variants | Retention of an updated, scoped rule. |
-| Original single-ring procedure | B22 and applicable B24 variants | Preservation of old valid knowledge and avoidance of unnecessary steps. |
-
-## Memory, observations, and fairness
-
-Give RGB, supported controls, current health/stamina, inventory, local state
-cues, newly encountered dialogue, and a concise goal. A transfer goal says
-"Restore the signal station," without a recipe or saved-skill selection hint.
-Visible role markings and family badges are legitimate observations: procedural
-memory must operate on observable current state.
-
-Do not supply an automatic skill summary, full journal, old-dialogue replay,
-milestone design table, future encounter list, hidden coordinates, or demonstration
-script. The agent writes and retrieves its own memory under declared budgets.
-Format is optional; structured procedure notes are an experimental condition,
-not an evaluator-written answer bank. All conditions get the same controls
-tutorial. World state, rule manifests, and evaluation logs are private.
-
-Training sources remain revisitable. Primary transfer scores evaluate the first
-attempt before new instructional help. A later solve following another lesson is
-assisted eventual success; record its travel and action cost. Local state and
-fault feedback remain available in every condition without printing a complete
-solution.
-
-A fresh context clears recent dialogue, actions, plans, and other transient
-agent state while preserving the world and permitted memory. This can run in
-one live simulator process. Cross-process resume additionally needs full state
-serialization. Independent task instances clear all memory; B24 deliberately
-retains it within the same learned-mechanics campaign.
-
-Seed layouts independently of rule assignments. Hold out transfer layouts and
-appearances from acquisition; hold out assignment/layout combinations across
-benchmark development and evaluation. Keep rules stable except for the signaled
-double-ring extension. Teach every branch required at a transfer probe, or mark
-its first encounter as adaptation. An untaught rule is not a forgetting test.
-
-## Horizon and evaluation
-
-Log both time since acquisition and time since the last relevant demonstration,
-assistance, or use: decisions, observed-context tokens, simulated time, intervening
-goals, and competing procedures. Reuse refreshes memory. Milestone numbering
-alone cannot establish a retention interval.
-
-For continuous-context variants, vary interference so supporting experience
-either remains inside or has left the fixed recent-context window. Scheduled
-fresh-context probes establish a stricter persistent-memory test. Log the actual
-context available at each probe. Delays should contain useful task work, not
-idle waiting. Calibrate budgets with legal reference rollouts; simulated time
-is distinct from model runtime and cost.
-
-### Comparison conditions
-
-Use the same model, control interface, decision interval, and transfer action
-budget. Match storage and retrieval budgets where possible and report exceptions.
-
-| Condition | Available past information | Purpose |
-| --- | --- | --- |
-| Recent context only | Fixed recent observation/action window; no persistent store. | Performance when old experience is unavailable. |
-| Agent-authored memory | Same recent window plus bounded notes derived from experience. | Practical benefit of persistent memory. |
-| Structured procedure memory | Same total budget with an optional procedure format/retrieval interface. | Test abstraction and retrieval design without supplying solutions. |
-| Retrieved experience records | Same budget retaining encounter excerpts. | Compare reuse of examples with explicit procedural summaries. |
-| Full-history reference | Past observations/actions within a reported larger budget. | Information-availability reference, not a compute-matched condition. |
-| Correct-procedure reference | Applicable abstract procedure, without hidden coordinates or action trajectory. | Estimate remaining perception, planning, and motor-control difficulty. |
-
-For selected probes, branch a matched checkpoint with actual memory retained,
-relevant learned-procedure records removed, or the older applicable version
-substituted after B19. Fix world state, recent context, instructions, and action
-budget. Remove duplicate answers from all permitted stores/context. If relevant
-content cannot be isolated in free-form notes, describe deletion as a general
-memory ablation rather than claiming procedure-specific causality.
-
-Use several seeds and repeated agent runs; report uncertainty and acquisition
-failures separately. Matched checkpoints avoid attributing different learning
-histories to memory. A convincing result needs improved behavior on unseen
-instances, not fluent explanations or a growing collection of notes.
-
-### Scores
-
-| Measure | Definition |
-| --- | --- |
-| Task success / progress | Final world predicate and all required milestones; separately report unique completions divided by 12 or 24. |
-| Acquisition | Independent success, attempts, help, and actions at A02–A03 and B02/B04/B06 before the delay. |
-| Delayed unassisted transfer | First-attempt success on unseen encounters before a repeated lesson or complete recipe hint; report eventual assisted success separately. |
-| Conditional correctness | Correct initial response to overload, retained progress, exposed shield, relay version, and current stamina. |
-| Reuse efficiency | Invalid applications, unnecessary casts, resets, and excess actions against a layout-specific successful reference. Do not compare raw training/test times across different difficulty. |
-| Composition | Success at B16–B18 and B23–B24 without a supplied skill order; identify component failures. |
-| Adaptation and preservation | Attempts at B19, first-use correctness at B21, and overgeneralization costs at B22. |
-| Memory contribution | Difference in transfer success/cost under matched interventions, with uncertainty across seeds/runs. |
-| Recovery and spatial recall | Source revisits, extra travel, and cache-location errors, separate from procedural competence. |
-
-Define attempt boundaries before evaluation: mechanism reset, combat-trial reset,
-traversal fall, or abandoning a probe for help. A scripted interruption is part
-of the trial, not automatic failure; appropriate recovery is the tested behavior.
-
-Sparse reward can remain one unit per milestone plus a completion bonus. Do not
-reward claimed memories, note length, skill labels, or correct action prefixes.
-Score transfer quality separately; disable target-distance shaping where a goal
-location is meant to be remembered. Eventual success alone does not demonstrate
-that memory improved reusable skill learning.
-
-## Implementation fit and order
-
-| Area | Existing foundation | Required addition |
-| --- | --- | --- |
-| Task graph | Quest, Stage, and prerequisites in open_world_bench/quests/schema.py. | Task selection, milestone IDs, compound state predicates, phase annotations, and acquisition/transfer metrics. |
-| Relays | Party swaps and elemental skills. | Targetable receivers, seeded role bindings, visible faults/progress, reusable interactions, and versioned rules. |
-| Sentinels | Enemies and elemental shields. | Core exposure, interruption, shield reformation, readable phases, and family-rule assignments. |
-| Traversal | Climbing, gliding, swimming, stamina, and terrain. | Vent forces, charge/pulse cues, safe shelves, recovery paths, and feasibility validation. |
-| Agent memory | Recent history and episode-local notes in the [embodied baseline](embodied-agent.md). | Fresh-context boundaries preserving permitted memory, selectable conditions, budgets, and access logs. Do not delete the tested store via a full policy reset. |
-| Observation contract | Native goal vectors and quest instructions; shared goal hints are off by default. | Local dialogue/demonstration delivery and mechanism cues; audit instructions, rewards, HUD, and evaluator fields for answer leakage. |
-| Recovery | Event-based quests and generic interactions. | Persistent facts, reusable mechanisms, durable quest items, explicit resets, and no duplicate rewards. |
-| Reproducibility | Seeded worlds and recorded events/actions. | Separate layout/rule/interruption seeds, exposure and memory-operation logs, and full snapshots for paired interventions and cross-process resume. |
-
-For each milestone record completion predicates, physical prerequisites,
-encounter family/version, acquired or needed procedure, visible cues, permitted
-assistance, perturbations, reset boundaries, and outputs. Distinguish
-demonstration, practice, fault feedback, source revisit, and successful reuse.
-Evaluator annotations must not populate agent memory or announce solutions.
-
-Implement R and Task A first. Validate a complete legal rollout, recovery
-branches, held-out role layouts, and fresh-context comparisons before adding
-G and T. Then build Task B's individual tests, compositions, and scoped update.
-Use a correct-procedure reference so unsolvable sites or inadequate controls
-are not counted as forgetting.
-
-The compact reference courses demonstrate the procedures and milestone outcomes.
-They do not yet implement the complete island-scale tasks or provide memory
-benchmark results; see the [reference-demo scope and verification](teyvat-reference-demos.md).
+# Teyvat: branching long-horizon campaigns
+
+Suite version: `teyvat-campaign-v1`.
+
+Three playable, original campaigns adapt the mountain expedition, multi-shrine
+cleansing, and desert-clearance structures described in the design request.
+The agent receives one final goal and must discover local mechanics, choose a
+branch order, retain information, and satisfy persistent world prerequisites.
+There is no current-step pointer or global waypoint supplied to the policy.
+
+These are research adaptations inspired by *In the Mountains*, *Sacred Sakura
+Cleansing Ritual*, and *Golden Slumber / Old Notes and New Friends*. They use
+original names, geometry, and mechanics, with no game assets or code. They do
+not reproduce the original games' quest scripts.
+
+| Proposed tier | Task | Final goal | Persistent milestones | Main demands |
+| --- | --- | --- | ---: | --- |
+| Easy | `summit` — Frostfall Spire | Restore the summit spire | 9 | Exploration, cold management, quartz discovery, combat, elemental latches, delayed reuse |
+| Medium | `cleansing` — Fivefold Cleansing | Defeat the Blightroot Heart | 17 | Five independent branches, local wards, reusable puzzle procedure, two boss phases |
+| Hard | `desert` — Zenith Archive | Recover the lost star atlas | 15 | Permission upgrades, charge budgeting, cross-region returns, chart assembly |
+
+The tiers are design hypotheses, not measured model difficulty. The desert has
+fewer milestone receipts than cleansing but longer spatial dependencies and
+additional resource/permission constraints. We do not pad milestone counts to
+make a task appear harder.
+
+## Mountain: Frostfall Spire
+
+**Goal:** “Restore the Frostfall Spire at the mountain summit.”
+
+```mermaid
+flowchart TD
+    Q[Discover a quartz-charged strike] --> L0[Thaw foothill shard 1]
+    Q --> L1[Defeat guardian and thaw shard 2]
+    Q --> L2[Solve elemental latches and thaw shard 3]
+    L0 --> A[Release summit wind seal]
+    L1 --> A
+    L2 --> A
+    A --> U0[Thaw summit shard 1]
+    A --> U1[Thaw summit shard 2]
+    A --> U2[Thaw summit shard 3]
+    U0 --> F[Restore Frostfall Spire]
+    U1 --> F
+    U2 --> F
+```
+
+Each shard requires **two separately charged physical hits**. Interacting with
+crimson quartz grants one hit that expires after 45 simulated seconds; it does
+not become an unlimited inventory weapon. Quartz regenerates after two seconds,
+so mistakes are recoverable. Native swing cooldown, range, and facing apply.
+One lower shard also requires defeating its guardian, and another requires a
+seeded three-element latch sequence read from a local inscription. These are
+actual completion conditions, not extra counters.
+
+Cold accumulates away from braziers. At maximum cold it damages the character;
+nearby heat reduces cold, and interacting with a brazier clears it. The three
+lower shards can be completed in any order. Their conjunction enables the wind
+seal console. Upper shards reject charged hits until the seal is released, even
+if an agent navigates around the visible doorway early. The upper shards reuse
+the quartz rule at new locations before the final spire becomes usable.
+
+Milestone IDs: `charged_strike`, `lower_0..2`, `ascent`, `upper_0..2`, `final`.
+The first charged hit demonstrates discovery; it does not finish a shard.
+
+## Cleansing: Fivefold Cleansing
+
+**Goal:** “End the valley blight by defeating the sealed Blightroot Heart.”
+
+```mermaid
+flowchart TD
+    L[Recover Echo Lens] --> S0[Shrine 1: ward, puzzle, guardian, cleanse]
+    L --> S1[Shrine 2: ward, puzzle, guardian, cleanse]
+    L --> S2[Shrine 3: ward, puzzle, guardian, cleanse]
+    L --> S3[Shrine 4: ward, puzzle, guardian, cleanse]
+    L --> S4[Shrine 5: ward, puzzle, guardian, cleanse]
+    S0 --> H[Heart unlocked]
+    S1 --> H
+    S2 --> H
+    S3 --> H
+    S4 --> H
+    H --> P1[Pattern and combat: phase 1]
+    P1 --> P2[Rotated pattern and combat: phase 2]
+    P2 --> F[Defeat Blightroot Heart]
+```
+
+The Echo Lens reveals a shrine-specific ward at each echo statue. Each ward is
+unique and consumed at its matching socket. Repeating an interaction cannot
+duplicate it, and a different shrine's ward does not work. The local tablet
+specifies a seeded ordering of ember, tide, and gale. Receiver positions are
+shuffled separately, so the procedure applies to roles rather than a fixed
+movement sequence. Applying an incorrect element/order resets the lamps while
+preserving the installed ward; the agent can inspect and retry.
+
+Only a solved pattern exposes the shrine guardian. Native damage cannot brute
+force the seal. After defeating the guardian, interacting with the altar
+permanently cleanses that shrine. All five branches are available after the lens;
+there is no prescribed shrine order.
+
+The Heart opens only after all five cleansings. Its two 80-HP phases each need a
+puzzle solution and combat during a 20-second exposure window. Phase two rotates
+the tablet order. Damage is capped at the remaining phase HP, so a large attack
+cannot skip the second puzzle. An expired window can be opened again.
+
+Milestone IDs: `lens`; `shrine_0..4_ward`, `shrine_0..4_puzzle`,
+`shrine_0..4`; `final`. The two boss phases are mechanically enforced subconditions
+of the final milestone, and their exposure windows are recorded separately.
+
+## Desert: Zenith Archive
+
+**Goal:** “Recover the lost star atlas from the sealed Zenith Archive.”
+
+```mermaid
+flowchart TD
+    S[Recover rank-one slate] --> T0[Temple 1 circuit and permission]
+    S --> T1[Temple 2 circuit and permission]
+    S --> T2[Temple 3 circuit and permission]
+    T0 --> R[Return to central calibrator: rank two]
+    T1 --> R
+    T2 --> R
+    R --> A0[Return to temple 1 archive: chart]
+    R --> A1[Return to temple 2 archive: chart]
+    R --> A2[Return to temple 3 archive: chart]
+    A0 --> K[Assemble cipher at expedition camp]
+    A1 --> K
+    A2 --> K
+    K --> Z[Zenith circuit and custodian]
+    Z --> F[Recover star atlas]
+```
+
+The slate starts with rank-one clearance and six charge units. Attuning a socket
+costs one charge, reading a tablet costs one, and opening an archive costs two.
+Field and camp obelisks restore charge without consuming a finite supply, so a
+poor budget requires additional travel rather than permanently breaking the run.
+
+Each temple supplies a separate permission mark after its puzzle and guardian.
+All three marks are required at the central calibrator for rank two. The temples'
+archives reject rank-one clearance, requiring return trips after the upgrade.
+Three unique charts then unlock the camp cipher desk, followed by the Zenith
+puzzle, custodian, and atlas. Charts and permissions are persistent credentials;
+wards and quartz are consumable, while slate charge is renewable.
+
+The evaluator counts archives approached while locked and subsequently opened,
+so observed revisits can be distinguished from merely visiting a location for
+the first time after clearance. This diagnostic is not a memory-performance
+score. The reference controller deliberately encounters the locked archives
+before upgrading.
+
+Milestone IDs: `slate`; `temple_0..2_puzzle`, `temple_0..2`; `rank_two`;
+`temple_0..2_record`; `atlas_key`; `zenith_puzzle`; `zenith`; `final`.
+
+## Observation, controls, and scoring
+
+- **Policy observations:** RGB, native proprioception and party state, a constant
+  final-goal instruction, and local text. Local text contains the agent's pack,
+  cold/coating/slate charge when applicable, recent interaction feedback, and up
+  to five visible nearby entity labels/ranges. Visibility is bounded by distance,
+  approximate camera field of view, terrain, and architecture occlusion.
+- **Memory:** interaction feedback expires after five simulated seconds. There
+  is no automatic global journal, saved procedure, full map, or future-step list.
+  The expedition keeper supplies local introductory instructions when approached;
+  tablets can be revisited. Ordered glyph names are exposed through interaction
+  text; this version does not require reading inscriptions from pixels alone.
+  An agent may maintain its own permitted memory.
+- **No target oracle:** the native task vector and shared adapter goal vector
+  are zero. The quest engine has one terminal receipt with no target position.
+  Site tables, coordinates, sampled solutions, and the full dependency graph
+  are evaluator state, not policy observations. `info` carries evaluator events
+  and progress diagnostics; model prompts must use observations, not `info`.
+- **Actions:** ordinary movement, camera look, jump/glide, interact, attack,
+  sprint/climb, elemental skill/burst, and party swap. There is no navigate-to,
+  complete-milestone, teleport, or select-target action.
+- **Reward:** zero until final success, then +1. There is no intermediate,
+  distance, discovery, or damage shaping. Native death and the step limit can
+  end an unsuccessful episode. Stepping after termination requires a reset.
+- **Diagnostics:** completion receipts and timestamps, distance, invalid
+  applications, blocked interactions, quartz expiry, cold damage, recharge
+  visits, archive revisits, and boss exposure windows. Every receipt checks its
+  prerequisites; the final verifier checks receipt order, site conditions,
+  phase completion, and resource accounting.
+
+A branch is eligible as soon as its prerequisites hold; it does not wait for an
+arbitrary numbered operation. Solved circuits, defeated guardians, obtained
+permissions, and consumed items persist while the agent travels elsewhere.
+
+## World and presentation
+
+The native environment defaults to geography scale 2: a 1,280 m square regional
+heightfield. The shared `variant="full"` selects that scale; `variant="small"`
+selects scale 0.5, a 320 m square compact layout for tests. Local interaction
+distances remain fixed while regional travel distances scale.
+
+Snowy slopes use timber buildings, windmills, and watchtowers; forest shrines use
+open pavilions; desert ruins use towers, stone gate frames, and permission seals.
+These build on the existing mixed architecture system. Dedicated meshes identify
+ice, quartz, hearths, tools, tablets, seals, and the spire. Stable entity identity
+controls appearance without consuming simulation RNG. The native renderer and
+Cycles exporter use the same fixtures and active seal dimensions. Closed seals
+participate in collision; task conditions also enforce clearance independently.
+
+User-facing screenshots and videos use **Blender Cycles** through the existing
+scene exporter. The validation command below intentionally produces no images:
+headless zero-RGB observations keep logic tests inexpensive. Any future render
+must retain the recorded terrain, collision geometry, camera/action state, and
+renderer/settings metadata. A Cycles render does not change the scope of the
+simulator: these are authored heightfield regions, not a production open world
+with underground interiors, a full economy, or the original game's combat.
+
+## Run the tasks
+
+```python
+import owb
+
+env = owb.make_env("teyvat", task="cleansing", variant="full", max_steps=40_000)
+obs, info = env.reset(seed=7)
+# Pass obs to an observation-only policy; info is evaluator data.
+```
+
+The shared factory accepts `task="summit"`, `"cleansing"`, or `"desert"`.
+Omitting `task` preserves the previous sandbox behavior. Native Gym IDs are
+`OpenWorldBench/Teyvat-Summit-v1`, `OpenWorldBench/Teyvat-Cleansing-v1`, and
+`OpenWorldBench/Teyvat-Desert-v1` (import `open_world_bench` to register).
+
+```bash
+# Privileged feasibility controller: native actions, no world writes or API calls.
+# Produces source hashes, geometry hashes, actions, summaries, and exact replay checks.
+python -m owb.scripts.teyvat_campaign --seed 7 --scale 2 \
+  --output assets/evaluation/my-teyvat-full-run
+
+# Different branch order and seed in a compact logic-validation map.
+python -m owb.scripts.teyvat_campaign --seed 19 --scale .5 --reverse \
+  --output assets/evaluation/my-teyvat-alternate-run
+
+# Replay an individual recorded episode with matching source files.
+python -m owb.scripts.teyvat_campaign \
+  --verify assets/evaluation/my-teyvat-full-run/desert-seed-7-forward
+```
+
+The benchmark CLI also accepts `--env teyvat --task cleansing --variant full`;
+choose the policy/model and action budget using its existing options. Reference
+traces contain privileged information and must remain outside policy context.
+
+## Validation and research scope
+
+See [validation results](teyvat-campaign-validation.md) for checked seeds, orders,
+action counts, simulation time, and replay artifacts. The reference controller
+reads hidden state for routing and planning, then emits only native controls.
+The recorder checks that calling the controller does not change simulation
+state. A fresh environment independently replays every action and compares exact
+positions, events, rewards, end flags, and state digests, including character,
+camera, party cooldowns, elemental state, inventory, mechanism state, and RNG.
+Static terrain, scenery, architecture, and gate definitions have a separate hash.
+
+This establishes feasibility and deterministic replay for the checked cases.
+It does **not** establish observation-only solvability by a particular model,
+learned exploration, skill acquisition, or memory benefit. The templates and
+regional arrangement are fixed with seeded local positions, patterns, and
+appearance; broad procedural topology generalization remains future work.
+
+For a memory study, compare matched seeds, action budgets, decision intervals,
+and observation modalities under no persistent memory, episodic memory,
+procedural memory, and combined memory. Proposed fresh-context checkpoints are
+after the lower mountain shards, after initial shrine mastery, and after the
+desert clearance upgrade, retaining the world and only the allowed agent store.
+These context resets and memory ablations are a proposed evaluation protocol,
+not automatically executed by the environment. Record acquisition first, actual
+time since last reuse, branch order, revisit travel, and terminal success; a
+failed initial lesson should not be reported as forgetting.
+
+The previous 12/24-step courses remain available in `ReferenceTaskEnv` for
+regression and existing recordings. Their design is retained in
+[legacy task notes](teyvat-legacy-tasks.md); they are not evidence for this new suite.

@@ -31,7 +31,7 @@ def request():
 
 def completed(model="gemini-4-argon", tool_calls=0):
     action = dict(move=[0.5, 0], look=[0, 0], buttons=[], command="none", swap=0,
-                  slot=0, ingredients=[0] * 5, part=0, build_move=[0] * 3, memory="Starting area.")
+                  slot=0, ingredients=[0] * 5, part=0, build_move=[0] * 3, click=[], memory="Starting area.")
     result = dict(session_id="gemini-session", response=json.dumps(action), stats=dict(
         models={model: dict(api=dict(totalRequests=1), tokens=dict(prompt=100, candidates=30, thoughts=20, cached=50))},
         tools=dict(totalCalls=tool_calls)))

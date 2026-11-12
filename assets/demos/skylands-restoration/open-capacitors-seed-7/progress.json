@@ -1,0 +1,11 @@
+{
+  "step": 3000,
+  "stage": "lock_0",
+  "position": [
+    1070.5,
+    112.0009994506836,
+    1180.54150390625
+  ],
+  "explanation": "Walk the physical route",
+  "wall_seconds": 32.62023807084188
+}

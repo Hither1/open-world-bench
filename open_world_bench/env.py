@@ -12,10 +12,18 @@ Action (Dict by default, flat Box with `flat_actions=True`):
     look     (2,) in [-1, 1]  camera yaw / pitch rate
     buttons  MultiBinary(7)   jump, sprint, interact, attack, climb, skill, burst
     swap     Discrete(N+1)    0 keeps current member; 1..N selects a party slot
+    pointer  (2,) in [0, 1]   normalised screen position (u right, v down)
+    click    Discrete(2)      1 clicks at `pointer`
 
 Flat actions have 15 entries: move(2), look(2), buttons(7), swap requests(4).
 Positive swap requests select the largest value (ties use the first slot).
 Set `party=None` for the original five-button / nine-entry action space.
+With `world_map` enabled, flat actions append click (>0 clicks) and the
+pointer in [-1, 1]; vectors without these three entries remain valid.
+
+World map: the RGB view carries a small map logo (top right). Clicking it
+opens a fog-of-war map of the whole island in place of the view and pauses the
+simulation until the logo is clicked again (see owb.sim.world_map).
 
 Reward is sparse quest progress, with optional distance shaping toward the
 current objective. The episode ends when the whole questline is finished.
@@ -98,6 +106,8 @@ class EnvConfig:
     text_obs: bool = False
     flat_actions: bool = False
     backend: str = "auto"
+    world_map: bool = True                      # clickable fog-of-war map logo
+    map_reveal_radius: float | None = None      # None: 4% of the island, 24..64 m
 
 
 class OpenWorldEnv(gym.Env):
@@ -128,7 +138,8 @@ class OpenWorldEnv(gym.Env):
         self.observation_space = spaces.Dict(obs)
 
         if self.cfg.flat_actions:
-            self.action_space = spaces.Box(-1.0, 1.0, (15 if self.cfg.party else 9,), dtype=np.float32)
+            size = (15 if self.cfg.party else 9) + (3 if self.cfg.world_map else 0)
+            self.action_space = spaces.Box(-1.0, 1.0, (size,), dtype=np.float32)
         else:
             actions = {
                 "move": spaces.Box(-1.0, 1.0, (2,), dtype=np.float32),
@@ -137,10 +148,14 @@ class OpenWorldEnv(gym.Env):
             }
             if self.cfg.party is not None:
                 actions["swap"] = spaces.Discrete(len(self.cfg.party.members) + 1)
+            if self.cfg.world_map:
+                actions["pointer"] = spaces.Box(0.0, 1.0, (2,), dtype=np.float32)
+                actions["click"] = spaces.Discrete(2)
             self.action_space = spaces.Dict(actions)
 
         self.world: World | None = None
         self._build(self._episode_seed)
+        self._init_world_map()
 
     # ------------------------------------------------------------------ setup
     def _build(self, seed: int) -> None:
@@ -183,17 +198,27 @@ class OpenWorldEnv(gym.Env):
             self._episode_seed = int(np.random.SeedSequence().generate_state(1)[0] % (2 ** 31))
         super().reset(seed=self._episode_seed)
         self._build(self._episode_seed)
+        self._init_world_map()
         obs = self._observe()
         return obs, self._info()
 
     # ------------------------------------------------------------------- step
     def _decode(self, action) -> Command:
+        from owb.sim.world_map import parse_click
+
         swap = -1
+        self._click = (False, 0.0, 0.0)
         if self.cfg.flat_actions:
             a = np.asarray(action, dtype=np.float32).reshape(-1)
             sizes = (9, 15) if self.party else (9,)
+            if self.cfg.world_map and a.size - 3 in sizes:
+                if not np.isfinite(a).all():
+                    raise ValueError("flat action entries must be finite")
+                self._click = parse_click(int(a[-3] > 0.0), (a[-2:] + 1.0) / 2.0)
+                a = a[:-3]
             if a.size not in sizes or not np.isfinite(a).all():
-                raise ValueError(f"flat action must have {sizes} finite entries")
+                raise ValueError(f"flat action must have {sizes} finite entries"
+                                 + (" plus optional click, pointer" if self.cfg.world_map else ""))
             move, look, btn = a[0:2], a[2:4], a[4:11 if a.size == 15 else 9] > 0.0
             if a.size == 15:
                 requests = a[11:11 + len(self.party.members)]
@@ -211,6 +236,8 @@ class OpenWorldEnv(gym.Env):
                 if not self.action_space["swap"].contains(requested):
                     raise ValueError("swap must be 0 (keep) or a one-based party slot")
                 swap = int(requested) - 1
+            if self.cfg.world_map and "click" in action:
+                self._click = parse_click(action["click"], action.get("pointer", (0.0, 0.0)))
         if move.shape != (2,) or look.shape != (2,) or not np.isfinite(np.concatenate([move, look])).all():
             raise ValueError("move and look must be finite two-element vectors")
         cmd = Command(move=np.clip(move, -1.0, 1.0),
@@ -225,7 +252,9 @@ class OpenWorldEnv(gym.Env):
         cmd = self._decode(action)
         c = self.cfg
         rc = c.reward
-        events: list[Event] = []
+        events: list[Event] = self._map_click()
+        if self.map_open:
+            return self._paused_step(events)
         if cmd.swap >= 0:
             events += self.world.swap_character(self.char, cmd.swap)
         damage_taken = 0.0
@@ -261,6 +290,7 @@ class OpenWorldEnv(gym.Env):
             self.controller.cfg.max_hp = self.party.max_hp
 
         self.steps += 1
+        self._reveal_map()
         ws = self.world.state_dict(self.char)
         quest_reward = self.quests.consume(events, ws)
 
@@ -305,9 +335,7 @@ class OpenWorldEnv(gym.Env):
 
     # ------------------------------------------------------------ observation
     def _observe(self) -> dict:
-        frame = self._renderer.render(self.world, self.char, self.cam, fov_y=self.cfg.camera.fov_y)
-        self._last_frame = frame
-        out = {"rgb": frame, "proprio": self._proprio(), "task": self._task_vector()}
+        out = {"rgb": self._screen(self._world_frame()), "proprio": self._proprio(), "task": self._task_vector()}
         if self.party is not None:
             out["party"] = self.party.as_vector()
         if self.cfg.text_obs:
@@ -390,6 +418,7 @@ class OpenWorldEnv(gym.Env):
             "active_character": self.party.active.spec.id if self.party else None,
             "episode_reward": self._episode_reward,
             "seed": self._episode_seed,
+            **self._map_info(),
         }
 
     # ----------------------------------------------------------------- render
@@ -397,9 +426,80 @@ class OpenWorldEnv(gym.Env):
         if self.render_mode != "rgb_array":
             return None
         if self._last_frame is None:
-            self._last_frame = self._renderer.render(self.world, self.char, self.cam,
-                                                     fov_y=self.cfg.camera.fov_y)
+            self._screen(self._world_frame())
         return self._last_frame
+
+    # -------------------------------------------------------------- world map
+    def _world_frame(self) -> np.ndarray:
+        """The 3-D view; reused unchanged while the paused map is open."""
+        if self.map_open and getattr(self, "_view", None) is not None:
+            return self._view
+        self._view = self._renderer.render(self.world, self.char, self.cam, fov_y=self.cfg.camera.fov_y)
+        return self._view
+
+    @property
+    def map_open(self) -> bool:
+        return bool(self.cfg.world_map and self.map_ui.open)
+
+    def _init_world_map(self) -> None:
+        self._view, self._map_base = None, None
+        if not self.cfg.world_map:
+            return
+        from owb.sim.world_map import FogOfWar, WorldMapUI
+
+        half = float(self.world.terrain._half)
+        radius = self.cfg.map_reveal_radius or float(np.clip(0.04 * 2 * half, 24.0, 64.0))
+        self.map_ui = WorldMapUI()
+        self.map_fog = FogOfWar((-half, -half, half, half), max(2.0, 2 * half / 256), radius)
+        self._reveal_map()
+
+    def _reveal_map(self) -> None:
+        if not self.cfg.world_map:
+            return
+        from owb.sim.world_map import reveal_radius
+
+        x, z = float(self.char.pos[0]), float(self.char.pos[2])
+        above = float(self.char.pos[1]) - float(self.world.terrain.height_at(x, z))
+        self.map_fog.reveal(x, z, reveal_radius(self.map_fog.radius, above))
+
+    def _map_click(self) -> list[Event]:
+        if not self.cfg.world_map or not self._click[0]:
+            return []
+        rs = self.cfg.render
+        return [Event(e.pop("type"), e) for e in self.map_ui.click(self._click[1], self._click[2],
+                                                                    rs.width, rs.height)]
+
+    def _paused_step(self, events):
+        """The map is open: no simulated time passes, but the decision counts."""
+        self.steps += 1
+        reward = -self.cfg.reward.time_penalty
+        truncated = self.steps >= self.cfg.max_episode_steps
+        self._last_events = events
+        self._episode_reward += float(reward)
+        return self._observe(), float(reward), False, truncated, self._info(events)
+
+    def _render_open_map(self, width: int, height: int) -> np.ndarray:
+        from owb.sim.world_map import render_map
+        from .world_map import terrain_surface
+
+        if self._map_base is None:
+            architecture = getattr(self.world, "architecture", None) or self.controller.architecture
+            self._map_base = terrain_surface(self.world.terrain, self.world.props, architecture)
+        base, bounds = self._map_base
+        yaw = float(self.char.yaw)
+        return render_map(width, height, base, bounds, self.map_fog, agent=self.char.pos[[0, 2]],
+                          heading=(np.sin(yaw), -np.cos(yaw)))
+
+    def _screen(self, frame: np.ndarray) -> np.ndarray:
+        """The policy's view: 3-D frame with the map logo, or the open map."""
+        screen = self.map_ui.compose(frame, self._render_open_map) if self.cfg.world_map else frame
+        self._last_frame = screen
+        return screen
+
+    def _map_info(self) -> dict:
+        if not self.cfg.world_map:
+            return {}
+        return dict(map_open=self.map_open, explored_fraction=self.map_fog.fraction)
 
     def render_hd(self, width: int = 960, height: int = 540, hud: bool = True,
                   *, renderer: str = "cycles", blender=None, samples: int = 48,

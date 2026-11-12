@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "failures": [],
+  "completed": 9,
+  "required": 9,
+  "metrics": {
+    "wrong_applications": 0,
+    "blocked_interactions": 0,
+    "quartz_expirations": 0,
+    "cold_damage": 0.0,
+    "distance_metres": 796.252385447151,
+    "recharge_visits": 0,
+    "archive_revisits": 0,
+    "boss_windows": 0
+  },
+  "scope": "Procedural campaign; native-action feasibility, not a learned-agent score",
+  "actions": 999,
+  "simulated_seconds": 199.79999999999123,
+  "milestone_order": [
+    {
+      "id": "charged_strike",
+      "time": 20.833333
+    },
+    {
+      "id": "lower_2",
+      "time": 27.633333
+    },
+    {
+      "id": "lower_1",
+      "time": 60.833333
+    },
+    {
+      "id": "lower_0",
+      "time": 91.633333
+    },
+    {
+      "id": "ascent",
+      "time": 115.233333
+    },
+    {
+      "id": "upper_2",
+      "time": 148.833333
+    },
+    {
+      "id": "upper_1",
+      "time": 170.233333
+    },
+    {
+      "id": "upper_0",
+      "time": 189.433333
+    },
+    {
+      "id": "final",
+      "time": 199.633333
+    }
+  ],
+  "final_digest": "443f30b7fc2ad4a63b79ce0a603a1a506da5c84112a409e9fb753f419d562e23",
+  "actions_sha256": "6cb6300c3822dec45955ffba564b64c2bf34b01886c3311462b4ba64c19aff55",
+  "geometry_digest": "df427a47d8a6e453f012d30479b435cf6e6966c571e6f782eabb2c87e7660242",
+  "wall_seconds": 47.96657852403587
+}

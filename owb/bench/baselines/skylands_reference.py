@@ -9,7 +9,8 @@ from ...env.skylands_reference import COMMANDS, LEVELS
 
 def neutral():
     return dict(move=np.zeros(2,np.float32),look=np.zeros(2,np.float32),buttons=np.zeros(5,np.int8),
-        command=0,slot=0,ingredients=np.zeros(5,np.int64),part=0,build_move=np.zeros(3,np.float32),target=0,option=0)
+        command=0,slot=0,ingredients=np.zeros(5,np.int64),part=0,build_move=np.zeros(3,np.float32),target=0,option=0,
+        pointer=np.zeros(2,np.float32),click=0)
 
 
 class SkylandsReferencePolicy:
