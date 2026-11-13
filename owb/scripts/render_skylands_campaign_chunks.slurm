@@ -5,7 +5,7 @@
 #SBATCH --constraint=rtxa6000|rtx6000pro|a40
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=1:30:00
+#SBATCH --time=3:00:00  # landscape geometry adds render time; frames resume on requeue
 #SBATCH --array=0-5%6
 #SBATCH --output=assets/demos/skylands-campaign/render-chunk-%A-%a.log
 set -euo pipefail

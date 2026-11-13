@@ -407,6 +407,12 @@ SKY_STRENGTH = 0.62
 DEVICES = ("CPU", "CUDA", "OPTIX", "METAL")
 
 
+def _socket(sockets, name):
+    """The active socket called ``name``. Blender 4.x keeps one Min/Max/Value
+    socket per data type (inactive ones disabled); 5.x shows only the active one."""
+    return next(socket for socket in sockets if socket.name == name and socket.enabled)
+
+
 def ground_cover(spec, objects, image=None):
     """Instance short grass on terrain near the camera, kept off paths and paving.
 
@@ -466,22 +472,22 @@ def ground_cover(spec, objects, image=None):
         density = math("MULTIPLY", density, math("SUBTRACT", 1.0, math("MULTIPLY", bare, 1.6)))
     chance = nodes.new("FunctionNodeRandomValue"); chance.data_type = "FLOAT"
     chance.inputs["Seed"].default_value = 11
-    keep = math("MULTIPLY", keep, math("LESS_THAN", chance.outputs["Value"], density))
+    keep = math("MULTIPLY", keep, math("LESS_THAN", _socket(chance.outputs, "Value"), density))
     prototypes = nodes.new("GeometryNodeCollectionInfo"); prototypes.inputs["Collection"].default_value = collection
     prototypes.inputs["Separate Children"].default_value = True; prototypes.inputs["Reset Children"].default_value = True
     pick = nodes.new("FunctionNodeRandomValue"); pick.data_type = "INT"
-    pick.inputs["Min"].default_value = 0; pick.inputs["Max"].default_value = len(spec["prototypes"]) - 1
+    _socket(pick.inputs, "Min").default_value = 0; _socket(pick.inputs, "Max").default_value = len(spec["prototypes"]) - 1
     pick.inputs["Seed"].default_value = 12
     spin = nodes.new("FunctionNodeRandomValue"); spin.data_type = "FLOAT_VECTOR"
-    spin.inputs["Min"].default_value = (0, 0, 0); spin.inputs["Max"].default_value = (0, 0, 6.283)
+    _socket(spin.inputs, "Min").default_value = (0, 0, 0); _socket(spin.inputs, "Max").default_value = (0, 0, 6.283)
     spin.inputs["Seed"].default_value = 13
-    euler = nodes.new("FunctionNodeEulerToRotation"); links.new(spin.outputs["Value"], euler.inputs[0])
+    euler = nodes.new("FunctionNodeEulerToRotation"); links.new(_socket(spin.outputs, "Value"), euler.inputs[0])
     size_ = nodes.new("FunctionNodeRandomValue"); size_.data_type = "FLOAT"
-    size_.inputs["Min"].default_value = .75; size_.inputs["Max"].default_value = 1.35; size_.inputs["Seed"].default_value = 14
+    _socket(size_.inputs, "Min").default_value = .75; _socket(size_.inputs, "Max").default_value = 1.35; size_.inputs["Seed"].default_value = 14
     instances = nodes.new("GeometryNodeInstanceOnPoints"); instances.inputs["Pick Instance"].default_value = True
     links.new(scatter.outputs["Points"], instances.inputs["Points"]); links.new(keep, instances.inputs["Selection"])
-    links.new(prototypes.outputs[0], instances.inputs["Instance"]); links.new(pick.outputs["Value"], instances.inputs["Instance Index"])
-    links.new(euler.outputs[0], instances.inputs["Rotation"]); links.new(size_.outputs["Value"], instances.inputs["Scale"])
+    links.new(prototypes.outputs[0], instances.inputs["Instance"]); links.new(_socket(pick.outputs, "Value"), instances.inputs["Instance Index"])
+    links.new(euler.outputs[0], instances.inputs["Rotation"]); links.new(_socket(size_.outputs, "Value"), instances.inputs["Scale"])
     join = nodes.new("GeometryNodeJoinGeometry")
     links.new(source.outputs[0], join.inputs[0]); links.new(instances.outputs[0], join.inputs[0])
     links.new(join.outputs[0], result.inputs[0])

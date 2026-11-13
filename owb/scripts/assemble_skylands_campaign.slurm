@@ -13,3 +13,4 @@ export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=4
 export MPLCONFIGDIR="$PWD/.cache/skylands-campaign/matplotlib-assembly-${task}"
 mkdir -p "$MPLCONFIGDIR"
 /n/home13/chloe00/miniforge3/bin/python -u -B -m owb.scripts.skylands_campaign_merge --task "$task"
+/n/home13/chloe00/miniforge3/bin/python -u -B -m owb.scripts.skylands_campaign_frame_records --task "$task"

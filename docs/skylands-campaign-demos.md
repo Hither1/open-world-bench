@@ -152,3 +152,35 @@ Chunk merging validates every state and image hash before encoding. The player
 builder fully decodes both videos, verifies frame counts and hashes, and builds
 the local milestone player. Cached renders are reusable only when source,
 trace, state, settings, and image hashes match.
+
+## Regenerating the videos
+
+The walkthroughs are presentation renders of fixed, verified traces. To
+re-render them with the current presentation code (for example after the
+[presentation landscape](rendering.md#presentation-landscape) change), commit
+the code, keep `assets/demos/skylands-campaign/render-source/` identical to
+`owb/render/`, and run this from the repository root on the Slurm login node:
+
+```bash
+bash owb/scripts/regenerate_skylands_campaign.sh
+```
+
+The script moves `.cache/skylands-campaign` and the previous walkthroughs aside
+(under `.cache/*-before-<timestamp>`), then submits a dependent chain:
+
+1. `export_skylands_campaign.slurm` replays each trace with full checks
+   (positions, events, rewards, milestone digests), exports the scene
+   snapshots, and reviews the camera for traveler visibility.
+2. `render_skylands_campaign_chunks.slurm` and
+   `render_skylands_campaign_camera.slurm` render with Blender 4.5.4 Cycles on OPTIX at
+   64 samples, 1280×720.
+3. `assemble_skylands_campaign.slurm` (task A, then B) verifies every frame
+   record, encodes the walkthrough, repackages frame records, and rebuilds the
+   player index.
+
+Copy the results to `videos/skylands-15-milestones.mp4` and
+`videos/skylands-24-milestones.mp4`; these files exceed GitHub's size limit
+and are not tracked. Run the export on the original toolchain: on other
+platforms, such as Apple-silicon Macs with current NumPy, the milestone
+digests have been observed to differ while positions, events, and rewards
+still match. Export then stops instead of producing an unverified video.

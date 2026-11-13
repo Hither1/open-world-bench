@@ -12,7 +12,11 @@ import numpy as np
 from mathutils import Vector
 sys.path.insert(0,os.environ.get('OWB_CAMPAIGN_RENDER_HELPERS',str(Path(__file__).resolve().parent)))
 import blender_scene
-from blender_scene import setup_scene,add_mesh,material,z_up,linear
+from blender_scene import setup_scene,add_mesh,material,z_up,linear,build_materials,configure_haze,mesh_material,DEVICES,SKY_STRENGTH
+
+
+def device_label(device):
+    return 'CPU' if device=='CPU' else device+' GPU'
 
 
 def load_scene(path,materials):
@@ -31,8 +35,8 @@ def load_dynamic(path,materials,objects):
             for i,spec in enumerate(meta['meshes']):
                 mesh=bpy.data.meshes.new(f'Replay mesh {i}')
                 obj=bpy.data.objects.new(f'Replay object {i}',mesh);bpy.context.collection.objects.link(obj);objects.append(obj)
-                mesh.materials.append(materials['water'] if spec['water'] else materials.get(spec.get('material','surface'),materials['surface']))
-                if not spec['water']:mesh.materials.append(materials['emission'])
+                mesh.materials.append(mesh_material(materials,spec))
+                if not spec['water']:mesh.materials.append(materials['emission:occluder' if spec.get('occluder') else 'emission'])
         if len(objects)!=len(meta['meshes']):raise RuntimeError('Dynamic mesh slot count changed')
         for i,(obj,spec) in enumerate(zip(objects,meta['meshes'])):
             prefix=f'mesh_{i}_';triangles=z_up(data[prefix+'triangles'])
@@ -96,6 +100,7 @@ def update_scene(scene,metadata):
     sun.rotation_euler=Vector(-z_up(lighting['direction'])).to_track_quat('-Z','Y').to_euler()
     ramp=next(n for n in scene.world.node_tree.nodes if n.type=='VALTORGB').color_ramp
     ramp.elements[0].color=(*linear(np.array(lighting['horizon'])),1);ramp.elements[1].color=(*linear(np.array(lighting['sky'])),1)
+    configure_haze(metadata.get('haze'),lighting['horizon'],SKY_STRENGTH)
     for index,spec in enumerate(metadata['point_lights']):
         name=f'Task lamp {index}';obj=bpy.data.objects.get(name)
         if obj is None:
@@ -105,7 +110,7 @@ def update_scene(scene,metadata):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--directory',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
-    p.add_argument('--first',type=int,default=0);p.add_argument('--last',type=int);p.add_argument('--samples',type=int,default=64);p.add_argument('--threads',type=int,default=8);p.add_argument('--device',choices=('CUDA','OPTIX'),default='CUDA')
+    p.add_argument('--first',type=int,default=0);p.add_argument('--last',type=int);p.add_argument('--samples',type=int,default=64);p.add_argument('--threads',type=int,default=8);p.add_argument('--device',choices=DEVICES,default='CUDA')
     a=p.parse_args(sys.argv[sys.argv.index('--')+1:]);data=json.loads((a.directory/'frames.json').read_text())
     # Exported NPZ scenes are detached immutable inputs. Validate those bytes;
     # unrelated edits to the simulator/exporter cannot alter these snapshots.
@@ -124,9 +129,8 @@ def main():
     preferences=bpy.context.preferences.addons['cycles'].preferences
     (a.output/'renderer-report.json').write_text(json.dumps(dict(blender_version=bpy.app.version_string,
         accelerators=[item.name for item in preferences.devices if item.type==a.device and item.use],
-        device=a.device+' GPU',samples=a.samples,width=1280,height=720,denoising=True,max_bounces=6,render_sources=render_sources)))
-    materials=dict(surface=material('Painted surfaces'),emission=material('Elemental glow',emission=True),water=material('Water',water=True))
-    for kind in ('terrain','stone','bark','foliage','metal','cloth','skin'):materials[kind]=material(kind.title(),kind=kind)
+        device=device_label(a.device),samples=a.samples,width=1280,height=720,denoising=True,max_bounces=6,render_sources=render_sources)))
+    with np.load(a.directory/'static.npz',allow_pickle=False) as d:materials=build_materials(metadata,d)
     load_scene(a.directory/'static.npz',materials);ground_cover(a.directory,materials)
     dynamic=[];started=time.monotonic();loaded=[None]
     selected=data['entries'][a.first:a.last]
@@ -155,7 +159,7 @@ def main():
             if loaded[0]!=frame:raise RuntimeError('Rendered state was not prepared')
             entry=entries[frame];target=a.output/f'{frame:06}.png'
             target.with_suffix('.json').write_text(json.dumps(dict(index=frame,step=entry['step'],digest=entry['digest'],trace_sha256=data['trace_sha256'],
-                image_sha256=hashlib.sha256(target.read_bytes()).hexdigest(),renderer='Blender Cycles',device=a.device+' GPU',samples=a.samples,size=[1280,720],seconds=time.monotonic()-started)))
+                image_sha256=hashlib.sha256(target.read_bytes()).hexdigest(),renderer='Blender Cycles',device=device_label(a.device),samples=a.samples,size=[1280,720],seconds=time.monotonic()-started)))
             print('FRAME COMPLETE',frame,'/',len(data['entries']),'step',entry['step'],flush=True)
         except Exception:
             traceback.print_exc();sys.stdout.flush();sys.stderr.flush();os._exit(2)
