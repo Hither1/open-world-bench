@@ -1,0 +1,93 @@
+{
+  "purpose": "Matched before/after presentation renders for the landscape refresh. Before = commit 3f8798b; after = this change.",
+  "renderer": {
+    "engine": "Blender Cycles",
+    "blender": "5.2.2 LTS",
+    "denoising": true,
+    "max_bounces": 6,
+    "view_transform": "AgX, Medium High Contrast",
+    "exposure": {
+      "before": 0.5,
+      "after": 0.0
+    }
+  },
+  "renders": {
+    "teyvat-a03-before.png / teyvat-a03-after.png": {
+      "trace": "assets/demos/teyvat-reference-cycles/task-a-seed-7/actions.jsonl",
+      "step": 138,
+      "layout": "1280x720 annotated reference frame, 864x486 Cycles viewport",
+      "samples": 48,
+      "device": "CPU"
+    },
+    "teyvat-a04-compare.png": {
+      "step": 330,
+      "samples": 48,
+      "device": "CPU",
+      "note": "viewport crop, scaled 0.75"
+    },
+    "teyvat-a10-compare.png": {
+      "step": 940,
+      "samples": 48,
+      "device": "CPU",
+      "note": "viewport crop, scaled 0.75"
+    },
+    "wildlands-a02-compare.png": {
+      "trace": "assets/demos/wildlands-reference/task-a-seed-7/actions.jsonl",
+      "step": 40,
+      "size": [
+        960,
+        540
+      ],
+      "samples": 48,
+      "device": "CPU",
+      "note": "scaled 0.67"
+    },
+    "wildlands-a04-compare.png": {
+      "step": 328,
+      "size": [
+        960,
+        540
+      ],
+      "samples": 48,
+      "device": "CPU",
+      "note": "scaled 0.67"
+    },
+    "skylands-a-step1500-compare.png": {
+      "trace": "assets/demos/skylands-campaign/task-a-seed-7/actions.jsonl",
+      "step": 1500,
+      "size": [
+        1280,
+        720
+      ],
+      "samples": 48,
+      "device": "METAL GPU",
+      "pipeline": "owb/render/blender_campaign.py (static + dynamic snapshots)",
+      "note": "scaled 0.5"
+    }
+  },
+  "replay": {
+    "teyvat": "positions asserted for every action",
+    "wildlands": "checked_step: positions, events, rewards, milestone digests",
+    "skylands": "checked_step positions, events and rewards; milestone digests were not compared because a clean checkout of 3f8798b already diverges at step 632 on this machine (Python 3.14 / current numpy and scipy)"
+  },
+  "presentation_landscape": {
+    "collision": false,
+    "observation": false,
+    "simulation_rng": false,
+    "trace_clearance_metres": {
+      "teyvat_a": 2.99,
+      "teyvat_b": 2.68,
+      "wildlands_a": 2.65,
+      "wildlands_b": 2.52
+    }
+  },
+  "sources": {
+    "owb/render/dressing.py": "343bd8aef16c2037affcc9e58b7da288d900313a1a718ee4bced3fa3a53af71a",
+    "owb/render/scene_export.py": "0acfe435eef147325f77c4343dd30a3a09108da9e9a087ad3fab87029cf95322",
+    "owb/render/blender_scene.py": "7a89e25f74327ea8ab76e1d247810260c3e76874e2c986b32b0dab0b0bbf347c",
+    "owb/render/blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+    "owb/render/skylands_campaign.py": "22e1035cb18f644e06b40207718844675e6e8df3ea35f953ad8dc2eae6f12b5a",
+    "open_world_bench/render/assets.py": "11400d9c9ddc0d123d1a471e04aacea1da37df38e76c9afde9dc7ddf5f38cfb9",
+    "owb/scripts/teyvat_reference.py": "b3c6f49c43223f51a0b643d78345a14a073338abb7dcffba0d44ed153cc70678"
+  }
+}

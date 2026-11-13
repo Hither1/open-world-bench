@@ -247,7 +247,7 @@ class Overlay:
                 label=entity.label
                 if op.kind=="relay":
                     label=next(k for k,v in op.state["roles"].items() if v==eid).upper()
-                w=draw.textbbox((0,0),label,font=self.bold[14] if 14 in self.bold else self.fonts[14])[2]
+                w=draw.textbbox((0,0),label,font=self.fonts[14])[2]
                 draw.rounded_rectangle((x-w//2-5,y-3,x+w//2+5,y+19),4,fill=(22,49,57))
                 draw.text((x-w//2,y),label,font=self.fonts[14],fill=(255,239,196))
         x,y=910,103
@@ -302,8 +302,15 @@ class Overlay:
             draw.text((39,633+k*22),value,font=self.fonts[20],fill=(247,246,233))
         draw.text((26,690),f"Compact prototype | Travel shown at ~{self.speed:g}x; event pauses | Complete action log + replay verification",font=self.fonts[14],fill=(169,192,190))
         if chapter:
-            draw.rounded_rectangle((45,112,568,164),7,fill=(23,55,63))
-            draw.text((61,123),"NEXT MILESTONE: "+row['milestone'],font=self.bold[23],fill=accent)
+            # A quiet objective chip: the header already names the milestone, so the
+            # in-world cue stays small, translucent, and out of the scene's centre.
+            chip=Image.new("RGBA",image.size,(0,0,0,0))
+            label="Next  "+row['milestone']
+            w=draw.textbbox((0,0),label,font=self.fonts[14])[2]
+            ImageDraw.Draw(chip).rounded_rectangle((36,104,36+w+20,128),5,fill=(16,38,45,165))
+            image=Image.alpha_composite(image.convert("RGBA"),chip).convert("RGB")
+            draw=ImageDraw.Draw(image)
+            draw.text((46,108),label,font=self.fonts[14],fill=accent)
         return np.asarray(image)
 
 

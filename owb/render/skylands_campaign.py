@@ -143,6 +143,7 @@ def static_scene(env):
     for x,y,z in np.argwhere(np.isin(vox,[B.BUSH,B.COOKPOT,B.CAMPFIRE,B.CAMPFIRE_LIT,B.TORCH_WALL,B.CRYSTAL,B.VINE,B.GLASS])):
         models.prop(batch,int(vox[x,y,z]),(x+.5,y,z+.5),0)
     _add_batch(scene,batch)
+    _landscape(scene,env)
     if hasattr(env, 'static_presentation_meshes'):
         architecture_batch = _presentation_batch()
         env.static_presentation_meshes(architecture_batch)
@@ -162,6 +163,25 @@ def static_scene(env):
     variants=(N.hash_unit(i,i,12)*12).astype(np.int32).clip(0,11)
     scene.metadata['geometry_contract'].update(trees=len(trees),grass_instances=len(points))
     return scene,points,variants
+
+
+def _landscape(scene,env):
+    """Presentation-only horizon ridges and surface set pieces (see dressing)."""
+    from . import dressing
+    from .scene_export import _add_ridges
+    w=env.world; half=max(w.size_x,w.size_z)/2; center=(w.size_x/2,w.size_z/2); ground=float(env.levels[1])
+    _add_ridges(scene,('skylands',type(env).__name__,int(env._seed),w.size_x,w.size_z),
+        [dict(center=center,half_extent=half,inner_gap=4,depth=half*1.6,floor=ground-4,peak=ground+150,gaps=False),
+         dict(center=center,half_extent=half,inner_gap=half*1.9,depth=half*2.6,floor=ground-10,peak=ground+380,gaps=False,snow=ground+300)])
+    layout=dressing.skylands_campaign_layout(env)
+    batch=_presentation_batch()
+    everywhere=np.array((center[0],ground,center[1]))
+    dressing.emit_pieces(layout,batch,everywhere,np.array((1.,0,0)),max_distance=1e9,near_detail=1e9,tufts_within=1e9)
+    _add_batch(scene,batch)
+    scene.add_texture('ground_detail',layout.mask_image,**layout.mask)
+    scene.metadata['haze']=dict(start=90.,distance=max(900.,half*2.2),amount=.8)
+    scene.metadata['presentation_landscape']=dict(scene.metadata.get('presentation_landscape',{}),**dressing.layout_summary(layout))
+    scene.metadata['geometry_contract']['presentation_landscape']='horizon ridges and surface set pieces; no collision, not observed'
 
 
 def dynamic_scene(env,first_person=False):

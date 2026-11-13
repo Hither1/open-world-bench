@@ -37,8 +37,17 @@ def _presentation_batch():
 class SceneSnapshot:
     metadata: dict
     meshes: list[dict] = field(default_factory=list)
+    textures: dict = field(default_factory=dict)
 
-    def add(self, name, triangles, colors, *, normals=None, emission=None, smooth=False, water=False, material="surface"):
+    def add_texture(self, name, pixels, **mapping):
+        """A uint8 RGBA image plus its world mapping (e.g. ground detail)."""
+        pixels = np.ascontiguousarray(pixels, np.uint8)
+        if pixels.ndim != 3 or pixels.shape[2] != 4:
+            raise ValueError("textures must be (rows, cols, 4) uint8")
+        self.textures[name] = (pixels, dict(mapping))
+
+    def add(self, name, triangles, colors, *, normals=None, emission=None, smooth=False, water=False,
+            material="surface", occluder=False):
         triangles = np.asarray(triangles, np.float32).reshape(-1, 3, 3)
         if not len(triangles):
             return
@@ -46,7 +55,8 @@ class SceneSnapshot:
         self.meshes.append(dict(name=name, triangles=triangles.copy(), colors=colors,
                                 normals=np.zeros_like(triangles) if normals is None else np.asarray(normals, np.float32).copy(),
                                 emission=np.zeros(len(triangles), np.float32) if emission is None else np.asarray(emission, np.float32).copy(),
-                                smooth=bool(smooth), water=bool(water), material=material))
+                                smooth=bool(smooth), water=bool(water), material=material,
+                                occluder=bool(occluder)))
 
     def save(self, path):
         """Write a new snapshot, refusing to overwrite an existing artifact."""
@@ -54,8 +64,17 @@ class SceneSnapshot:
         path.parent.mkdir(parents=True, exist_ok=True)
         metadata = dict(self.metadata, meshes=[])
         arrays = {}
+        if self.textures:
+            metadata["textures"] = {}
+            for name, (pixels, mapping) in self.textures.items():
+                metadata["textures"][name] = mapping
+                arrays[f"texture_{name}"] = pixels
         for i, mesh in enumerate(self.meshes):
-            metadata["meshes"].append({k: mesh[k] for k in ("name", "smooth", "water", "material")})
+            spec = {k: mesh[k] for k in ("name", "smooth", "water", "material")}
+            for flag in ("occluder", "prototype"):
+                if mesh.get(flag):
+                    spec[flag] = True
+            metadata["meshes"].append(spec)
             for key in ("triangles", "colors", "normals", "emission"):
                 arrays[f"mesh_{i}_{key}"] = mesh[key]
         with path.open("xb") as handle:
@@ -150,8 +169,11 @@ def _voxel_faces(voxels, occupied):
     return np.concatenate(output).astype(np.float32), np.concatenate(blocks)
 
 
-def _add_batch(scene, batch):
-    triangles, colors, emission, _ = batch.finish()
+def _add_batch(scene, batch, faded=(), fade_triangles=None):
+    """Export a batch grouped by material. Triangles whose object id is in
+    ``faded`` (or selected by ``fade_triangles(triangles, ids)``) become
+    separate occluder meshes the presentation fades for camera rays only."""
+    triangles, colors, emission, ids = batch.finish()
     if len(triangles):
         normals = np.concatenate(getattr(batch, "smooth_normals", batch.normals))
         # Legacy primitives were shaded two-sided by the CPU rasterizer. Some
@@ -172,11 +194,18 @@ def _add_batch(scene, batch):
             start = end
         from open_world_bench.render.meshes import MATERIAL_NAMES
         material_ids=np.concatenate(batch.material_ids)
+        fade=np.isin(ids, np.asarray(sorted(faded), np.int64)) if len(faded) else np.zeros(len(ids), bool)
+        if fade_triangles is not None:
+            fade|=fade_triangles(triangles, ids)
         for material_id in np.unique(material_ids):
-            mask=material_ids==material_id
             name=MATERIAL_NAMES[int(material_id)]
-            scene.add("Characters and props: "+name, triangles[mask], colors[mask],
-                      normals=normals[mask], emission=emission[mask], material=name)
+            for occluder in (False, True):
+                mask=(material_ids==material_id)&(fade==occluder)
+                if not mask.any():
+                    continue
+                label=("Faded occluders: " if occluder else "Characters and props: ")+name
+                scene.add(label, triangles[mask], colors[mask], normals=normals[mask],
+                          emission=emission[mask], material=name, occluder=occluder)
 
 
 VIEWS = ("presentation", "first_person")
@@ -235,6 +264,7 @@ def _teyvat(native, size, view="presentation"):
         if world.campaign.task == "desert":
             weight = smoothstep(np.radians(30), np.radians(52), slope)[:,None]
             color = np.array((.66,.49,.29))*(1-weight)+np.array((.49,.36,.24))*weight
+    color = _graded_meadow(color, p)
     scene.add("Island terrain", triangles, color, smooth=True, material="terrain")
     if world.architecture is not None:
         scene.metadata["architecture"] = dict(
@@ -244,13 +274,103 @@ def _teyvat(native, size, view="presentation"):
     plane = np.array([[[-extent, terrain.cfg.sea_level, -extent], [-extent, terrain.cfg.sea_level, extent]],
                       [[extent, terrain.cfg.sea_level, -extent], [extent, terrain.cfg.sea_level, extent]]])
     scene.add("Ocean", _grid_triangles(plane), (0.16, 0.61, 0.66), water=True)
+    course = getattr(world, "course", None)
+    layout = None
+    if course is not None:
+        from . import dressing
+        layout = dressing.course_layout(world)
+        scene.metadata["presentation_landscape"] = dressing.layout_summary(layout)
+        scene.add_texture("ground_detail", layout.mask_image, **layout.mask)
+        prototypes = []
+        for k in range(dressing.CARPET_VARIANTS):
+            vertices, colors, normals, _, _ = dressing.carpet_template(k)
+            name = f"Meadow grass prototype {k}"
+            scene.add(name, vertices, colors, normals=normals, material="foliage")
+            scene.meshes[-1]["prototype"] = True
+            prototypes.append(name)
+        scene.metadata["ground_cover"] = dict(target="Island terrain", prototypes=prototypes,
+                                              radius=40.0, density=10.0, seed=int(native._episode_seed))
+        _add_ridges(scene, ("teyvat-course", native._episode_seed),
+                    [dict(center=(0, 0), half_extent=300, inner_gap=40, depth=520, floor=-14, peak=92,
+                          gaps=True, shoreline=terrain.cfg.sea_level + .4),
+                     dict(center=(0, 0), half_extent=300, inner_gap=640, depth=900, floor=-10, peak=270,
+                          gaps=False, snow=205)])
+    else:
+        half = terrain.cfg.size / 2
+        _add_ridges(scene, ("teyvat-island", native._episode_seed),
+                    [dict(center=(0, 0), half_extent=half, inner_gap=half * .55, depth=half * 1.4, floor=-16,
+                          peak=150, gaps=True, shoreline=terrain.cfg.sea_level + .4, snow=230)])
+    scene.metadata["haze"] = dict(start=70.0, distance=1100.0, amount=.85)
     # Observation budgets must not reduce presentation geometry or vegetation.
     settings = replace(native.cfg.render, width=size[0], height=size[1],
                        draw_props=True, draw_entities=True, draw_character=view != "first_person",
-                       ground_cover=True, prop_draw_distance=max(260, native.cfg.render.prop_draw_distance))
-    _add_batch(scene, SoftRenderer(settings)._build_meshes(
-        world, native.char, eye, _unit(target - eye), batch=_presentation_batch(), full_detail=True))
+                       ground_cover=layout is None,
+                       prop_draw_distance=max(260, native.cfg.render.prop_draw_distance))
+    forward = _unit(target - eye)
+    batch = SoftRenderer(settings)._build_meshes(
+        world, native.char, eye, forward, batch=_presentation_batch(), full_detail=True)
+    faded = set()
+    head = native.char.pos + np.array((0.0, 1.25, 0.0))
+    third_person = view == "presentation"
+    if third_person:
+        for n, entity in enumerate(world.entities.values()):
+            if entity.alive and _occludes(eye, head, entity.pos[[0, 2]], entity.pos[1], 3.6, 1.15):
+                faded.add(100 + n)
+    if layout is not None:
+        from . import dressing
+        occludes = None
+        if third_person:
+            occludes = lambda xz, base, height, radius: _occludes(eye, head, xz, base, height, radius)
+        scene.metadata["presentation_landscape"]["visible"] = dressing.emit_pieces(
+            layout, batch, eye, forward, occludes=occludes)
+        dressing.meadow_tufts(layout, batch, eye)
+        faded.add(dressing.OBJ_FADED)
+    if faded:
+        scene.metadata["faded_occluders"] = len(faded)
+    _add_batch(scene, batch, faded)
     return scene
+
+
+def _graded_meadow(color, points):
+    """Presentation grading: deeper, less saturated grass with restrained variation."""
+    from .dressing import fbm
+    luminance = color @ np.array((.3, .55, .15))
+    graded = (color * .82 + luminance[:, None] * .18) * .8
+    variation = fbm(points[:, 0], points[:, 2], 55, 3, salt=91)[:, None]
+    dry = np.array((.40, .41, .23))
+    greenness = np.clip((color[:, 1] - color[:, 0]) * 4, 0, 1)[:, None]
+    graded = graded * (1 - .35 * variation * greenness) + dry * .35 * variation * greenness
+    return np.clip(graded * (.94 + .12 * fbm(points[:, 0], points[:, 2], 9, 2, salt=92))[:, None], 0, 1)
+
+
+def _occludes(eye, head, center_xz, base_y, height, radius):
+    """Whether a vertical cylinder blocks the camera's line to the character."""
+    t = np.linspace(.04, .9, 32)[:, None]
+    line = eye + (head - eye) * t
+    near = np.linalg.norm(line[:, [0, 2]] - np.asarray(center_xz), axis=1) < radius
+    within = (line[:, 1] > base_y - .2) & (line[:, 1] < base_y + height)
+    return bool(np.any(near & within))
+
+
+_RIDGES = {}
+
+
+def _add_ridges(scene, identity, layers):
+    """Horizon ridges outside the walkable world; cached per world identity."""
+    from .dressing import horizon_ridges
+    from open_world_bench.render.meshes import MeshBatch
+    key = (identity, repr(layers))
+    if key not in _RIDGES:
+        if len(_RIDGES) > 6:
+            _RIDGES.clear()
+        batch = MeshBatch()
+        for n, layer in enumerate(layers):
+            horizon_ridges(batch, identity=(identity, n), **layer)
+        triangles, colors, _, _ = batch.finish()
+        _RIDGES[key] = (triangles, colors, np.concatenate(batch.normals))
+    triangles, colors, normals = _RIDGES[key]
+    scene.add("Horizon ridges (presentation only)", triangles, colors, normals=normals, material="terrain")
+    scene.metadata.setdefault("presentation_landscape", {})["horizon_layers"] = len(layers)
 
 
 def _wildlands(native, size):
@@ -306,13 +426,60 @@ def _wildlands(native, size):
         entities.append(dict(pos=tuple(agent.pos + (0, 0.9, 0)), radius=0.35, height=1.75,
             color=(59, 128, 147), semantic=B.SEM_SELF, yaw=agent.yaw,
             gliding=agent.gliding, phase=agent.distance_travelled * 2.5))
-    _add_batch(scene, renderer._meshes(world, cam.pos, forward, entities, native.ticks))
+    batch = renderer._meshes(world, cam.pos, forward, entities, native.ticks)
+    _wildlands_landscape(scene, native, batch, cam.pos, forward)
+    focus = agent.pos + np.array((0.0, 1.0, 0.0))
+    fade = None
+    if cfg.render_cfg.third_person or hasattr(native, "presentation_camera"):
+        from .dressing import OBJ_FADED
+        def fade(triangles, ids, eye=np.asarray(cam.pos, float), head=focus):
+            # Foliage and props between the presentation camera and the traveler.
+            centre = triangles.mean(axis=1).astype(float)
+            line = head - eye
+            t = np.clip(((centre - eye) @ line) / max(line @ line, 1e-9), 0, 1)
+            near = np.linalg.norm(centre - (eye + t[:, None] * line), axis=1) < 2.2
+            tall = np.isin(ids, (B.SEM_TREE, B.SEM_ROCK, B.SEM_STRUCTURE, 11))
+            return (near & tall & (t > .02) & (t < .9)) | (ids == OBJ_FADED)
+        scene.metadata["faded_occluders"] = "camera-to-traveler cylinder, camera rays only"
+    _add_batch(scene, batch, fade_triangles=fade)
     if hasattr(native, "presentation_meshes"):
         batch = _presentation_batch()
         native.presentation_meshes(batch)
         _add_batch(scene, batch)
         scene.metadata["reference_task"] = native.task
     return scene
+
+
+def _wildlands_landscape(scene, native, batch, eye, forward):
+    """Presentation landscape around voxel worlds; never collision or observation."""
+    from . import dressing
+    world = native.world
+    half = max(world.size_x, world.size_z) / 2
+    center = (world.size_x / 2, world.size_z / 2)
+    sea = float(world.sea_level)
+    _add_ridges(scene, ("voxel", type(native).__name__, int(native._seed), world.size_x, world.size_z),
+                [dict(center=center, half_extent=half, inner_gap=max(10, half * .12), depth=max(200, half * 2.5),
+                      floor=sea - 6, peak=sea + max(55, half * .8), gaps=True, shoreline=sea + .4),
+                 dict(center=center, half_extent=half, inner_gap=max(260, half * 3.2), depth=max(420, half * 5),
+                      floor=sea - 4, peak=sea + max(170, half * 2.2), gaps=False, snow=sea + max(140, half * 1.8))])
+    # Open sea around the square world (not under it: caves stay dry).
+    far = half * 14
+    x0, x1, z0, z1 = 0.0, float(world.size_x), 0.0, float(world.size_z)
+    cx, cz = center
+    quads = [((cx - far, cz - far), (x0, cz + far)), ((x1, cz - far), (cx + far, cz + far)),
+             ((x0, cz - far), (x1, z0)), ((x0, z1), (x1, cz + far))]
+    for (a, b), (c, d) in quads:
+        plane = np.array([[[a, sea + .45, b], [a, sea + .45, d]], [[c, sea + .45, b], [c, sea + .45, d]]])
+        scene.add("Open sea (presentation only)", _grid_triangles(plane), (0.16, 0.61, 0.66), water=True)
+    scene.metadata["haze"] = dict(start=45.0, distance=max(520.0, half * 6), amount=.82)
+    if type(native).__name__ == "WildlandsReferenceEnv":
+        key = ("wildlands-reference", int(native._seed), native.task)
+        layout = dressing._cached(key, lambda: dressing.wildlands_reference_layout(native))
+        scene.add_texture("ground_detail", layout.mask_image, **layout.mask)
+        dressing.emit_pieces(layout, batch, eye, forward, max_distance=260, near_detail=60)
+        dressing.wildlands_course_trim(native, batch)
+        summary = dressing.layout_summary(layout)
+        scene.metadata["presentation_landscape"] = dict(scene.metadata.get("presentation_landscape", {}), **summary)
 
 
 def capture_scene(env, *, width=960, height=540, view="presentation"):

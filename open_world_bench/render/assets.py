@@ -236,66 +236,118 @@ def _pedestal(batch,rng,height=.45,radius=.72):
                    _color((.48,.47,.41),rng),sides=8,taper=.96)
 
 
+def _foundation(batch,rng,size=1.7,tiers=2):
+    """Stepped square footing: every relay part is built on prepared ground."""
+    _tag(batch,STONE)
+    y=-.12
+    for tier in range(tiers):
+        s=size*(1-.17*tier);h=.26 if tier else .34
+        batch.box((0,y+h/2,0),(s,h,s),_color((.52,.50,.44),rng,.06))
+        y+=h
+    # Corner kerbs break the silhouette of the plain slab.
+    for x in (-1,1):
+        for z in (-1,1):
+            batch.box((x*size*.43,.25,z*size*.43),(size*.16,.16,size*.16),_color((.47,.45,.40),rng,.06))
+    return y
+
+
+def _crystal(batch,base,radius,height,color,emissive,sides=6):
+    """A cut crystal (bipyramid), held point-up; replaces bare glowing cones."""
+    lower=height*.32
+    batch.cone(np.asarray(base)+(0,lower,0),radius,-lower,color,sides=sides,emissive=emissive)
+    batch.cone(np.asarray(base)+(0,lower,0),radius,height-lower,color,sides=sides,emissive=emissive)
+
+
+def _cradle(batch,center,radius,height,metal,prongs=4):
+    _tag(batch,METAL)
+    center=np.asarray(center)
+    ring(batch,center,radius*.8,metal,tube=.035,segments=16)
+    for a in np.arange(prongs)*2*np.pi/prongs+np.pi/prongs:
+        d=np.array((np.cos(a),0,np.sin(a)))
+        batch.tube(center+d*radius*.8,center+d*radius*1.05+(0,height*.55,0),.03,metal,sides=5)
+        batch.tube(center+d*radius*1.05+(0,height*.55,0),center+d*radius*.55+(0,height,0),.025,metal,sides=5)
+
+
 def _fixture(batch,rng,kind,used,role,version):
-    stone=(.47,.46,.40);metal=(.43,.32,.16);glow=(.34,.70,.72)
-    _pedestal(batch,rng)
+    stone=(.50,.48,.42);dark=(.36,.35,.31);metal=(.43,.32,.16);glow=(.34,.70,.72)
+    lit=lambda on,off: on if used else off
+    if role in ("drain","vane","core","source") or kind=="pillar":
+        top=_foundation(batch,rng)
+    else:
+        _pedestal(batch,rng);top=.45
     if role=="drain":
-        _tag(batch,STONE);ring(batch,(0,.52,0),.60,stone,tube=.12)
-        batch.cone((0,.43,0),.49,.09,(.17,.22,.22),sides=16,taper=1)
+        # A sunken basin with a bronze grate: reads as an outflow, not a post.
+        _tag(batch,STONE);ring(batch,(0,top+.14,0),.62,stone,tube=.14)
+        batch.cone((0,top,0),.52,.12,(.17,.22,.22),sides=16,taper=1)
+        for a in np.arange(4)*np.pi/2+np.pi/4:
+            batch.box((np.cos(a)*.62,top+.32,np.sin(a)*.62),(.16,.36,.16),_color(dark,rng,.05),a)
         _tag(batch,METAL)
         for a in np.arange(6)*np.pi/3:
-            batch.tube((np.cos(a)*.18,.55,np.sin(a)*.18),(np.cos(a)*.53,.55,np.sin(a)*.53),
+            batch.tube((np.cos(a)*.18,top+.16,np.sin(a)*.18),(np.cos(a)*.55,top+.16,np.sin(a)*.55),
                        .033,metal,sides=6)
-        ring(batch,(0,.72,0),.28,metal,tube=.035)
+        ring(batch,(0,top+.36,0),.28,metal,tube=.035)
     elif role=="vane":
-        _tag(batch,METAL);batch.tube((0,.45,0),(0,3.05,0),.11,metal,end_radius=.065,sides=10)
-        ring(batch,(0,2.15,0),.63,metal,vertical=True,tube=.045)
+        # A bronze mast and sail wheel stepped into a stone collar.
+        _tag(batch,STONE);batch.cone((0,top,0),.34,.5,_color(stone,rng),sides=8,taper=.75)
+        _tag(batch,METAL);batch.tube((0,top+.45,0),(0,top+2.7,0),.09,metal,end_radius=.06,sides=10)
+        ring(batch,(0,top+1.8,0),.63,metal,vertical=True,tube=.045)
         for a in np.arange(4)*np.pi/2:
             direction=np.array((np.cos(a),np.sin(a),0));side=np.array((-np.sin(a),np.cos(a),0))
-            center=np.array((0,2.15,0))
+            center=np.array((0,top+1.8,0))
             _tag(batch,METAL);batch.tube(center,center+direction*.88,.028,metal,sides=5)
             _tag(batch,CLOTH)
             batch.quad(center+direction*.24,center+direction*.86,center+direction*.75+side*.27+(0,0,.10),
                        center+direction*.30+side*.17,(.63,.68,.48))
+        _tag(batch,METAL);batch.ellipsoid((0,top+2.78,0),(.1,.1,.1),metal)
     elif role=="core":
-        _tag(batch,STONE);batch.cone((0,.45,0),.42,1.0,stone,sides=8,taper=.85)
+        # A squat drum holding an armillary gimbal around a floating crystal.
+        _tag(batch,STONE)
+        batch.cone((0,top,0),.52,.75,_color(stone,rng),sides=12,taper=.86)
+        batch.cone((0,top+.75,0),.58,.14,_color(dark,rng),sides=12,taper=.95)
         _tag(batch,METAL)
-        ring(batch,(0,1.9,0),.48,metal,vertical=True)
-        ring(batch,(0,1.9,0),.54,metal)
-        batch.cone((0,1.55,0),.22,.7,glow,sides=6,emissive=.55 if used else .13)
+        ring(batch,(0,top+1.55,0),.50,metal,vertical=True)
+        ring(batch,(0,top+1.55,0),.56,metal)
+        for a in (0,np.pi):
+            batch.tube((np.cos(a)*.56,top+.9,np.sin(a)*.56),(np.cos(a)*.56,top+1.55,np.sin(a)*.56),.035,metal,sides=5)
+        _crystal(batch,(0,top+1.25,0),.17,.6,glow,lit(.6,.14))
     elif role=="vent":
-        _tag(batch,STONE);ring(batch,(0,.5,0),.64,stone,tube=.11)
+        _tag(batch,STONE);ring(batch,(0,top+.05,0),.64,stone,tube=.11)
         _tag(batch,METAL)
         for a in np.arange(8)*np.pi/4:
             d=np.array((np.cos(a),0,np.sin(a)))
-            batch.quad(d*.15+(0,.45,0),d*.59+(0,.45,0),d*.57+(0,.60,.08),d*.18+(0,.52,.08),metal)
+            batch.quad(d*.15+(0,top,0),d*.59+(0,top,0),d*.57+(0,top+.15,.08),d*.18+(0,top+.07,.08),metal)
     elif kind=="waypoint":
         _tag(batch,STONE)
         for side in (-1,1):
-            batch.cone((side*.53,.44,0),.20,2.55,stone,sides=6,taper=.7)
-            batch.tube((side*.53,2.85,0),(0,3.25,0),.14,stone,sides=8)
-        _tag(batch,METAL);ring(batch,(0,2.2,0),.47,metal,vertical=True,tube=.06)
-        batch.cone((0,1.15,0),.25,1.35,glow,sides=6,emissive=.35 if used else .14)
+            batch.cone((side*.53,top,0),.20,2.55,stone,sides=6,taper=.7)
+            batch.tube((side*.53,top+2.4,0),(0,top+2.8,0),.14,stone,sides=8)
+        _tag(batch,METAL);ring(batch,(0,top+1.75,0),.47,metal,vertical=True,tube=.06)
+        _crystal(batch,(0,top+1.35,0),.2,.75,glow,lit(.35,.14))
     elif kind=="beacon":
-        _tag(batch,STONE);batch.cone((0,.45,0),.35,1.8,stone,sides=8,taper=.75)
-        _tag(batch,METAL);ring(batch,(0,2.3,0),.48,metal,tube=.10)
-        for a in np.arange(5)*2*np.pi/5:
-            batch.tube((np.cos(a)*.4,2.25,np.sin(a)*.4),(np.cos(a)*.2,2.75,np.sin(a)*.2),.045,metal,sides=5)
-        batch.cone((0,2.25,0),.22,.72,(.94,.58,.20),sides=7,emissive=.8 if used else .04)
+        _tag(batch,STONE);batch.cone((0,top,0),.38,1.8,stone,sides=8,taper=.75)
+        batch.box((0,top+1.86,0),(.62,.14,.62),_color(dark,rng))
+        _cradle(batch,(0,top+1.95,0),.36,.55,metal,prongs=5)
+        _crystal(batch,(0,top+2.0,0),.2,.7,(.94,.58,.20),lit(.8,.04))
     else:
-        # Source cells and generic puzzle pillars share a family, with a clear inlet ring cue.
-        height=rng.uniform(1.7,2.3)
+        # Source stele: a banded, gently tapering shaft with a capital that
+        # holds a cut crystal in a bronze cradle. Bronze bands count the rule version.
+        height=rng.uniform(1.85,2.15)
         _tag(batch,STONE)
-        for level in range(4):
-            batch.cone((0,.45+level*height/4,0),.35-level*.024,height/4-.025,
-                       _color(stone,rng),sides=6,taper=.97)
+        batch.box((0,top+.12,0),(.82,.24,.82),_color(dark,rng,.05))
+        sections=3
+        for level in range(sections):
+            y=top+.24+level*height/sections
+            r=.33-level*.03
+            batch.cone((0,y,0),r,height/sections-.06,_color(stone,rng,.06),sides=4,taper=.94)
+            batch.cone((0,y+height/sections-.06,0),r*.9,.06,_color(dark,rng,.05),sides=4,taper=1)
+        capital=top+.24+height
+        batch.box((0,capital+.09,0),(.66,.18,.66),_color(stone,rng,.05),np.pi/4)
+        batch.box((0,capital+.23,0),(.5,.1,.5),_color(dark,rng,.05),np.pi/4)
         _tag(batch,METAL)
         for level in range(version if role=="source" else 1):
-            ring(batch,(0,.84+level*.20,0),.36,metal,tube=.065)
-        for a in np.arange(4)*np.pi/2:
-            batch.tube((np.cos(a)*.28,height+.3,np.sin(a)*.28),
-                       (np.cos(a)*.20,height+1.0,np.sin(a)*.20),.035,metal,sides=5)
-        batch.cone((0,height+.3,0),.20,.82,glow,sides=6,emissive=.6 if used else .15)
+            ring(batch,(0,top+.62+level*.22,0),.34,metal,tube=.055)
+        _cradle(batch,(0,capital+.28,0),.24,.5,metal)
+        _crystal(batch,(0,capital+.3,0),.15,.55,glow,lit(.6,.15))
 
 
 @lru_cache(maxsize=256)

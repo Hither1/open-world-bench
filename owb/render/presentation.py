@@ -56,8 +56,8 @@ class PresentationRenderer:
         self.width, self.height = width, height
         self.samples, self.threads = samples, threads
         self.device = device or os.environ.get("OWB_CYCLES_DEVICE", "CPU")
-        if self.device not in ("CPU", "CUDA", "OPTIX"):
-            raise ValueError("Cycles device must be CPU, CUDA, or OPTIX")
+        if self.device not in ("CPU", "CUDA", "OPTIX", "METAL"):
+            raise ValueError("Cycles device must be CPU, CUDA, OPTIX, or METAL")
         self.blender = resolve_blender(blender) if backend == "cycles" else None
         self._workspace = None
 

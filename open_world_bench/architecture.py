@@ -223,4 +223,7 @@ def populate_architecture(world, spawn=None):
                                    float(np.ceil(np.ptp(heights)*10)/10)))
             break
     world.architecture = Architecture(placed)
+    # Read-only record of the corridors kept clear; presentation dressing
+    # honours the same contract. It does not affect collision or state.
+    world.architecture.protected_routes = routes.copy()
     return world.architecture

@@ -24,6 +24,64 @@ variation, individual foliage, distinct task fixtures, and material groups for
 stone, bark, foliage, metal, cloth, skin, and terrain. These groups survive scene
 export; Blender assigns their different surface responses during rendering.
 
+## Presentation landscape
+
+Compact reference courses are small authored layouts, so the Cycles
+presentation frames them with a landscape. The code is in
+[`owb/render/dressing.py`](../owb/render/dressing.py). The simulated terrain,
+collision, task entities, and action traces are unchanged; none of this
+geometry collides or appears in policy RGB observations.
+
+| Layer | What it adds | Where |
+| --- | --- | --- |
+| Horizon ridges | Two rings of ridged terrain beyond the walkable world. The near ring has gaps and a beach line; the far ring is taller with snow. | Teyvat (course and island), Wildlands, Skylands |
+| Distance haze | Camera-distance blend toward the horizon colour, so far ridges read as layered silhouettes. Subjects within about 45–90 m are unaffected. | All Cycles scenes |
+| Set pieces | Locations rather than a scatter. Each task site gets a role-specific vignette (ruined walls framing a relay court, a standing-stone cairn at a survey point, a stair-and-terrace ruin by a lift, a broken colonnade by a sentinel). Ambient clusters group trees, bushes, and grass around rock outcrops, with regional tree species. | Teyvat course, Wildlands course, Skylands campaign surface |
+| Ground detail | A world-space texture (path wear, soil, paving, exposed rock) applied to upward-facing terrain, with noise-broken edges. Relay courts get irregular flagstones; the route between sites is a worn path. | Same as set pieces |
+| Meadow carpet | Short grass instanced by geometry nodes within 40 m of the camera, clumped by a world-space noise shared with the ground tone, and kept off paths, paving, and rock. | Teyvat course |
+| Gate trim | Bases, banded shafts, capitals, and a cornice wrapped around the Wildlands courtyard gate voxels; the voxels remain the collision geometry. | Wildlands course |
+| Occluder fading | Tall objects between the presentation camera and the character are faded for camera rays only; their shadows and bounce light are unchanged. | Teyvat presentation view, Wildlands |
+
+Set pieces stay outside protected corridors: every straight route between task
+entities (the same corridors architecture placement keeps clear), entity
+positions, buildings, courtyards, and roads. The Teyvat corridor margin is
+6.5 m because the reference controller strays up to about 5 m from straight
+routes during combat and turns.
+[`tests/test_presentation_landscape.py`](../tests/test_presentation_landscape.py)
+checks that every position in the committed Teyvat and Wildlands reference
+traces is more than 1 m from every set-piece footprint. The measured minimum
+is 2.5 m.
+
+Layouts are pure functions of the world identity and a layout version. They
+use local hash noise and identity-seeded generators, never the simulation RNG,
+so pieces keep their appearance as the camera moves. Snapshots record the
+layout summary under `presentation_landscape` (`collision: false`,
+`observation: false`) together with the ground-detail texture and its world
+mapping.
+
+Shared look settings in [`blender_scene.py`](../owb/render/blender_scene.py):
+AgX with Medium High Contrast at exposure 0 (previously +0.5, which washed out
+the ground), sun strength × 4.0, sky strength 0.62. Teyvat terrain is graded to
+a deeper, less saturated meadow with restrained dry patches. This removes most
+of the strong green bounce in cast shadows. Blender also accepts
+`--device METAL` (Apple GPUs) alongside `CPU`, `CUDA`, and `OPTIX`; an
+unavailable device is still an error, never a silent fallback.
+
+Matched before/after Cycles renders of the committed traces, with their
+settings, are in [`assets/design/landscape-refresh`](../assets/design/landscape-refresh/):
+[Teyvat A03 before](../assets/design/landscape-refresh/teyvat-a03-before.png) /
+[after](../assets/design/landscape-refresh/teyvat-a03-after.png),
+[Teyvat A10](../assets/design/landscape-refresh/teyvat-a10-compare.png),
+[Wildlands A04](../assets/design/landscape-refresh/wildlands-a04-compare.png), and
+[Skylands](../assets/design/landscape-refresh/skylands-a-step1500-compare.png).
+The Skylands campaign camera looks steeply down at the traveler, so most of its
+change (ridges and set pieces) is visible only in wider views.
+
+Not changed: the compact courses remain compact prototypes on the same
+terrain. A shaped valley, occluding terrain, or colliding landmarks inside the
+walkable area would change the task and need new ground-truth traces. Videos
+and previews committed before this change are not re-rendered automatically.
+
 ## Render both environments
 
 Install the repository and an [official Blender release](https://www.blender.org/download/).
@@ -122,11 +180,11 @@ MP4 output uses H.264, `yuv420p`, and fast-start metadata for viewer compatibili
 The recording's `config.json` includes the presentation backend and settings.
 
 Cycles presentation supports an explicit GPU device through
-`OWB_CYCLES_DEVICE=CUDA` or `OWB_CYCLES_DEVICE=OPTIX`. The default hardware device
+`OWB_CYCLES_DEVICE=CUDA`, `OWB_CYCLES_DEVICE=OPTIX`, or `OWB_CYCLES_DEVICE=METAL`. The default hardware device
 is `CPU`; all three use the same full Cycles scene, materials, and sample count.
 The selected device is recorded in presentation metadata. An unavailable GPU
 raises an error instead of switching devices. The standalone Blender script
-accepts the equivalent `--device CPU|CUDA|OPTIX` option.
+accepts the equivalent `--device CPU|CUDA|OPTIX|METAL` option.
 
 The reference task recorder (`owb.scripts.teyvat_reference`), screenshot script,
 and native Teyvat `render_hd()` also default to Cycles. Reference frames are

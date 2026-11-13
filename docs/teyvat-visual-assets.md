@@ -30,10 +30,14 @@ record the state and implementation used for the refreshed views.
 - Waypoints have stone supports and metal/crystal assemblies. Chests have
   timber planks, straps, clasps, and rivets. NPCs vary in clothing, hair,
   accessories, skin tone, and stature.
-- Relay sources are caged cells, drains are low basins with channels, vanes are
-  wind-driven structures, and cores are ring-mounted consoles. Source inlets
-  visibly retain the single-/double-ring distinction required by the task rules.
-  Vent shelves use a separate ground-level design.
+- Relay parts are one architectural family. Each stands on a stepped square
+  foundation with corner kerbs. Sources are banded, gently tapering steles whose
+  capital holds a cut crystal in a bronze cradle; drains are sunken basins with a
+  bronze grate; vanes are bronze masts stepped into a stone collar; cores are
+  squat drums holding an armillary gimbal around a floating crystal. Source
+  bands visibly retain the single-/double-ring distinction required by the task
+  rules. Vent shelves use a separate ground-level design. (The earlier source
+  pillar, a tapered shaft under a large glowing cone, read as a giant pencil.)
 - Cycles uses separate stone, bark, foliage, metal, cloth, skin, and terrain
   materials with different roughness, fine surface normals, and color variation.
   Leaves transmit some light; terrain includes world-anchored earth patches.
@@ -130,3 +134,12 @@ manifest with renderer settings, source hashes, building identities, and image
 hashes. Only presentation cameras change; task state and terrain remain exact.
 `--export-only` writes scenes without rendering. The render command requires an
 available CUDA or OptiX GPU and never falls back to CPU rendering.
+
+## Presentation landscape
+
+Cycles presentation renders of the compact reference course also add a
+presentation-only landscape, described in the
+[rendering guide](rendering.md#presentation-landscape): horizon ridges beyond
+the plateau, set pieces grouped around each task site, worn paths, paved relay
+courts, and meadow grass near the camera. None of it collides or appears in
+policy observations, and the course terrain is unchanged.
