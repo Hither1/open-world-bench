@@ -59,6 +59,14 @@ layout summary under `presentation_landscape` (`collision: false`,
 `observation: false`) together with the ground-detail texture and its world
 mapping.
 
+The haze is an emission shader mixed into every material, so materials whose
+only emission is haze use `emission_sampling = "NONE"`. Otherwise Cycles treats
+every hazed triangle as a light: in the Skylands campaign that made the
+~70 million baked grass triangles light-tree emitters, and some frames exceeded
+128 GB of host memory. Rays still gather the haze, so the image is unchanged
+(re-rendered frames differ by at most one 8-bit level); genuinely glowing
+materials keep light sampling.
+
 Shared look settings in [`blender_scene.py`](../owb/render/blender_scene.py):
 AgX with Medium High Contrast at exposure 0 (previously +0.5, which washed out
 the ground), sun strength × 4.0, sky strength 0.62. Teyvat terrain is graded to

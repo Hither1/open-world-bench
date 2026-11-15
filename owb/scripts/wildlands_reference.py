@@ -10,14 +10,15 @@ import time
 import numpy as np
 from owb.env.wildlands_reference import WildlandsReferenceEnv, plain, COMMANDS
 from owb.bench.baselines.wildlands_reference import WildlandsReferencePolicy
-from owb.render.presentation import PresentationRenderer
+from owb.render.cycles_batch import CyclesBatchRenderer
 from owb.render.video import H264Writer
 
 ROOT=Path(__file__).resolve().parents[2]
 SOURCES=('owb/env/wildlands_reference.py','owb/bench/baselines/wildlands_reference.py',
          'owb/scripts/wildlands_reference.py','owb/env/wildlands.py','owb/physics/character.py',
          'owb/physics/bodies.py','owb/physics/elements.py','owb/render/scene_export.py',
-         'owb/render/blender_scene.py','owb/render/presentation.py','owb/render/video.py')
+         'owb/render/blender_scene.py','owb/render/dressing.py','owb/render/presentation.py','owb/render/video.py',
+         'owb/render/cycles_batch.py','owb/render/blender_batch.py')
 LIMITATIONS=[
  'Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.',
  'Privileged reference controller; no claim that an agent learned skills or retained memories.',
@@ -113,19 +114,24 @@ def font(size,bold=False):
 
 class Overlay:
     def __init__(self,task,samples=48,threads=8):
-        self.renderer=PresentationRenderer(backend='cycles',width=960,height=540,samples=samples,threads=threads)
+        self.renderer=CyclesBatchRenderer(width=960,height=540,samples=samples,threads=threads)
         self.task=task; self.fonts={n:font(n) for n in (14,16,18,20,24)}; self.title=font(26,True)
 
-    def frame(self,env,row):
-        from PIL import Image,ImageDraw
+    def submit(self,env,row):
+        """Export this state for Cycles and capture the caption panel; does not wait for the render."""
         env.reference_view_id=row['milestone']
         before=env.state_digest()
-        rgb=self.renderer.render(env)
+        ticket=self.renderer.submit(env)
         assert env.state_digest()==before,'Presentation must not change simulation'
-        image=Image.new('RGB',(1280,720),(18,39,46)); d=ImageDraw.Draw(image)
-        d.text((22,14),row['milestone']+'  '+row['title'],font=self.title,fill=(247,237,211))
-        d.text((23,54),'WILDLANDS  |  Executed reference course  |  Privileged controller  |  Blender Cycles',font=self.fonts[16],fill=(161,201,194))
-        image.paste(Image.fromarray(rgb),(16,93))
+        return ticket,self.panel(env,row)
+
+    def result(self,pending):
+        ticket,panel=pending
+        return self.compose(panel,self.renderer.result(ticket))
+
+    def frame(self,env,row): return self.result(self.submit(env,row))
+
+    def panel(self,env,row):
         m=env.by_id[row['milestone']]; s=m.state
         lines=[f'Completed {len(env.completed)} / {len(env.milestones)}',f'Simulation {env.elapsed:.1f} s',
                f'Action {env.steps}',f'Health {env.agent.health:.1f}',f'Stamina {env.agent.stamina:.0f}',
@@ -135,9 +141,18 @@ class Overlay:
         elif m.kind in ('flow','cool','prepare'): lines += [f'Inlet: {"OPEN" if s["inlet"] else "CLOSED"}',f'Outlets: '+''.join('O' if v else '-' for v in s['outlets']),f'Stable: {s["stable"]:.1f} s',f'Temperature: {s["temperature"]:.0f} C']
         elif m.kind=='calibrate': lines += [f'Parts installed: {s["installed"]}',f'Mark selected: {s["selected"]}',f'Stable: {s["elapsed"]:.1f} s']
         else: lines += [f'Parts: {sum(env.satchel.values())}',f'Stations online: {len(env.online)}',f'Road drained: {env.drained}',f'Bridge closed: {env.storm}']
-        for i,line in enumerate(lines): d.text((993,104+i*27),line,font=self.fonts[16],fill=(222,231,223))
         complete=any(ev['type']=='milestone_complete' for ev in row['events'])
         caption=('VERIFIED: '+row['milestone']+' complete') if complete else row['explanation']
+        return dict(heading=row['milestone']+'  '+row['title'],lines=lines,caption=caption)
+
+    def compose(self,panel,rgb):
+        from PIL import Image,ImageDraw
+        image=Image.new('RGB',(1280,720),(18,39,46)); d=ImageDraw.Draw(image)
+        d.text((22,14),panel['heading'],font=self.title,fill=(247,237,211))
+        d.text((23,54),'WILDLANDS  |  Executed reference course  |  Privileged controller  |  Blender Cycles',font=self.fonts[16],fill=(161,201,194))
+        image.paste(Image.fromarray(rgb),(16,93))
+        for i,line in enumerate(panel['lines']): d.text((993,104+i*27),line,font=self.fonts[16],fill=(222,231,223))
+        caption=panel['caption']
         d.rectangle((16,646,1263,688),fill=(32,66,73))
         d.text((29,655),caption[:105],font=self.fonts[20],fill=(247,237,211))
         d.text((22,698),'Selected simulator states; held for reading | Compact oracle course | Complete actions supplied for replay',font=self.fonts[14],fill=(159,188,183))
@@ -199,7 +214,20 @@ def render_chunk(directory,cache,first,last,*,stride=12,fps=10,samples=48,thread
     else: save(plan,contract)
     progress=folder/'progress.json'
     previous_frames={r['step']:r for r in json.loads(progress.read_text())} if progress.exists() else {}
-    started=time.monotonic()
+    started=time.monotonic(); pending=None
+
+    def finish():
+        # Collect the frame queued earlier; Blender renders it while the replay continues.
+        nonlocal pending
+        if pending is None: return
+        job,row,step,digest,new,important=pending; pending=None
+        rgb=overlay.result(job); name=f'{step:06}.png'
+        Image.fromarray(rgb).save(folder/name)
+        entries.append(dict(file=name,sha256=sha(folder/name),step=step,id=row['milestone'],title=row['title'],
+            seconds=row['seconds'],new=new,repeats=30 if checkpoints else (8 if important or new else 1),digest=digest))
+        save(progress.with_suffix('.partial'),entries)
+        progress.with_suffix('.partial').replace(progress)
+        print(f'{row["milestone"]} action {step}: saved Cycles frame; {time.monotonic()-started:.0f} s',flush=True)
     try:
         for row in rows:
             number=int(row['milestone'][1:])
@@ -217,17 +245,20 @@ def render_chunk(directory,cache,first,last,*,stride=12,fps=10,samples=48,thread
                 if saved:
                     if saved['digest']!=env.state_digest() or sha(folder/saved['file'])!=saved['sha256']:
                         raise RuntimeError('Saved frame no longer matches replay')
-                    entries.append(saved)
+                    finish(); entries.append(saved)
+                    print(f'{row["milestone"]} action {row["step"]}: reused verified Cycles frame',flush=True)
                 else:
-                    rgb=overlay.frame(env,row); name=f'{row["step"]:06}.png'
-                    Image.fromarray(rgb).save(folder/name)
-                    entries.append(dict(file=name,sha256=sha(folder/name),step=row['step'],id=row['milestone'],title=row['title'],
-                        seconds=row['seconds'],new=new,repeats=30 if checkpoints else (8 if important or new else 1),digest=env.state_digest()))
-                    save(progress.with_suffix('.partial'),entries)
-                    progress.with_suffix('.partial').replace(progress)
-                print(f'{row["milestone"]} action {row["step"]}: saved Cycles frame',flush=True)
+                    job=overlay.submit(env,row)
+                    finish()
+                    pending=(job,row,row['step'],env.state_digest(),new,important)
             if 'milestone_complete' in kinds:
-                print(f'{directory.name}: rendered {row["milestone"]}; {len(entries)} frames; {time.monotonic()-started:.0f} s',flush=True)
+                print(f'{directory.name}: replayed {row["milestone"]}; {len(entries)} frames saved; {time.monotonic()-started:.0f} s',flush=True)
+        finish()
+        timings=getattr(overlay.renderer,'timings',None)
+        if timings:
+            build=[t['build_seconds'] for t in timings]; render=[t['render_seconds'] for t in timings]
+            print(f'Cycles timing over {len(timings)} frames: scene build mean {np.mean(build):.1f} s, '
+                  f'render+denoise mean {np.mean(render):.1f} s; wall {time.monotonic()-started:.0f} s',flush=True)
         if last==manifest['required']:
             assert env.success and env.state_digest()==manifest['final_digest']
         save(folder/'index.json',dict(**contract,frames=entries,checkpoint=env.state_digest()))

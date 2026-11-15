@@ -320,7 +320,14 @@ def material(name, *, emission=False, water=False, kind="surface", ground=None):
         bump.inputs["Distance"].default_value = 0.12
         links.new(noise.outputs["Fac"], bump.inputs["Height"])
         links.new(bump.outputs["Normal"], shader.inputs["Normal"])
-    return add_haze(mat)
+    mat = add_haze(mat)
+    if not emission:
+        # Haze is distance fog seen by rays, not a light. With AUTO emission
+        # sampling every hazed triangle (tens of millions of grass blades) became
+        # a light-tree emitter. Rays still gather the haze, so the expected image
+        # is unchanged; real glow materials keep light sampling.
+        mat.cycles.emission_sampling = "NONE"
+    return mat
 
 
 MATERIAL_KINDS = ("terrain", "stone", "bark", "foliage", "metal", "cloth", "skin")

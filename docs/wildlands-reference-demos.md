@@ -1,13 +1,14 @@
 # Wildlands reference demonstrations
 
-**Current status:** both complete action traces are independently replay-verified.
-The full Cycles video renders are pending compute-node approval. The chapter
-player and MP4 links below describe the prepared output paths; the files are
-published only after rendering and complete playback checks succeed.
+**Current status:** both complete action traces are independently replay-verified,
+and both walkthroughs are rendered in Blender Cycles (OptiX, 48 samples) with the
+[presentation landscape](rendering.md#presentation-landscape), with every encoded
+frame decoded and checked. Renderer settings and source hashes are recorded in each
+course's `summary.json`.
 
-A [verified Cycles checkpoint preview](../assets/demos/wildlands-reference/render-preview.png)
+An earlier [single Cycles checkpoint preview](../assets/demos/wildlands-reference/render-preview.png)
 and its [state/render receipt](../assets/demos/wildlands-reference/render-preview.json)
-are available now.
+predate the presentation landscape.
 
 The prepared recordings demonstrate valid solutions to **compact executable versions**
 of the [12- and 24-milestone task designs](wildlands-long-horizon-tasks.md).
@@ -82,22 +83,41 @@ memory conditions, held-out instances, and appropriate diagnostic baselines.
 
 ## Rendering and reproduction
 
-Presentation uses Blender 4.5.4 Cycles, 48 samples, denoising, six maximum
-bounces, and AgX. The scene is rendered at its native 960 × 540 resolution and
+Presentation uses Blender 4.5.4 Cycles (OptiX), 48 samples, OpenImageDenoise,
+six maximum bounces, and AgX. The scene is rendered at its native 960 × 540 resolution and
 placed without upscaling in a 1280 × 720 caption layout. Videos use H.264 Baseline,
 `yuv420p`, fast-start metadata, and 10 encoded frames per second; checkpoint
 images are repeated for reading. Rendering does not replace policy observations.
 
-A bounded GPU job is prepared in
-[`owb/scripts/render_wildlands.slurm`](../owb/scripts/render_wildlands.slurm).
-It requests one GPU, four CPU cores, 16 GB RAM, and at most one hour on
-`gpu_test`, renders sequentially using Cycles CUDA, verifies both traces, and
-assembles the videos and chapter player. Submit from the repository root after
-compute access is approved:
+Render from the repository root on the Slurm login node:
 
 ```bash
-sbatch owb/scripts/render_wildlands.slurm
+bash owb/scripts/regenerate_wildlands.sh
 ```
+
+The script moves any previous frame cache and published videos aside, then
+submits two dependent jobs:
+
+1. [`render_wildlands.slurm`](../owb/scripts/render_wildlands.slurm): six
+   array tasks on `gpu_requeue` (RTX A6000, RTX 6000 Pro, or A40), one per
+   milestone range balanced by checkpoint frames (A: 1–5, 6–12; B: 1–5, 6–13,
+   14–18, 19–24). Each task replays its trace from the start with full checks,
+   then renders its checkpoint states with Cycles OptiX in one persistent
+   Blender process ([`cycles_batch.py`](../owb/render/cycles_batch.py)). Each
+   frame starts from Blender's factory settings and runs the unchanged scene
+   builder, so it matches a fresh Blender process per frame. Python exports the
+   next state while Blender renders the previous one. Preempted tasks requeue
+   and resume from verified saved frames.
+2. [`assemble_wildlands.slurm`](../owb/scripts/assemble_wildlands.slurm): on a
+   CPU node, replay-verifies both traces, encodes and decodes both walkthroughs
+   from the verified frames, and builds the chapter player.
+
+Blender is staged on node-local disk by
+[`stage_blender.py`](../owb/scripts/stage_blender.py) from a checksummed copy
+of the official archive in `.cache/render-tools` (downloaded once), and the
+large per-frame scene snapshots stay on node-local disk. Render records include
+the Blender version, device, denoiser, and source hashes, including the
+presentation-landscape code.
 
 The default frame cache is `.cache/wildlands-cycles`; `OWB_FRAME_CACHE` may point
 to a persistent scratch directory. There is no automatic GPU-to-CPU fallback.

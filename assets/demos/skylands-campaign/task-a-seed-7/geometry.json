@@ -9,6 +9,7 @@
   "spatial_culling": false,
   "tree_detail": 2,
   "ground_cover_repeats": 4,
+  "presentation_landscape": "horizon ridges and surface set pieces; no collision, not observed",
   "trees": 235,
   "grass_instances": 3506380
 }

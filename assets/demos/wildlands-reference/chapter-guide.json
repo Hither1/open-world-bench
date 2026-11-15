@@ -1,0 +1,750 @@
+{
+  "a": {
+    "chapters": [
+      {
+        "id": "A01",
+        "title": "Accept the repair commission",
+        "start_seconds": 0.0,
+        "action_start": 1,
+        "simulation_start": 0.2,
+        "end_seconds": 3.0,
+        "memory_role": "Remember a location",
+        "instruction": "Inspect the commission. Retain the ranger-cache landmark for A08."
+      },
+      {
+        "id": "A02",
+        "title": "Restore the workshop lift",
+        "start_seconds": 3.0,
+        "action_start": 52,
+        "simulation_start": 10.399999999999979,
+        "end_seconds": 21.0,
+        "memory_role": "Learn support and release",
+        "instruction": "Observe the empty-load brake trip. Engage the brake, magnetically place one slab on the cradle, drop it so its mass is supported, then release. Wait for stable opening."
+      },
+      {
+        "id": "A03",
+        "title": "Reach the thermal gallery",
+        "start_seconds": 21.0,
+        "action_start": 143,
+        "simulation_start": 28.600000000000136,
+        "end_seconds": 33.0,
+        "memory_role": "Learn a safe updraft",
+        "instruction": "Read the local shaft instructions. Open the vent, ignite the sheltered heat source, jump and deploy the glider into the updraft. Land on the upper gallery."
+      },
+      {
+        "id": "A04",
+        "title": "Open the practice gate",
+        "start_seconds": 33.0,
+        "action_start": 328,
+        "simulation_start": 65.60000000000055,
+        "end_seconds": 48.0,
+        "memory_role": "Practice support and release",
+        "instruction": "Use the same device-family meanings on the second gate. Brake first; establish the required supported load, then release and verify the gate opens."
+      },
+      {
+        "id": "A05",
+        "title": "Recover the salvage kit",
+        "start_seconds": 48.0,
+        "action_start": 424,
+        "simulation_start": 84.79999999999946,
+        "end_seconds": 60.0,
+        "memory_role": "Practice a safe updraft",
+        "instruction": "Open the new shaft vent, enable sheltered heat, and glide to the elevated gallery. Landing awards the salvage kit."
+      },
+      {
+        "id": "A06",
+        "title": "Survey the valley",
+        "start_seconds": 60.0,
+        "action_start": 516,
+        "simulation_start": 103.19999999999841,
+        "end_seconds": 63.0,
+        "memory_role": "Remember a calibration",
+        "instruction": "Inspect the survey source. Save the seeded intake calibration mark and the depot bearings for later use."
+      },
+      {
+        "id": "A07",
+        "title": "Obtain the replacement regulator",
+        "start_seconds": 63.0,
+        "action_start": 556,
+        "simulation_start": 111.19999999999796,
+        "end_seconds": 66.0,
+        "memory_role": "Intervening work",
+        "instruction": "Bring the salvage kit to the supply locker. Exchange it for the replacement regulator and cache key."
+      },
+      {
+        "id": "A08",
+        "title": "Retrieve the cached handle",
+        "start_seconds": 66.0,
+        "action_start": 599,
+        "simulation_start": 119.79999999999747,
+        "end_seconds": 69.0,
+        "memory_role": "Retrieve the earlier location",
+        "instruction": "Return to the cache identified at A01. Spend the key from A07 to obtain the service handle."
+      },
+      {
+        "id": "A09",
+        "title": "Open the intake housing",
+        "start_seconds": 69.0,
+        "action_start": 699,
+        "simulation_start": 139.79999999999634,
+        "end_seconds": 84.0,
+        "memory_role": "Recall support and release",
+        "instruction": "At the intake housing, engage the brake and build the larger supported load with two slabs. Release only when the gauge is correct; verify stable opening."
+      },
+      {
+        "id": "A10",
+        "title": "Reach the intake gallery",
+        "start_seconds": 84.0,
+        "action_start": 804,
+        "simulation_start": 160.79999999999515,
+        "end_seconds": 96.0,
+        "memory_role": "Recall a safe updraft",
+        "instruction": "Establish a sheltered draft in rainy weather. Jump, glide through the shaft, and land on the intake gallery."
+      },
+      {
+        "id": "A11",
+        "title": "Repair and calibrate the intake",
+        "start_seconds": 96.0,
+        "action_start": 830,
+        "simulation_start": 165.99999999999486,
+        "end_seconds": 108.0,
+        "memory_role": "Combine parts and remembered facts",
+        "instruction": "Install both the regulator and service handle. Select the calibration from A06, engage the intake, and maintain valid operation for five simulated seconds. The road drains."
+      },
+      {
+        "id": "A12",
+        "title": "Reopen the pass and report",
+        "start_seconds": 108.0,
+        "action_start": 960,
+        "simulation_start": 191.99999999999338,
+        "end_seconds": 114.0,
+        "memory_role": "Verify the outcome",
+        "instruction": "Walk through the drained road from its south side to its north side, then report at Reedbank while the intake remains operational."
+      }
+    ],
+    "video": "task-a-seed-7/walkthrough.mp4",
+    "summary": {
+      "task": "a",
+      "seed": 7,
+      "controller": "privileged native-action reference policy",
+      "initial_digest": "1407b1741fe4f0f0d860ce0c826f5d1eda9cc86229b712276d445b357602c315",
+      "final_digest": "c9b74748eae458e8b656b79185294c1207c5e1ee67aff4c9d4814d0ea1d1a1fa",
+      "decisions": 1062,
+      "simulated_seconds": 212.39999999999222,
+      "milestones": [
+        {
+          "id": "A01",
+          "step": 1,
+          "seconds": 0.2
+        },
+        {
+          "id": "A02",
+          "step": 93,
+          "seconds": 18.6
+        },
+        {
+          "id": "A03",
+          "step": 166,
+          "seconds": 33.2
+        },
+        {
+          "id": "A04",
+          "step": 385,
+          "seconds": 77.0
+        },
+        {
+          "id": "A05",
+          "step": 449,
+          "seconds": 89.8
+        },
+        {
+          "id": "A06",
+          "step": 516,
+          "seconds": 103.2
+        },
+        {
+          "id": "A07",
+          "step": 556,
+          "seconds": 111.2
+        },
+        {
+          "id": "A08",
+          "step": 599,
+          "seconds": 119.8
+        },
+        {
+          "id": "A09",
+          "step": 764,
+          "seconds": 152.8
+        },
+        {
+          "id": "A10",
+          "step": 829,
+          "seconds": 165.8
+        },
+        {
+          "id": "A11",
+          "step": 856,
+          "seconds": 171.2
+        },
+        {
+          "id": "A12",
+          "step": 1062,
+          "seconds": 212.4
+        }
+      ],
+      "required": 12,
+      "success": true,
+      "events": {
+        "clue_exposed": 4,
+        "milestone_complete": 12,
+        "brake_trip": 1,
+        "counterweight_control": 6,
+        "magnetic_grip": 5,
+        "magnetic_move": 97,
+        "magnetic_drop": 5,
+        "counterweight_open": 3,
+        "thermal_control": 6,
+        "jump": 3,
+        "updraft": 6,
+        "land": 6,
+        "thermal_landed": 3,
+        "item_exchange": 2,
+        "freezing": 127,
+        "parts_installed": 1,
+        "calibration_selected": 1,
+        "intake_engaged": 1,
+        "road_drained": 1,
+        "completion_signal": 1
+      },
+      "health": 21.416718596852824,
+      "limitations": [
+        "Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.",
+        "Privileged reference controller; no claim that an agent learned skills or retained memories.",
+        "Counterweights use native magnetic bodies and supported-mass sensors; fixed gate/lift actuators are authored mechanisms.",
+        "Thermal flights use native jump/glide physics with authored shaft updraft fields and measured service-deck landings.",
+        "Flow and cooling are discrete authored networks, not a general fluid solver.",
+        "Training procedures are readable local instructions plus observable practice, not a separately animated teacher.",
+        "Role mappings, material/shape transfer variants, regional temperature exposure, and learning-from-memory ablations remain incomplete.",
+        "Repair parts use a separate persistent satchel; ordinary food uses native inventory and cooking.",
+        "The road and bridge really change voxel collision; no controller teleportation or direct completion edits."
+      ],
+      "sources": {
+        "owb/env/wildlands_reference.py": "8a922f80c60d3cae44b301e9ba3a78f07aaa625bccc54b9f6a8742c8df7ce9d0",
+        "owb/bench/baselines/wildlands_reference.py": "56233588131268b3a7cf9c39eb674da75ac7a8fd0b990c74dac3b38f787b49a0",
+        "owb/scripts/wildlands_reference.py": "ad82802688beadf456c65be82d755ee9886de24ad34645eae855af77d29efc8c",
+        "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+        "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+        "owb/physics/bodies.py": "96236eb54d2f78bd4b953f8f5b28bfb6bcf2762e6c9bcbea1385b8013e4a4276",
+        "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+        "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
+        "owb/render/blender_scene.py": "6fe39a6dd60be83835282add386ceab964c4ed889f903cb2228ad85b6973ca85",
+        "owb/render/presentation.py": "35e99fc90b441c957bbf4a9e26da709820a0bd316ad6386bd1d323b416532aec",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+      },
+      "actions_sha256": "c2ba2e73507a9b77d62fdc4bcd86a5f84dbcdb0169300c555162f2fa470e2933",
+      "replay_verified": true,
+      "presentation": {
+        "backend": "cycles",
+        "width": 960,
+        "height": 540,
+        "samples": 48,
+        "threads": 4,
+        "device": "OPTIX",
+        "process": "persistent",
+        "blender": "Blender 4.5.4 LTS",
+        "denoiser": "OPENIMAGEDENOISE"
+      },
+      "video_frames": 1140,
+      "video_fps": 10,
+      "video_seconds": 114.0,
+      "render_stride": 12,
+      "video_sha256": "211f25d377916ff5b3fe78591ec73389fbad25a263d36fa127f3851b6a0c1ac1",
+      "frame_count": 38,
+      "checkpoint_walkthrough": true,
+      "render_sources": {
+        "owb/env/wildlands_reference.py": "8a922f80c60d3cae44b301e9ba3a78f07aaa625bccc54b9f6a8742c8df7ce9d0",
+        "owb/bench/baselines/wildlands_reference.py": "a199f2959d150b46b484cdff895e8af071560d6667354d406e2ee76d7eb6b50f",
+        "owb/scripts/wildlands_reference.py": "52708068a0682ab4af9b79ecc9ef5f5f3955f68c53615a2a1c5b018a5c40a7bf",
+        "owb/env/wildlands.py": "e3bab70532fe387b3a9cc736ff59d4bf7f0895cf618790174e98d4e862fca296",
+        "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+        "owb/physics/bodies.py": "96236eb54d2f78bd4b953f8f5b28bfb6bcf2762e6c9bcbea1385b8013e4a4276",
+        "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+        "owb/render/scene_export.py": "0acfe435eef147325f77c4343dd30a3a09108da9e9a087ad3fab87029cf95322",
+        "owb/render/blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+        "owb/render/dressing.py": "343bd8aef16c2037affcc9e58b7da288d900313a1a718ee4bced3fa3a53af71a",
+        "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+        "owb/render/cycles_batch.py": "cbad2360348f5b7092cf25398a8cb7936a6827c1b36a29f37264eaf135f02791",
+        "owb/render/blender_batch.py": "b8e59f0aefc98c0f9a0b2567a482cb3a727a2f232fc3fc3d7fdf18e1731a2f95"
+      }
+    }
+  },
+  "b": {
+    "chapters": [
+      {
+        "id": "B01",
+        "title": "Accept the floodworks commission",
+        "start_seconds": 0.0,
+        "action_start": 1,
+        "simulation_start": 0.2,
+        "end_seconds": 3.0,
+        "memory_role": "Remember the authorization",
+        "instruction": "Read the floodworks commission. Retain the authorized empty overflow basin; the final outlet symbols will need a separate mapping."
+      },
+      {
+        "id": "B02",
+        "title": "Restore the training lift",
+        "start_seconds": 3.0,
+        "action_start": 52,
+        "simulation_start": 10.399999999999979,
+        "end_seconds": 21.0,
+        "memory_role": "Learn support and release",
+        "instruction": "Observe a release with insufficient support trip the brake. Engage the brake, place and drop a slab on the cradle, release, and verify stable lift operation."
+      },
+      {
+        "id": "B03",
+        "title": "Repair the second gate",
+        "start_seconds": 21.0,
+        "action_start": 133,
+        "simulation_start": 26.600000000000108,
+        "end_seconds": 36.0,
+        "memory_role": "Practice support and release",
+        "instruction": "Use the same control-family meanings at the second gate. Establish supported mass with the brake held, then release."
+      },
+      {
+        "id": "B04",
+        "title": "Restore the thermal shaft",
+        "start_seconds": 36.0,
+        "action_start": 246,
+        "simulation_start": 49.20000000000043,
+        "end_seconds": 48.0,
+        "memory_role": "Learn a safe updraft",
+        "instruction": "Inspect the shaft instructions. Open the draft and ignite the sheltered hearth. Jump, deploy the glider into the updraft, and land on the gallery."
+      },
+      {
+        "id": "B05",
+        "title": "Reach the second gallery",
+        "start_seconds": 48.0,
+        "action_start": 423,
+        "simulation_start": 84.59999999999947,
+        "end_seconds": 60.0,
+        "memory_role": "Practice a safe updraft",
+        "instruction": "Repeat the vent, protected heat, launch, and landing procedure at the second gallery."
+      },
+      {
+        "id": "B06",
+        "title": "Restore the flow circuit",
+        "start_seconds": 60.0,
+        "action_start": 517,
+        "simulation_start": 103.3999999999984,
+        "end_seconds": 69.0,
+        "memory_role": "Learn route before feeding",
+        "instruction": "Keep the inlet closed. Open only the locally requested outlet, then enable the inlet and wait for five seconds of stable operation."
+      },
+      {
+        "id": "B07",
+        "title": "Commission the second circuit",
+        "start_seconds": 69.0,
+        "action_start": 593,
+        "simulation_start": 118.59999999999754,
+        "end_seconds": 78.0,
+        "memory_role": "Practice route before feeding",
+        "instruction": "Read the new outlet request. Configure that branch with the inlet isolated, then feed and verify stable operation."
+      },
+      {
+        "id": "B08",
+        "title": "Survey the reserve depot",
+        "start_seconds": 78.0,
+        "action_start": 716,
+        "simulation_start": 143.19999999999615,
+        "end_seconds": 81.0,
+        "memory_role": "Remember a depot and route",
+        "instruction": "Inspect the reserve-depot survey. Remember the eastern causeway depot and the original wooden bridge approach."
+      },
+      {
+        "id": "B09",
+        "title": "Prepare expedition supplies",
+        "start_seconds": 81.0,
+        "action_start": 850,
+        "simulation_start": 169.99999999999463,
+        "end_seconds": 90.0,
+        "memory_role": "Intervening supply work",
+        "instruction": "Gather peppers and a chillshroom, light the cooking campfire, and cook both cold-resistance and heat-resistance provisions."
+      },
+      {
+        "id": "B10",
+        "title": "Recover the wind coupling",
+        "start_seconds": 90.0,
+        "action_start": 892,
+        "simulation_start": 178.39999999999415,
+        "end_seconds": 93.0,
+        "memory_role": "Collect a repair part",
+        "instruction": "Use the commission authorization at the wind-coupling locker and collect its coupling."
+      },
+      {
+        "id": "B11",
+        "title": "Recover two couplings",
+        "start_seconds": 93.0,
+        "action_start": 935,
+        "simulation_start": 186.99999999999366,
+        "end_seconds": 96.0,
+        "memory_role": "Collect two repair parts",
+        "instruction": "Use the authorization at the second locker to collect the pump and quarry-engine couplings."
+      },
+      {
+        "id": "B12",
+        "title": "Survey channels and safety",
+        "start_seconds": 96.0,
+        "action_start": 992,
+        "simulation_start": 198.399999999993,
+        "end_seconds": 99.0,
+        "memory_role": "Remember mapping and applicability",
+        "instruction": "Inspect the channel survey. Retain the outlet-symbol-to-basin mapping and the maximum safe shaft-launch temperature of 45 C."
+      },
+      {
+        "id": "B13",
+        "title": "Open the ridge housing",
+        "start_seconds": 99.0,
+        "action_start": 1035,
+        "simulation_start": 206.99999999999253,
+        "end_seconds": 114.0,
+        "memory_role": "Recall support and release",
+        "instruction": "Engage the ridge brake, establish the required supported mass, and release to open the ridge housing."
+      },
+      {
+        "id": "B14",
+        "title": "Reach the wind deck",
+        "start_seconds": 114.0,
+        "action_start": 1137,
+        "simulation_start": 227.39999999999137,
+        "end_seconds": 126.0,
+        "memory_role": "Recall a safe updraft",
+        "instruction": "Open the wind-deck shaft draft and enable its protected heat source. Glide onto the upper service deck."
+      },
+      {
+        "id": "B15",
+        "title": "Commission the wind station",
+        "start_seconds": 126.0,
+        "action_start": 1163,
+        "simulation_start": 232.59999999999107,
+        "end_seconds": 132.0,
+        "memory_role": "Commission the wind station",
+        "instruction": "Use the wind coupling on the upper service deck. Hold valid station operation for five simulated seconds."
+      },
+      {
+        "id": "B16",
+        "title": "Commission the marsh pump",
+        "start_seconds": 132.0,
+        "action_start": 1295,
+        "simulation_start": 258.9999999999904,
+        "end_seconds": 144.0,
+        "memory_role": "Recall route before feeding",
+        "instruction": "Install the pump coupling. With the inlet shut, configure the requested outlet, then enable feed and verify five seconds of stable flow."
+      },
+      {
+        "id": "B17",
+        "title": "Make the quarry shaft safe",
+        "start_seconds": 144.0,
+        "action_start": 1420,
+        "simulation_start": 283.9999999999961,
+        "end_seconds": 153.0,
+        "memory_role": "Check whether a skill is safe to use",
+        "instruction": "The quarry shaft is too hot to launch. Route the cooling bypass before feeding it, then wait until the measured temperature is at most 45 C."
+      },
+      {
+        "id": "B18",
+        "title": "Commission the quarry engine",
+        "start_seconds": 153.0,
+        "action_start": 1501,
+        "simulation_start": 300.19999999999976,
+        "end_seconds": 171.0,
+        "memory_role": "Compose cooling and updraft skills",
+        "instruction": "After the cooling check, open the shaft draft and enable heat. Glide to the service deck, install the engine coupling, and verify stable operation."
+      },
+      {
+        "id": "B19",
+        "title": "Inspect the storm update",
+        "start_seconds": 171.0,
+        "action_start": 1777,
+        "simulation_start": 355.4000000000123,
+        "end_seconds": 174.0,
+        "memory_role": "Update an earlier memory",
+        "instruction": "Inspect the storm report. The wooden bridge is now physically gone; retain the new north-stone-detour route to the same depot."
+      },
+      {
+        "id": "B20",
+        "title": "Retrieve the reserve winch",
+        "start_seconds": 174.0,
+        "action_start": 2028,
+        "simulation_start": 405.6000000000237,
+        "end_seconds": 177.0,
+        "memory_role": "Reuse a location with updated routing",
+        "instruction": "Return to the remembered reserve depot using the detour. Collect the reserve winch after all three stations are online."
+      },
+      {
+        "id": "B21",
+        "title": "Repair the final lock",
+        "start_seconds": 177.0,
+        "action_start": 2156,
+        "simulation_start": 431.20000000002955,
+        "end_seconds": 192.0,
+        "memory_role": "Compose support and repair",
+        "instruction": "Hold the final lock with its brake, establish the required supported load, and release. Install the reserve winch only after the support lock is valid."
+      },
+      {
+        "id": "B22",
+        "title": "Configure final outlets",
+        "start_seconds": 192.0,
+        "action_start": 2311,
+        "simulation_start": 462.2000000000366,
+        "end_seconds": 195.0,
+        "memory_role": "Join two distant facts",
+        "instruction": "Combine the basin authorization from B01 with the symbol-to-basin map from B12. Open the matching final outlet while keeping the inlet shut."
+      },
+      {
+        "id": "B23",
+        "title": "Bring the floodworks online",
+        "start_seconds": 195.0,
+        "action_start": 2313,
+        "simulation_start": 462.6000000000367,
+        "end_seconds": 210.0,
+        "memory_role": "Compose all three skills",
+        "instruction": "Establish a safe updraft and reach the upper controls. Enable the prepared final inlet, verify stable flow with the repaired stations and lock, and confirm that the road drains."
+      },
+      {
+        "id": "B24",
+        "title": "Signal the designated refuge",
+        "start_seconds": 210.0,
+        "action_start": 2490,
+        "simulation_start": 498.00000000004474,
+        "end_seconds": 216.0,
+        "memory_role": "Verify the mission outcome",
+        "instruction": "Traverse the reopened road from south to north and signal the designated refuge while the floodworks remain operational."
+      }
+    ],
+    "video": "task-b-seed-7/walkthrough.mp4",
+    "summary": {
+      "task": "b",
+      "seed": 7,
+      "controller": "privileged native-action reference policy",
+      "initial_digest": "828acf274836d1dd6faa258a4275f5ecfad639e7e220ee4b80c2e15410b0aced",
+      "final_digest": "a584ab941334821445550e01c052073249a6517547b869b9321edb15fb2b5d06",
+      "decisions": 2614,
+      "simulated_seconds": 522.8000000000503,
+      "milestones": [
+        {
+          "id": "B01",
+          "step": 1,
+          "seconds": 0.2
+        },
+        {
+          "id": "B02",
+          "step": 93,
+          "seconds": 18.6
+        },
+        {
+          "id": "B03",
+          "step": 195,
+          "seconds": 39.0
+        },
+        {
+          "id": "B04",
+          "step": 269,
+          "seconds": 53.8
+        },
+        {
+          "id": "B05",
+          "step": 447,
+          "seconds": 89.4
+        },
+        {
+          "id": "B06",
+          "step": 542,
+          "seconds": 108.4
+        },
+        {
+          "id": "B07",
+          "step": 618,
+          "seconds": 123.6
+        },
+        {
+          "id": "B08",
+          "step": 716,
+          "seconds": 143.2
+        },
+        {
+          "id": "B09",
+          "step": 853,
+          "seconds": 170.6
+        },
+        {
+          "id": "B10",
+          "step": 892,
+          "seconds": 178.4
+        },
+        {
+          "id": "B11",
+          "step": 935,
+          "seconds": 187.0
+        },
+        {
+          "id": "B12",
+          "step": 992,
+          "seconds": 198.4
+        },
+        {
+          "id": "B13",
+          "step": 1097,
+          "seconds": 219.4
+        },
+        {
+          "id": "B14",
+          "step": 1162,
+          "seconds": 232.4
+        },
+        {
+          "id": "B15",
+          "step": 1187,
+          "seconds": 237.4
+        },
+        {
+          "id": "B16",
+          "step": 1322,
+          "seconds": 264.4
+        },
+        {
+          "id": "B17",
+          "step": 1449,
+          "seconds": 289.8
+        },
+        {
+          "id": "B18",
+          "step": 1551,
+          "seconds": 310.2
+        },
+        {
+          "id": "B19",
+          "step": 1777,
+          "seconds": 355.4
+        },
+        {
+          "id": "B20",
+          "step": 2028,
+          "seconds": 405.6
+        },
+        {
+          "id": "B21",
+          "step": 2215,
+          "seconds": 443.0
+        },
+        {
+          "id": "B22",
+          "step": 2311,
+          "seconds": 462.2
+        },
+        {
+          "id": "B23",
+          "step": 2364,
+          "seconds": 472.8
+        },
+        {
+          "id": "B24",
+          "step": 2614,
+          "seconds": 522.8
+        }
+      ],
+      "required": 24,
+      "success": true,
+      "events": {
+        "clue_exposed": 10,
+        "milestone_complete": 24,
+        "brake_trip": 1,
+        "counterweight_control": 8,
+        "magnetic_grip": 7,
+        "magnetic_move": 135,
+        "magnetic_drop": 7,
+        "counterweight_open": 4,
+        "thermal_control": 10,
+        "jump": 5,
+        "updraft": 10,
+        "land": 10,
+        "thermal_landed": 5,
+        "flow_control": 10,
+        "gather": 2,
+        "cook": 2,
+        "light_campfire": 1,
+        "item_exchange": 3,
+        "station_engaged": 1,
+        "parts_installed": 3,
+        "bridge_closed": 1,
+        "lightning": 9,
+        "thunder": 8,
+        "freezing": 583,
+        "road_drained": 1,
+        "completion_signal": 1
+      },
+      "health": 7.729416906726322,
+      "limitations": [
+        "Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.",
+        "Privileged reference controller; no claim that an agent learned skills or retained memories.",
+        "Counterweights use native magnetic bodies and supported-mass sensors; fixed gate/lift actuators are authored mechanisms.",
+        "Thermal flights use native jump/glide physics with authored shaft updraft fields and measured service-deck landings.",
+        "Flow and cooling are discrete authored networks, not a general fluid solver.",
+        "Training procedures are readable local instructions plus observable practice, not a separately animated teacher.",
+        "Role mappings, material/shape transfer variants, regional temperature exposure, and learning-from-memory ablations remain incomplete.",
+        "Repair parts use a separate persistent satchel; ordinary food uses native inventory and cooking.",
+        "The road and bridge really change voxel collision; no controller teleportation or direct completion edits."
+      ],
+      "sources": {
+        "owb/env/wildlands_reference.py": "8a922f80c60d3cae44b301e9ba3a78f07aaa625bccc54b9f6a8742c8df7ce9d0",
+        "owb/bench/baselines/wildlands_reference.py": "56233588131268b3a7cf9c39eb674da75ac7a8fd0b990c74dac3b38f787b49a0",
+        "owb/scripts/wildlands_reference.py": "ad82802688beadf456c65be82d755ee9886de24ad34645eae855af77d29efc8c",
+        "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+        "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+        "owb/physics/bodies.py": "96236eb54d2f78bd4b953f8f5b28bfb6bcf2762e6c9bcbea1385b8013e4a4276",
+        "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+        "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
+        "owb/render/blender_scene.py": "6fe39a6dd60be83835282add386ceab964c4ed889f903cb2228ad85b6973ca85",
+        "owb/render/presentation.py": "35e99fc90b441c957bbf4a9e26da709820a0bd316ad6386bd1d323b416532aec",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+      },
+      "actions_sha256": "fcebb55cd3007b21625b018e442beacb04929ef5cbedf351ac8e2a3dadb5429c",
+      "replay_verified": true,
+      "presentation": {
+        "backend": "cycles",
+        "width": 960,
+        "height": 540,
+        "samples": 48,
+        "threads": 4,
+        "device": "OPTIX",
+        "process": "persistent",
+        "blender": "Blender 4.5.4 LTS",
+        "denoiser": "OPENIMAGEDENOISE"
+      },
+      "video_frames": 2160,
+      "video_fps": 10,
+      "video_seconds": 216.0,
+      "render_stride": 12,
+      "video_sha256": "7d27254b7ae2d4852635ccd5951f4e2f558564d5c245f4772d79342f58b5d183",
+      "frame_count": 72,
+      "checkpoint_walkthrough": true,
+      "render_sources": {
+        "owb/env/wildlands_reference.py": "8a922f80c60d3cae44b301e9ba3a78f07aaa625bccc54b9f6a8742c8df7ce9d0",
+        "owb/bench/baselines/wildlands_reference.py": "a199f2959d150b46b484cdff895e8af071560d6667354d406e2ee76d7eb6b50f",
+        "owb/scripts/wildlands_reference.py": "52708068a0682ab4af9b79ecc9ef5f5f3955f68c53615a2a1c5b018a5c40a7bf",
+        "owb/env/wildlands.py": "e3bab70532fe387b3a9cc736ff59d4bf7f0895cf618790174e98d4e862fca296",
+        "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+        "owb/physics/bodies.py": "96236eb54d2f78bd4b953f8f5b28bfb6bcf2762e6c9bcbea1385b8013e4a4276",
+        "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+        "owb/render/scene_export.py": "0acfe435eef147325f77c4343dd30a3a09108da9e9a087ad3fab87029cf95322",
+        "owb/render/blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+        "owb/render/dressing.py": "343bd8aef16c2037affcc9e58b7da288d900313a1a718ee4bced3fa3a53af71a",
+        "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+        "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+        "owb/render/cycles_batch.py": "cbad2360348f5b7092cf25398a8cb7936a6827c1b36a29f37264eaf135f02791",
+        "owb/render/blender_batch.py": "b8e59f0aefc98c0f9a0b2567a482cb3a727a2f232fc3fc3d7fdf18e1731a2f95"
+      }
+    }
+  }
+}

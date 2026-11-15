@@ -68,7 +68,10 @@ def main():
         verify_video(output,json.loads((output/'reference-manifest.json').read_text()),json.loads((output/'video-manifest.json').read_text()))
         print('CAMPAIGN VIDEO VERIFIED',task,flush=True)
     from .skylands_campaign_index import main as index
-    if all((ROOT/f'assets/demos/skylands-campaign/task-{task}-seed-7/video-manifest.json').exists() for task in 'ab'):index()
+    # Regeneration keeps the previous manifests beside the archived videos, so
+    # build the index only once both new walkthroughs exist.
+    if all((ROOT/f'assets/demos/skylands-campaign/task-{task}-seed-7/{name}').exists()
+           for task in 'ab' for name in ('video-manifest.json','walkthrough.mp4')):index()
 
 
 if __name__=='__main__':main()

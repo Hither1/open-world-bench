@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=rtxa6000|rtx6000pro|a40
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --mem=128G  # Blender holds ~52 GB with the presentation landscape; 64 GB was OOM-killed
 #SBATCH --time=00:30:00
 #SBATCH --array=0-1%2
 #SBATCH --output=assets/demos/skylands-campaign/render-camera-%A-%a.log

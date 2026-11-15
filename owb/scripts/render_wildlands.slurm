@@ -1,48 +1,48 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=owb-wildlands-cycles
-#SBATCH --partition=gpu_test
+#SBATCH --partition=gpu_requeue
+#SBATCH --requeue
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --time=01:00:00
-#SBATCH --output=assets/demos/wildlands-reference/render-%j.log
+#SBATCH --constraint=rtxa6000|rtx6000pro|a40
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=01:00:00  # ~20 frames x ~13 s measured on an RTX A6000; frames resume on requeue
+#SBATCH --array=0-5%6
+#SBATCH --output=assets/demos/wildlands-reference/render-chunk-%A-%a.log
 
-# Submit from the repository root. This script requests exactly one GPU and
-# renders sequentially, preserving all geometry, samples, and native resolution.
+# One GPU per milestone range; owb/scripts/assemble_wildlands.slurm joins them.
+# Submit both through owb/scripts/regenerate_wildlands.sh from the repository root.
+# Each chunk replays its trace from the start with full checks, then renders its
+# checkpoint states in one persistent Blender process (Cycles OptiX, 48 samples,
+# native 960x540, OpenImageDenoise). Python exports the next state while Blender
+# renders the previous one.
 set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:?Submit this script through sbatch from the repository root}"
 test -f owb/scripts/wildlands_reference.py
-export OWB_CYCLES_DEVICE=CUDA
-export OPENBLAS_NUM_THREADS=1
-export OMP_NUM_THREADS=4
+# Ranges are balanced by checkpoint frame count (A: 20+18, B: 20+18+19+15).
+case "$SLURM_ARRAY_TASK_ID" in
+  0) task=a; first=1;  last=5;;
+  1) task=a; first=6;  last=12;;
+  2) task=b; first=1;  last=5;;
+  3) task=b; first=6;  last=13;;
+  4) task=b; first=14; last=18;;
+  5) task=b; first=19; last=24;;
+  *) exit 2;;
+esac
+py="${OWB_PYTHON:-/n/home13/chloe00/miniforge3/bin/python}"
+# Node-local disk for Blender and the large per-frame scene snapshots.
+local_dir="${SLURM_TMPDIR:-/tmp}/owb-wildlands-${SLURM_JOB_ID}"
+mkdir -p "$local_dir/tmp" "$local_dir/cuda"
+trap 'rm -rf "$local_dir"' EXIT
+export TMPDIR="$local_dir/tmp" CUDA_CACHE_PATH="$local_dir/cuda"
+export OWB_BLENDER="$("$py" owb/scripts/stage_blender.py "$local_dir/blender")"
+export OWB_CYCLES_DEVICE=OPTIX
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=4
 export OWB_FRAME_CACHE="${OWB_FRAME_CACHE:-$PWD/.cache/wildlands-cycles}"
-export MPLCONFIGDIR="$OWB_FRAME_CACHE/matplotlib"
-export CUDA_CACHE_PATH="$OWB_FRAME_CACHE/cuda"
-mkdir -p "$MPLCONFIGDIR" "$CUDA_CACHE_PATH"
-
-python -u -B - <<'PY'
-import json,os,subprocess,sys
-from pathlib import Path
-from owb.scripts.wildlands_reference import verify,render_chunk,assemble
-from owb.scripts.wildlands_demo_index import main as build_index
-from owb.render.presentation import resolve_blender
-from owb.render.video import resolve_ffmpeg
-
-root=Path('assets/demos/wildlands-reference')
-cache=Path(os.environ['OWB_FRAME_CACHE'])
-print('Blender:',resolve_blender(),'FFmpeg:',resolve_ffmpeg(),flush=True)
-subprocess.run(['nvidia-smi','--query-gpu=name,driver_version,memory.total','--format=csv'],check=True)
-for task,count in [('a',12),('b',24)]:
-    folder=root/f'task-{task}-seed-7'
-    print('Verifying',task,verify(folder),flush=True)
-    for milestone in range(1,count+1):
-        render_chunk(folder,cache,milestone,milestone,checkpoints=True,samples=48,threads=4)
-    if not (folder/'walkthrough.mp4').exists():
-        assemble(folder,cache)
-    else:
-        from owb.scripts.wildlands_reference import sha
-        summary=json.loads((folder/'summary.json').read_text())
-        assert sha(folder/'walkthrough.mp4')==summary['video_sha256']
-build_index()
-print('Both walkthroughs and chapter player are complete.',flush=True)
-PY
+export MPLCONFIGDIR="$OWB_FRAME_CACHE/matplotlib-$SLURM_ARRAY_TASK_ID"
+mkdir -p "$MPLCONFIGDIR"
+nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
+echo "Task $task milestones $first-$last; Blender $OWB_BLENDER"
+"$py" -u -B -m owb.scripts.wildlands_reference \
+  --render-chunk "assets/demos/wildlands-reference/task-${task}-seed-7" \
+  --cache "$OWB_FRAME_CACHE" --milestones "$first" "$last" --checkpoints --samples 48 --threads 4

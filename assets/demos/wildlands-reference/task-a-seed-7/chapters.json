@@ -1,0 +1,98 @@
+[
+  {
+    "id": "A01",
+    "title": "Accept the repair commission",
+    "start_seconds": 0.0,
+    "action_start": 1,
+    "simulation_start": 0.2,
+    "end_seconds": 3.0
+  },
+  {
+    "id": "A02",
+    "title": "Restore the workshop lift",
+    "start_seconds": 3.0,
+    "action_start": 52,
+    "simulation_start": 10.399999999999979,
+    "end_seconds": 21.0
+  },
+  {
+    "id": "A03",
+    "title": "Reach the thermal gallery",
+    "start_seconds": 21.0,
+    "action_start": 143,
+    "simulation_start": 28.600000000000136,
+    "end_seconds": 33.0
+  },
+  {
+    "id": "A04",
+    "title": "Open the practice gate",
+    "start_seconds": 33.0,
+    "action_start": 328,
+    "simulation_start": 65.60000000000055,
+    "end_seconds": 48.0
+  },
+  {
+    "id": "A05",
+    "title": "Recover the salvage kit",
+    "start_seconds": 48.0,
+    "action_start": 424,
+    "simulation_start": 84.79999999999946,
+    "end_seconds": 60.0
+  },
+  {
+    "id": "A06",
+    "title": "Survey the valley",
+    "start_seconds": 60.0,
+    "action_start": 516,
+    "simulation_start": 103.19999999999841,
+    "end_seconds": 63.0
+  },
+  {
+    "id": "A07",
+    "title": "Obtain the replacement regulator",
+    "start_seconds": 63.0,
+    "action_start": 556,
+    "simulation_start": 111.19999999999796,
+    "end_seconds": 66.0
+  },
+  {
+    "id": "A08",
+    "title": "Retrieve the cached handle",
+    "start_seconds": 66.0,
+    "action_start": 599,
+    "simulation_start": 119.79999999999747,
+    "end_seconds": 69.0
+  },
+  {
+    "id": "A09",
+    "title": "Open the intake housing",
+    "start_seconds": 69.0,
+    "action_start": 699,
+    "simulation_start": 139.79999999999634,
+    "end_seconds": 84.0
+  },
+  {
+    "id": "A10",
+    "title": "Reach the intake gallery",
+    "start_seconds": 84.0,
+    "action_start": 804,
+    "simulation_start": 160.79999999999515,
+    "end_seconds": 96.0
+  },
+  {
+    "id": "A11",
+    "title": "Repair and calibrate the intake",
+    "start_seconds": 96.0,
+    "action_start": 830,
+    "simulation_start": 165.99999999999486,
+    "end_seconds": 108.0
+  },
+  {
+    "id": "A12",
+    "title": "Reopen the pass and report",
+    "start_seconds": 108.0,
+    "action_start": 960,
+    "simulation_start": 191.99999999999338,
+    "end_seconds": 114.0
+  }
+]

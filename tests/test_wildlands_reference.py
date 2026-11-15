@@ -88,8 +88,10 @@ def test_render_resume_reuses_only_verified_frames(tmp_path,monkeypatch):
     class DiagnosticOverlay:
         def __init__(self,*args):
             self.renderer=SimpleNamespace(metadata=dict(backend='diagnostic-test'))
-        def frame(self,env,row):
+        def submit(self,env,row):
             calls.append(row['step'])
+            return row['step']
+        def result(self,pending):
             return np.zeros((720,1280,3),np.uint8)
         def close(self): pass
     monkeypatch.setattr(recorder,'Overlay',DiagnosticOverlay)
