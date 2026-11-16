@@ -88,7 +88,7 @@ Facts the first plan got wrong, and the old run had to follow:
 These are robot actions, not the full task, and they are not scored by the nine milestones or by the 21-milestone spec.
 
 - `videos/lemon-tart-mix.mp4`: bowl, flour, and sugar out of drawers. A sugar cube is placed in the bowl. The flour bag is one rigid body, tipped to 117 degrees over the bowl, and nothing comes out. Seed 1, 4857 steps.
-- `videos/lemon-tart-mix-usable.mp4` and the shorter `videos/lemon-tart-usable-*.mp4` clips: with `usable_ingredients=True`, flour, packaged sugar, and egg pour as grains, and the knife cuts the butter and the lemon.
+- `videos/lemon-tart-mix-usable.mp4`, plus the shorter flour, sugar, and egg clips: with `usable_ingredients=True`, those ingredients pour as grains. The same usable run cuts the butter and the lemon.
 - `videos/lemon-tart-oven-lock.mp4` and `videos/lemon-tart-oven-knobs.mp4`: the optional lock and knob order. The door locks again when it closes. A knob turns up only after the earlier knobs in that episode's order are on.
 
 On-screen captions in all of these files are Chinese. The task write-up is the English document linked above.
