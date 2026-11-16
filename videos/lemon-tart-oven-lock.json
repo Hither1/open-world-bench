@@ -1,0 +1,109 @@
+{
+  "seed": 1,
+  "demo": "lock",
+  "knobs": {},
+  "oven_lock": "recipe",
+  "steps": 2211,
+  "simulated_seconds": 110.55,
+  "wall_seconds": 178.9,
+  "stages": [
+    {
+      "stage": "locked_pull",
+      "steps": 300,
+      "ends_at": 310,
+      "lock": {
+        "mode": "recipe",
+        "locked": true,
+        "unlock_presses": 0,
+        "presses_while_unlocked": 0,
+        "locked_pulls": 1,
+        "relocks": 0,
+        "door_angle": 0.0
+      }
+    },
+    {
+      "stage": "unlock_open",
+      "steps": 541,
+      "ends_at": 851,
+      "lock": {
+        "mode": "recipe",
+        "locked": false,
+        "unlock_presses": 1,
+        "presses_while_unlocked": 0,
+        "locked_pulls": 1,
+        "relocks": 0,
+        "door_angle": 1.3712213205791453
+      }
+    },
+    {
+      "stage": "close_relock",
+      "steps": 588,
+      "ends_at": 1439,
+      "lock": {
+        "mode": "recipe",
+        "locked": true,
+        "unlock_presses": 1,
+        "presses_while_unlocked": 0,
+        "locked_pulls": 1,
+        "relocks": 1,
+        "door_angle": 0.0
+      }
+    },
+    {
+      "stage": "locked_pull_again",
+      "steps": 181,
+      "ends_at": 1620,
+      "lock": {
+        "mode": "recipe",
+        "locked": true,
+        "unlock_presses": 1,
+        "presses_while_unlocked": 0,
+        "locked_pulls": 2,
+        "relocks": 1,
+        "door_angle": 0.0
+      }
+    },
+    {
+      "stage": "unlock_open_again",
+      "steps": 539,
+      "ends_at": 2159,
+      "lock": {
+        "mode": "recipe",
+        "locked": false,
+        "unlock_presses": 2,
+        "presses_while_unlocked": 0,
+        "locked_pulls": 2,
+        "relocks": 1,
+        "door_angle": 1.3712213205802273
+      }
+    },
+    {
+      "stage": "done",
+      "steps": 32,
+      "ends_at": 2191,
+      "lock": {
+        "mode": "recipe",
+        "locked": false,
+        "unlock_presses": 2,
+        "presses_while_unlocked": 0,
+        "locked_pulls": 2,
+        "relocks": 1,
+        "door_angle": 1.3712213205637043
+      }
+    }
+  ],
+  "lock": {
+    "mode": "recipe",
+    "locked": false,
+    "unlock_presses": 2,
+    "presses_while_unlocked": 0,
+    "locked_pulls": 2,
+    "relocks": 1,
+    "door_angle": 1.3712213205637043
+  },
+  "success": true,
+  "error": null,
+  "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-oven-lock.mp4",
+  "actions": "videos/lemon-tart-oven-lock-actions.npz"
+}

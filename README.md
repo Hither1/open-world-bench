@@ -22,7 +22,7 @@ game assets or code are redistributed.
 | `teyvat` | Genshin Impact | Large anime-styled 3D island world: multi-stage quests, NPC dialogue, elemental interactions, long-range navigation and landmark memory. |
 | `wildlands` | The Legend of Zelda: Breath of the Wild | Emergent physics and survival: shrine-style puzzles, weather and temperature, durable-vs-consumable resource tracking, exploration under partial maps. |
 | `skylands` | The Legend of Zelda: Tears of the Kingdom | Vertical, three-layer worlds plus construction: combining parts into contraptions, reusing recipes discovered much earlier, sky/surface/depths cross-referencing. |
-| `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. |
+| `mobile_robot` | Real indoor/outdoor mobile robots | Grounded embodied navigation: continuous control, noisy sensing, semantic mapping, revisiting places and objects after long delays. The kitchen track is a RoboCasa PandaOmron lemon tart, specified in [docs/mobile-manipulation-tasks.md](docs/mobile-manipulation-tasks.md) and not yet wired into `owb.make_env`. |
 
 [Teyvat branching campaigns](docs/teyvat-long-horizon-tasks.md) provide three
 Genshin-inspired final goals: restore a snowy summit, cleanse five shrines and

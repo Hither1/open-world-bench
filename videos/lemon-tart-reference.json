@@ -1,0 +1,122 @@
+{
+  "seed": 1,
+  "horizon": 24000,
+  "steps": 22402,
+  "simulated_seconds": 1120.1,
+  "wall_seconds": 823.7,
+  "milestones": [
+    {
+      "step": 5329,
+      "milestone": "ingredients_out"
+    },
+    {
+      "step": 8660,
+      "milestone": "crust_baked"
+    },
+    {
+      "step": 9628,
+      "milestone": "knobs_zeroed"
+    },
+    {
+      "step": 10136,
+      "milestone": "curd_started"
+    },
+    {
+      "step": 12474,
+      "milestone": "crumble_baked"
+    },
+    {
+      "step": 12899,
+      "milestone": "assembled"
+    },
+    {
+      "step": 17868,
+      "milestone": "ingredients_restored"
+    },
+    {
+      "step": 22402,
+      "milestone": "tools_washed"
+    },
+    {
+      "step": 22402,
+      "milestone": "served"
+    }
+  ],
+  "stages": [
+    {
+      "stage": "ingredients_out",
+      "steps": 5353,
+      "ends_at": 5363
+    },
+    {
+      "stage": "crust_baked / knobs_zeroed",
+      "steps": 4312,
+      "ends_at": 9675
+    },
+    {
+      "stage": "curd_started",
+      "steps": 529,
+      "ends_at": 10204
+    },
+    {
+      "stage": "crumble_baked",
+      "steps": 2341,
+      "ends_at": 12545
+    },
+    {
+      "stage": "assembled",
+      "steps": 440,
+      "ends_at": 12985
+    },
+    {
+      "stage": "ingredients_restored",
+      "steps": 4905,
+      "ends_at": 17890
+    },
+    {
+      "stage": "tools_washed / served",
+      "steps": 4512,
+      "ends_at": 22402
+    }
+  ],
+  "success": true,
+  "homes": {
+    "butter": "fridge",
+    "egg": "fridge",
+    "lemon": "fridge",
+    "flour": "stack_1_main_group_2",
+    "sugar": "stack_1_main_group_3",
+    "saucepan": "dishwasher",
+    "whisk": "stack_1_main_group_4",
+    "bowl": "stack_4_main_group_2",
+    "baking_sheet": "dishwasher",
+    "tart_pan": "dishwasher"
+  },
+  "opens_during_restore": 3,
+  "wrong_opens": 0,
+  "error": null,
+  "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
+  "video": "videos/lemon-tart-reference.mp4",
+  "video_frames": 5660,
+  "actions": "videos/lemon-tart-reference-actions.npz",
+  "video_encoding": "H.264, yuv420p, crf 28, faststart; every 4th control step at 20 fps (4x), plus a 3 s hold on the last frame",
+  "replay": {
+    "command": "python -m owb.scripts.lemon_tart_reference --replay videos/lemon-tart-reference-actions.npz --horizon 24000",
+    "result": {
+      "seed": 1,
+      "steps": 22402,
+      "milestones": {
+        "ingredients_out": 5329,
+        "crust_baked": 8660,
+        "knobs_zeroed": 9628,
+        "curd_started": 10136,
+        "crumble_baked": 12474,
+        "assembled": 12899,
+        "ingredients_restored": 17868,
+        "tools_washed": 22402,
+        "served": 22402
+      },
+      "success": true
+    }
+  }
+}

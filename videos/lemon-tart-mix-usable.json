@@ -1,0 +1,84 @@
+{
+  "seed": 1,
+  "usable": true,
+  "steps": 11740,
+  "simulated_seconds": 587.0,
+  "wall_seconds": 997.3,
+  "stages": [
+    {
+      "stage": "bowl_out",
+      "steps": 1091,
+      "ends_at": 1101
+    },
+    {
+      "stage": "dry_out",
+      "steps": 2301,
+      "ends_at": 3402
+    },
+    {
+      "stage": "sugar_in_bowl",
+      "steps": 840,
+      "ends_at": 4242
+    },
+    {
+      "stage": "flour_poured",
+      "steps": 782,
+      "ends_at": 5024
+    },
+    {
+      "stage": "fridge_out",
+      "steps": 2996,
+      "ends_at": 8020
+    },
+    {
+      "stage": "egg_poured",
+      "steps": 793,
+      "ends_at": 8813
+    },
+    {
+      "stage": "knife_out",
+      "steps": 1219,
+      "ends_at": 10032
+    },
+    {
+      "stage": "cut",
+      "steps": 1163,
+      "ends_at": 11195
+    },
+    {
+      "stage": "halves_lifted",
+      "steps": 525,
+      "ends_at": 11720
+    }
+  ],
+  "checks": {
+    "sugar_grains_in_bowl": 36,
+    "sugar_grains_total": 36,
+    "flour_grains_in_bowl": 48,
+    "flour_grains_total": 48,
+    "egg_grains_in_bowl": 27,
+    "egg_grains_total": 27,
+    "butter_cut": true,
+    "butter_halves_apart_mm": 31.8,
+    "butter_half_lifted_cm": 10.2,
+    "lemon_cut": true,
+    "lemon_halves_apart_mm": 24.3,
+    "lemon_half_lifted_cm": 10.2,
+    "sugar_upright_on_counter": true,
+    "egg_upright_on_counter": true,
+    "knife_on_counter": true,
+    "fridge_closed": true,
+    "flour_max_tilt_deg_over_bowl": 118.5,
+    "flour_steps_past_90_deg": 64,
+    "flour_upright_on_counter": true,
+    "bowl_upright_on_counter": true,
+    "drawers_closed": true
+  },
+  "success": true,
+  "error": null,
+  "note": "Flour, sugar and egg are open containers of loose grains; the checks count the grains inside the bowl. Butter and lemon are two welded halves that the environment releases when the knife blade comes down through the seam.",
+  "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-mix-usable.mp4",
+  "video_frames": 3973,
+  "actions": "videos/lemon-tart-mix-usable-actions.npz"
+}

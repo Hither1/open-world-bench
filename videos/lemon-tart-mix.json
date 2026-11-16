@@ -1,0 +1,43 @@
+{
+  "seed": 1,
+  "steps": 4857,
+  "simulated_seconds": 242.85,
+  "wall_seconds": 208.9,
+  "stages": [
+    {
+      "stage": "bowl_out",
+      "steps": 1077,
+      "ends_at": 1087
+    },
+    {
+      "stage": "dry_out",
+      "steps": 2437,
+      "ends_at": 3524
+    },
+    {
+      "stage": "sugar_in_bowl",
+      "steps": 606,
+      "ends_at": 4130
+    },
+    {
+      "stage": "flour_poured",
+      "steps": 707,
+      "ends_at": 4837
+    }
+  ],
+  "checks": {
+    "sugar_in_bowl": true,
+    "flour_max_tilt_deg_over_bowl": 117.3,
+    "flour_steps_past_90_deg": 32,
+    "flour_upright_on_counter": true,
+    "bowl_upright_on_counter": true,
+    "drawers_closed": true
+  },
+  "success": true,
+  "error": null,
+  "note": "The flour bag is a single rigid body: it is tipped over the bowl but nothing comes out of it.",
+  "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-mix.mp4",
+  "video_frames": 2488,
+  "actions": "videos/lemon-tart-mix-actions.npz"
+}

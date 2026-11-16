@@ -1,5 +1,7 @@
 # Mobile robot: long-horizon memory tasks
 
+> 2026-11-15: the two tidying tasks below are not the current plan. The current tasks are the lemon tart and the guest dessert, in [mobile-manipulation-tasks.md](mobile-manipulation-tasks.md). This text is kept.
+
 Status: task designs, not runnable implementations. These two tasks retain
 exactly **12** and **24** milestones, matching the
 [Wildlands](wildlands-long-horizon-tasks.md) and
