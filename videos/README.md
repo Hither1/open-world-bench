@@ -24,7 +24,11 @@ The new Cycles evidence packages are in `assets/demos/teyvat-reference-cycles/`.
 # Lemon tart (mobile manipulation)
 
 The current task is [mobile-manipulation-tasks.md](../docs/mobile-manipulation-tasks.md).
-A robot trajectory for that procedure is not recorded yet.
+
+- [lemon-tart-full.mp4](lemon-tart-full.mp4) is one continuous run of that procedure from `reset`, at 6x, 7 minutes 41 seconds, MuJoCo's own renderer. Log: [lemon-tart-full.json](lemon-tart-full.json), 20/21 milestones, `success` false.
+  From 0:00 to about 6:07 are the first 19 milestones, through `ingredients_restored` at step 44087.
+  From 6:07 to 6:41 the tools go into the dishwasher. `tools_washed` latches at step 48075, but the rack placement in this stretch was changed after the recording.
+  After 6:41 the run fails: the whisk does not come off the rack, and the last caption says the run stopped. Do not treat that stretch as a result.
 
 - [lemon-tart-reference.mp4](lemon-tart-reference.mp4) is an **older version**.
   The PandaOmron finishes the previous nine milestones with its own 12-dimensional

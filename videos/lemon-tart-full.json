@@ -1,0 +1,195 @@
+{
+  "seed": 1,
+  "horizon": 80000,
+  "steps": 54876,
+  "simulated_seconds": 2743.8,
+  "wall_seconds": 3179.9,
+  "milestones": {
+    "recipe_stowed": true,
+    "ingredients_out": true,
+    "tools_out": true,
+    "butter_cut": true,
+    "lemon_cut": true,
+    "crust_mixed": true,
+    "crust_in_pan": true,
+    "crust_loaded": true,
+    "crust_baked": true,
+    "knobs_zeroed": true,
+    "crust_out": true,
+    "curd_mixed": true,
+    "curd_started": true,
+    "tart_filled": true,
+    "tart_loaded": true,
+    "tart_baked": true,
+    "knobs_zeroed_again": true,
+    "tart_out": true,
+    "ingredients_restored": true,
+    "tools_washed": true,
+    "tools_restored": false
+  },
+  "milestones_reached": 20,
+  "milestone_first_seen_by_stage_end": {
+    "recipe_stowed": 1308,
+    "tools_out": 9261,
+    "ingredients_out": 13518,
+    "butter_cut": 14616,
+    "lemon_cut": 14616,
+    "crust_mixed": 17465,
+    "crust_in_pan": 18429,
+    "crust_loaded": 20755,
+    "crust_baked": 23379,
+    "knobs_zeroed": 23379,
+    "crust_out": 25706,
+    "curd_mixed": 31093,
+    "curd_started": 31093,
+    "tart_filled": 32092,
+    "tart_loaded": 34396,
+    "tart_baked": 36827,
+    "knobs_zeroed_again": 36827,
+    "tart_out": 39148,
+    "ingredients_restored": 44087,
+    "tools_washed": 48075
+  },
+  "success": false,
+  "homes": {
+    "butter": "fridge",
+    "egg": "fridge",
+    "lemon": "fridge",
+    "tart_pan": "dishwasher",
+    "bowl": "dishwasher",
+    "knife": "stack_1_main_group_4",
+    "whisk": "stack_1_main_group_3",
+    "saucepan": "stack_1_main_group_2",
+    "flour": "cab_1_main_group",
+    "sugar": "cab_main_main_group",
+    "recipe_card": "cab_2_main_group"
+  },
+  "knob_order": [
+    "function",
+    "time",
+    "temperature"
+  ],
+  "opens_during_restore": 3,
+  "wrong_opens": 0,
+  "oven_lock": {
+    "mode": "recipe",
+    "locked": false,
+    "unlock_presses": 5,
+    "presses_while_unlocked": 9,
+    "locked_pulls": 2,
+    "relocks": 4,
+    "door_angle": 0.0
+  },
+  "bake": {
+    "crust_shown": true,
+    "filling_shown": true,
+    "pieces_removed": 77
+  },
+  "stages": [
+    {
+      "stage": "recipe_stowed",
+      "steps": 1298,
+      "ends_at": 1308
+    },
+    {
+      "stage": "tools_left",
+      "steps": 2128,
+      "ends_at": 3436
+    },
+    {
+      "stage": "flour_out",
+      "steps": 1734,
+      "ends_at": 5170
+    },
+    {
+      "stage": "saucepan_out",
+      "steps": 1248,
+      "ends_at": 6418
+    },
+    {
+      "stage": "dishwasher_tools",
+      "steps": 2843,
+      "ends_at": 9261
+    },
+    {
+      "stage": "sugar_out",
+      "steps": 1605,
+      "ends_at": 10866
+    },
+    {
+      "stage": "ingredients_out",
+      "steps": 2652,
+      "ends_at": 13518
+    },
+    {
+      "stage": "cut",
+      "steps": 1098,
+      "ends_at": 14616
+    },
+    {
+      "stage": "crust_mixed",
+      "steps": 2849,
+      "ends_at": 17465
+    },
+    {
+      "stage": "crust_in_pan",
+      "steps": 964,
+      "ends_at": 18429
+    },
+    {
+      "stage": "crust_loaded",
+      "steps": 2326,
+      "ends_at": 20755
+    },
+    {
+      "stage": "crust_baked",
+      "steps": 2624,
+      "ends_at": 23379
+    },
+    {
+      "stage": "crust_out",
+      "steps": 2327,
+      "ends_at": 25706
+    },
+    {
+      "stage": "curd_mixed",
+      "steps": 5387,
+      "ends_at": 31093
+    },
+    {
+      "stage": "tart_filled",
+      "steps": 999,
+      "ends_at": 32092
+    },
+    {
+      "stage": "tart_loaded",
+      "steps": 2304,
+      "ends_at": 34396
+    },
+    {
+      "stage": "tart_baked",
+      "steps": 2431,
+      "ends_at": 36827
+    },
+    {
+      "stage": "tart_out",
+      "steps": 2321,
+      "ends_at": 39148
+    },
+    {
+      "stage": "ingredients_restored",
+      "steps": 4939,
+      "ends_at": 44087
+    },
+    {
+      "stage": "tools_washed",
+      "steps": 3988,
+      "ends_at": 48075
+    }
+  ],
+  "error": "could not take the whisk off the rack",
+  "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-full.mp4",
+  "video_speed": 6,
+  "actions": "videos/lemon-tart-full-actions.npz"
+}

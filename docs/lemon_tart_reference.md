@@ -1,6 +1,6 @@
 # Lemon tart reference trajectory
 
-The video [lemon-tart-reference.mp4](../videos/lemon-tart-reference.mp4) is an **older version** of the task. It finishes the previous nine milestones: containers moved into the oven or onto the stove, a baking sheet used as a second bake, and the lemon placed on the tart pan. The current procedure is [mobile-manipulation-tasks.md](mobile-manipulation-tasks.md). A robot trajectory for that procedure is not recorded yet.
+The video [lemon-tart-reference.mp4](../videos/lemon-tart-reference.mp4) is an **older version** of the task. It finishes the previous nine milestones: containers moved into the oven or onto the stove, a baking sheet used as a second bake, and the lemon placed on the tart pan. The current procedure is [mobile-manipulation-tasks.md](mobile-manipulation-tasks.md). A partial robot run of that procedure is [lemon-tart-full.mp4](../videos/lemon-tart-full.mp4). It is not a finished reference: 20 of 21 milestones latch, and the last milestone fails.
 
 The controller below is still the one that produced the old video. It emits only the PandaOmron's own 12-dimensional actions. It does not teleport the base, write object or door joints, or set the knobs directly.
 
@@ -92,3 +92,15 @@ These are robot actions, not the full task, and they are not scored by the nine 
 - `videos/lemon-tart-oven-lock.mp4` and `videos/lemon-tart-oven-knobs.mp4`: the optional lock and knob order. The door locks again when it closes. A knob turns up only after the earlier knobs in that episode's order are on.
 
 On-screen captions in all of these files are Chinese. The task write-up is the English document linked above.
+
+## Partial run of the current procedure
+
+[lemon-tart-full.mp4](../videos/lemon-tart-full.mp4) is one continuous run from `reset`, played at 6x. It is 7 minutes 41 seconds, H.264, rendered with MuJoCo's own renderer. The log is [lemon-tart-full.json](../videos/lemon-tart-full.json): seed 1, 54876 control steps, 20 of 21 milestones, `success` false. The error is `could not take the whisk off the rack`.
+
+| Video time | What it is |
+| --- | --- |
+| 0:00 to about 6:07 | The first 19 milestones, through `ingredients_restored` at step 44087 |
+| 6:07 to 6:41 | Tools loaded into the dishwasher. `tools_washed` does latch, at step 48075. The placement in this stretch was changed after this recording, so do not treat the arrangement in the rack as the current one |
+| after 6:41 | The failed ending. The whisk does not come off the rack, and the last caption says the run stopped. This stretch is not a result |
+
+`tools_restored` stays false. Three storage opens during restore, zero wrong opens. Knob order for this seed was function, then time, then temperature.

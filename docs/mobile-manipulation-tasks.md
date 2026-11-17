@@ -129,7 +129,7 @@ Pour the saucepan into the tart pan. Bake it again the same way: unlock, open, p
 
 ### What is implemented
 
-The 21 milestones, the recipe card, overhead cabinets, and a reverse-order requirement for turning knobs down are not in `lemon_tart.py` yet. The code still scores the old nine milestones: an empty container in the oven or on the stove, the lemon touching the tart pan as assembly, and a baking sheet among the tools. `videos/lemon-tart-reference.mp4` is that older task. A trajectory for the procedure in this document is not recorded yet.
+The 21 milestones, the recipe card, overhead cabinets, and a reverse-order requirement for turning knobs down are not in `lemon_tart.py` yet. The code still scores the old nine milestones: an empty container in the oven or on the stove, the lemon touching the tart pan as assembly, and a baking sheet among the tools. `videos/lemon-tart-reference.mp4` is that older task. `videos/lemon-tart-full.mp4` is one run of the procedure in this document: 20 of 21 milestones, then a failed attempt to take the whisk off the dishwasher rack. The stretch after 6:41 is not a result. See [lemon_tart_reference.md](lemon_tart_reference.md).
 
 The flour bag and the old plate are marked non-graspable in the asset table. That filter only affects sampling. The gripper is still contact-based. A preview of the metal tart pan is `videos/lemon-tart-tart-pan.png`. The whisk has no dishwasher tag, so it is sampled on the counter and moved into the dishwasher after reset.
 
@@ -137,7 +137,7 @@ Kitchen assets are already on the machine used for this work. Textures, fixtures
 
 The PandaOmron gripper bottoms out near 0.29 m, so a drawer whose handle is below 0.30 m is not used as a home. Dishwasher objects sit on the upper rack. See [lemon_tart_reference.md](lemon_tart_reference.md). Whether this arm can open layout 001's overhead cabinets has not been measured.
 
-Not done: a reference trajectory for this procedure, other seeds, a one-hour horizon, the transparent-cabinet and spoken-inventory controls, and a `owb.make_env` adapter. The PandaOmron's 12-dimensional action does not fit schema 2. `videos/lemon-tart-state-walkthrough.mp4` poses objects directly. It is not robot actions, and it shows the old milestones.
+Not done: finishing `tools_restored`, other seeds, a one-hour horizon, the transparent-cabinet and spoken-inventory controls, and a `owb.make_env` adapter. The PandaOmron's 12-dimensional action does not fit schema 2. `videos/lemon-tart-state-walkthrough.mp4` poses objects directly. It is not robot actions, and it shows the old milestones.
 
 ## Task 2: the guest's dessert
 
