@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 import hashlib
 import json
+import zlib
 
 import numpy as np
 
@@ -26,14 +27,14 @@ from .events import Event
 from .fullscale_b_world import (CAUSEWAY_OPEN, CRATER_GATE_OPEN, CROWN_SIGNAL, OUTPOST_CLEAR, RESERVE_POWER,
                                 SKYLIFT_POWER, SUITE_VERSION, SUMMIT_POWER, build_world)
 from .fullscale_mechanics import (COLUMN_RADIUS, PULSE_DAMAGE, PULSE_RADIUS, RISE_SPEED, SLAM_DAMAGE, SLAM_RADIUS,
-                                  SPUTTER_HOP, WAKE_RADIUS, RelayUnit, SentinelUnit, VentState, stable_unit)
+                                  WAKE_RADIUS, RelayUnit, SentinelUnit, VentState, stable_unit)
 from .fullscale_physics import PHYSICS_VERSION, FullScaleCombat, FullScaleController
 from .party import Party
 from .quests import ObjKind, Objective, Quest, QuestEngine, QuestGraph, Stage
 from .render import RenderSettings
 from .world import HOSTILE, EntityKind, World, WorldConfig
 
-COURSE_VERSION = "teyvat-fullscale-b-course-v1"
+COURSE_VERSION = "teyvat-fullscale-b-course-v2"
 GOAL = ("Reopen the valley's expedition route, recover the beacon heart, and bring the distant outpost online. "
         "Train with the relay keeper, sentinel warden, and wind guide before setting out.")
 INTERACT_REACH = 3.0
@@ -117,7 +118,7 @@ class ExpeditionCourse:
     def relay(self, rid, anchor, label, family, version=1, radius=7.0, **state):
         centre = self.anchor(anchor)
         angles = np.radians([45.0, 135.0, 225.0, 315.0]) + stable_unit(self.fw.seed, rid, "turn") * np.pi / 2
-        order = np.random.default_rng([self.fw.seed, sum(map(ord, rid))]).permutation(4)
+        order = np.random.default_rng([self.fw.seed, zlib.crc32(rid.encode())]).permutation(4)
         receivers = {}
         for role, k in zip(("source", "vane", "drain", "core"), order):
             xz = centre + radius * np.array([np.cos(angles[k]), np.sin(angles[k])])
@@ -492,8 +493,6 @@ class ExpeditionCourse:
             dist = float(np.hypot(*(e.pos - char.pos)[[0, 2]]))
             for kind, payload in unit.tick(dt, dist <= WAKE_RADIUS, dist):
                 self._sentinel_event(unit, kind, payload, char)
-        for eid in self.statues:
-            pass
         for eid, (role, owner) in self.roles.items():
             if role == "statue" and not self.statues.get(eid):
                 e = self.world.get(eid)
@@ -536,8 +535,7 @@ class ExpeditionCourse:
                 self.emit("vent_launch", vent=vent.id, route=vent.route, leg=vent.leg, beat=vent.beat(elapsed))
                 self.say(f"Vent ({VENT_GLYPH}): the column throws you upward.")
             else:
-                vent.sputters += 1
-                char.vel[1] = min(float(char.vel[1]), float(np.sqrt(2 * 24.0 * SPUTTER_HOP)))
+                vent.sputters += 1                # an ordinary jump; the charge is spent
                 self.emit("vent_sputter", vent=vent.id, beat=vent.beat(elapsed))
                 self.say(f"Vent ({VENT_GLYPH}): it sputters on the {vent.beat(elapsed)} beat; the charge is spent.")
             return
@@ -842,7 +840,14 @@ class ExpeditionWorld(World):
             self.expedition.tick(char, dt)
         events.extend(self.expedition.events)
         self.expedition.events.clear()
+        # Sentinel pulses and slams land after the base defeat check: handle them here,
+        # so a downed member swaps out (or the party respawns) instead of ending the episode.
+        events += self._handle_defeat(char, char_cfg)
         return events
+
+    def attack(self, char):
+        events = super().attack(char)
+        return events + self._handle_defeat(char, self.expedition.env.controller.cfg)
 
     def _respawn(self, char, char_cfg):
         course = self.expedition
@@ -869,13 +874,41 @@ class ExpeditionCombat(FullScaleCombat):
         if ability is not None and any(e.type in ("skill", "burst") for e in events):
             reach = float(ability.range or ability.radius or 2.6)
             self.world.expedition.apply_element(char, ability.element, reach)
+            events += self.world._handle_defeat(char, controller.cfg)
         return events
 
+    def _sentinel(self, enemy):
+        roles = self.world.expedition.roles
+        return enemy.id in roles and roles[enemy.id][0] == "sentinel"
+
+    def _damage(self, enemy, damage, element):
+        if self._sentinel(enemy):
+            return []                         # reaction splash and other side paths never touch a sentinel
+        return super()._damage(enemy, damage, element)
+
     def _hit(self, enemy, char, damage, element, charge=1.0):
-        course = self.world.expedition
-        if enemy.id in course.roles and course.roles[enemy.id][0] == "sentinel":
-            return course.sentinel_hit(enemy, damage, element, char)
+        if self._sentinel(enemy):
+            return self.world.expedition.sentinel_hit(enemy, damage, element, char)
         return super()._hit(enemy, char, damage, element, charge)
+
+
+class ExpeditionQuests(QuestEngine):
+    """Advances through every stage whose milestone completed this step.
+
+    The base engine advances one stage per step. Early credit can complete two
+    milestones in one step (opening the strongbox after diving for the coupling
+    completes B08 and B09), and the engine would then stay a stage behind for
+    good, so the finish never arrives.
+    """
+
+    def _update_quest(self, quest, events, world_state):
+        reward = 0.0
+        progress = self.progress[quest.id]
+        while True:
+            before = progress.stage
+            reward += super()._update_quest(quest, events, world_state)
+            if progress.stage == before or progress.stage >= len(quest.stages):
+                return reward
 
 
 class TeyvatExpeditionEnv(OpenWorldEnv):
@@ -912,7 +945,7 @@ class TeyvatExpeditionEnv(OpenWorldEnv):
         build_course(self.course)
         stages = [Stage([Objective(m.id, ObjKind.ACTIVATE, m.title, targets=(m.id,))]) for m in self.course.milestones]
         self.graph = QuestGraph([Quest("fullscale_b", "Task B", GOAL, stages, reward=0)])
-        self.quests = QuestEngine(self.graph)
+        self.quests = ExpeditionQuests(self.graph)
         char_cfg = replace(c.character)
         char_cfg.max_hp = self.party.max_hp
         char_cfg.stamina_regen *= self.party.stamina_regen_multiplier
@@ -945,6 +978,7 @@ class TeyvatExpeditionEnv(OpenWorldEnv):
 
     def _info(self, events=None):
         result = super()._info(events)
+        result["instruction"] = GOAL             # the base env puts the current milestone title here
         c = self.course
         result["course"] = dict(milestone_index=c.index, op_index=c.op_index, facts=sorted(c.facts),
                                 pack=dict(c.pack), deaths=c.deaths)
@@ -954,8 +988,10 @@ class TeyvatExpeditionEnv(OpenWorldEnv):
         state = {"suite": SUITE_VERSION, "physics": PHYSICS_VERSION, "course": COURSE_VERSION,
                  "world": self.world_digest, "position": self.char.pos.tolist(), "velocity": self.char.vel.tolist(),
                  "stamina": float(self.char.stamina), "hp": float(self.char.hp), "move_state": int(self.char.state),
+                 "yaw": float(self.char.yaw), "regen": float(self.char._regen_timer),
                  "time": self.world.elapsed, "party": self.party.summary(), "course_state": self.course.state(),
-                 "entities": {e.id: [e.pos.tolist(), float(e.hp), bool(e.alive), bool(e.used)]
+                 "entities": {e.id: [e.pos.tolist(), float(e.hp), bool(e.alive), bool(e.used), float(e.attack_cd),
+                                     e.elemental.aura.element.name, float(e.elemental.aura.charge)]
                               for e in self.world.entities.values()},
                  "camera": [float(self.cam.yaw), float(self.cam.pitch)]}
         return hashlib.sha256(json.dumps(state, sort_keys=True, default=float, allow_nan=False).encode()).hexdigest()

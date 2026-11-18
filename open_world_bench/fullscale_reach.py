@@ -326,6 +326,45 @@ class _FaceGraph:
 
 
 CARRY_QUANTUM = 0.05        # strict-carry ceilings are rounded up to this, so the fixed point is reached
+# CharacterController's climbing branch (character.py): the speed up a face is 0.85 * climb_speed * stick,
+# the sideways speed is climb_speed whatever the stick magnitude, and a stick of 0.1 or less pays 0.35 of
+# climb_cost.
+CLIMB_UP_FACTOR = 0.85
+CLIMB_SMALL_STICK = 0.1
+CLIMB_SMALL_COST = 0.35
+
+
+def strict_face_slack(model: TraversalModel, cell: float, char_cfg: CharacterConfig | None = None,
+                      party: PartyConfig | None = None) -> float:
+    """Worst-case margin (m) by which a strict-carry face ceiling exceeds a real climb.
+
+    Strict mode charges ``0.5 / glide_ratio`` metres of ceiling per metre of
+    patch steps along faces. Moving sideways on a face costs no height, so that
+    charge is not a climb cost: at full stick the climber rises at 0.85
+    climb_speed and moves sideways at climb_speed at the same time, and at a
+    stick of 0.1 or less it pays only 0.35 of climb_cost while still moving
+    sideways at climb_speed. Stamina, which never recovers on a face, is what
+    bounds the traverse. With t1 seconds at full stick and t2 at a small stick,
+    ``cost * (t1 + 0.35 t2) <= stamina``, the climber ends at most
+    ``start + 0.85 v t1 + 0.085 v t2`` above its standing ground and at most
+    ``v (t1 + t2)`` metres sideways. Over s metres sideways, strict mode charges
+    at most ``0.5 / glide_ratio * 1.0824 * (s + 2 sqrt2 cell)``: octile steps,
+    one patch of rounding at each end, and one diagonal patch for the vault
+    onto the top. The margin is linear in (t1, t2), so its minimum lies at a
+    vertex of the stamina budget. Drops and glides between faces lose height
+    faster than this charge (glides at the model's own glide ratio).
+    """
+    cfg = char_cfg or CharacterConfig()
+    bound = climb_height_bound(cfg, party)
+    v = cfg.climb_speed
+    seconds = bound.climb / v                       # one full bar at full climb cost (resonance included)
+    per_metre = 0.5 / model.glide_ratio * 1.0824
+    worst = np.inf
+    for t1, t2 in ((0.0, 0.0), (seconds, 0.0), (0.0, seconds / CLIMB_SMALL_COST)):
+        rise = bound.start + CLIMB_UP_FACTOR * v * (t1 + CLIMB_SMALL_STICK * t2)
+        charge = per_metre * (v * (t1 + t2) + 2.0 * SQRT2 * cell)
+        worst = min(worst, model.climb_budget - rise - charge)
+    return float(worst)
 
 
 def patch_centres(world):
@@ -374,11 +413,12 @@ def _nearest_rest(world, graph, xz):
     return index
 
 
-def _glide(start, carry, g, model, cell, climbing, decay_carry=False):
+def _glide(start, carry, g, model, cell, climbing, decay_carry=False, floor=-np.inf):
     """Spread glides from ``start`` heights; return the glide field, the face
     patches hit (with the hit height) and the largest ``carry`` value arriving.
     With ``decay_carry`` the carried value loses the same height as the glide
-    on every step, so it stays tied to the path it came from."""
+    on every step, so it stays tied to the path it came from. A glide cannot
+    continue below ``floor``."""
     glide, value = start, carry
     hit = np.full(start.shape, -np.inf)
     hit_value = np.full(start.shape, -np.inf)
@@ -390,7 +430,7 @@ def _glide(start, carry, g, model, cell, climbing, decay_carry=False):
             cost = cell * (SQRT2 if di and dj else 1.0) / model.glide_ratio
             incoming = np.maximum(incoming, _shift(glide, di, dj, -np.inf) - cost)
             incoming_value = np.maximum(incoming_value, _shift(value, di, dj, -np.inf) - (cost if decay_carry else 0.0))
-        passable = incoming > g.glide_top + model.glide_clearance
+        passable = (incoming > g.glide_top + model.glide_clearance) & (incoming >= floor)
         if climbing:
             touch = steep & (incoming >= g.corner_lo)
             hit = np.maximum(hit, np.where(touch, incoming, -np.inf))
@@ -414,12 +454,15 @@ def _glide(start, carry, g, model, cell, climbing, decay_carry=False):
 
 def vent_glide_model(model: TraversalModel, cell: float, char_cfg: CharacterConfig | None = None) -> TraversalModel:
     """The glide a vent launch may use. ``over`` keeps its own optimistic glide;
-    ``under`` glides at its conservative ratio over 80 % of one real stamina bar."""
+    ``under`` glides at its conservative ratio over a path of at most 80 % of
+    one real stamina bar (``notes["vent_range"]``; :func:`reach` enforces it as
+    a height floor, so diagonal steps count at their real length)."""
     if model.name == "over":
         return model
     cfg = char_cfg or CharacterConfig()
-    real_range = cfg.stamina_max / cfg.glide_cost * cfg.glide_speed
-    return replace(model, glide_steps=int(real_range * 0.8 / cell))
+    vent_range = cfg.stamina_max / cfg.glide_cost * cfg.glide_speed * 0.8
+    return replace(model, glide_steps=int(np.ceil(vent_range / cell)),
+                   notes=dict(model.notes, vent_range=vent_range))
 
 
 def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
@@ -440,11 +483,16 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
     soundness. A glide from a hold carries the climb still left (ceiling minus
     hold height), not the ceiling, so a face grabbed lower gives a lower
     ceiling. Along faces, a ceiling loses half a glide step of height per patch
-    step, whether the climber shifts sideways (which really costs about 2 m of
-    climb per patch) or drops to a neighbouring face (at least part of a patch
-    crossed), so a ceiling cannot slide along a long face indefinitely. The
-    default mode instead carries a ceiling free for the climb budget's distance
-    and keeps it through drops; Task A's phase-1 evidence uses the default.
+    step, so a ceiling cannot slide along a long face indefinitely. That charge
+    is not a real cost of moving sideways (which costs only stamina); it is
+    sound because the climb budget's margin covers it over the longest
+    traverse one stamina bar allows, which :func:`strict_face_slack` checks
+    from the character parameters. The default mode instead carries a ceiling
+    free for the climb budget's distance and keeps it through drops; Task A's
+    phase-1 evidence uses the default.
+
+    ``under`` vent glides are capped by path length (80 % of one stamina bar),
+    not by step count, since diagonal steps are longer.
     """
     cell = world.terrain._cell
     model = model or over_model(cell, char_cfg, party)
@@ -470,6 +518,10 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
                 vents.append((pad, vent.apex + (VENT_MARGIN if model.name == "over" else 0.0)))
     vent_model = vent_glide_model(model, cell, char_cfg) if vents else None
     climbing = model.climb_budget > 0.0
+    if strict_carry and climbing:
+        slack = strict_face_slack(model, cell, char_cfg, party)
+        if slack <= 0.0:
+            raise ValueError(f"strict_carry is unsound for these parameters (face slack {slack:.2f} m)")
     spread_steps = int(np.ceil(model.climb_budget / cell))
     hop_axis = 0.5 * cell / model.glide_ratio if model.glide_ratio else 0.0
     faces = _FaceGraph(steep, hop_axis, hop_axis * SQRT2) if strict_carry and climbing else None
@@ -518,14 +570,17 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
                 # A face inside two neighbouring standing patches, climbed from rest.
                 reached |= rest & (g.lo <= _shift(stand, di, dj, -np.inf) + model.climb_budget + TOP_OUT)
         vent_launch = none
-        for pad, apex in vents:
-            vent_launch = np.maximum(vent_launch, np.where(reached & pad, apex, -np.inf))
-        if vents and model.name == "under" and np.isfinite(vent_launch).any():
-            key = ("vent", vent_launch.tobytes())
-            if key not in memo:
-                memo[key] = _glide(vent_launch, none, g, vent_model, cell, False)
-            glide = memo[key][0]
-            reached |= rest & ~g.water & np.isfinite(glide) & (glide >= g.hi)
+        for k, (pad, apex) in enumerate(vents):
+            start_k = np.where(reached & pad, apex, -np.inf)
+            vent_launch = np.maximum(vent_launch, start_k)
+            if model.name == "under" and np.isfinite(start_k).any():
+                # Height falls by path length / glide_ratio, so a floor caps the path length.
+                key = ("vent", k, start_k.tobytes())
+                if key not in memo:
+                    floor = apex - vent_model.notes["vent_range"] / vent_model.glide_ratio
+                    memo[key] = _glide(start_k, none, g, vent_model, cell, False, floor=floor)
+                glide = memo[key][0]
+                reached |= rest & ~g.water & np.isfinite(glide) & (glide >= g.hi)
         if model.glide_steps:
             if model.name == "under":
                 launch = np.where(reached & rest & ~g.water, g.lo + model.glide_start, -np.inf)

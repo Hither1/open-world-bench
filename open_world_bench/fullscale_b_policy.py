@@ -21,6 +21,7 @@ STUCK_WINDOW = 15
 STUCK_DISTANCE = 1.0
 SPRINT_ON, SPRINT_OFF = 55.0, 15.0
 STANCE = 3.0                # metres from a sentinel core
+GLIDE_GAIN = 0.8            # 1/s: target glide speed per metre from the shelf centre
 SAFE_DISTANCE = 10.5        # outside the slam
 PAD_TOLERANCE = 0.7
 BUTTON = dict(jump=0, sprint=1, interact=2, attack=3, climb=4, skill=5, burst=6)
@@ -325,11 +326,33 @@ class ExpeditionReference:
                     self.route_restarts += 1
                 return
             a["buttons"][BUTTON["jump"]] = 1
-            if d > 2.5:
-                self._move_toward(a, target, stop=0.0, sprint=False)
-            else:
-                self._aim_camera(a, np.array([target[0] - st.pos[0], 0.0, target[1] - st.pos[2]]))
+            self._glide_to(a, target)
             self.explanation = f"Glide to {vent.target.replace('_', ' ')} (leg {k + 1}/{len(legs)})"
+
+    def _glide_to(self, a, target):
+        """Steer the glider's velocity toward a target velocity that shrinks near the shelf centre.
+
+        The glider keeps its horizontal velocity when the stick is released, so it can only
+        slow down by steering against its motion. Commanding the velocity error (with the
+        target speed along it) brakes as well as accelerates."""
+        env = self.env
+        st = env.char
+        offset = np.asarray(target, float) - st.pos[[0, 2]]
+        speed_cap = env.controller.cfg.glide_speed
+        desired = offset * GLIDE_GAIN
+        norm = float(np.linalg.norm(desired))
+        if norm > speed_cap:
+            desired *= speed_cap / norm
+        if float(np.linalg.norm(offset)) > 2.0:
+            self._aim_camera(a, np.array([offset[0], 0.0, offset[1]]))
+        error = desired - st.vel[[0, 2]]
+        size = float(np.linalg.norm(error))
+        if size < 0.05:
+            return
+        wish = error / size
+        magnitude = float(np.clip(np.dot(desired, wish) / speed_cap, 0.01, 1.0))
+        cy, sy = np.cos(env.cam.yaw), np.sin(env.cam.yaw)
+        a["move"][:] = np.array([wish[0] * cy + wish[1] * sy, wish[0] * sy - wish[1] * cy]) * magnitude
 
     # ------------------------------------------------------------ mechanisms
     def _do(self, a, op):
@@ -402,7 +425,7 @@ class ExpeditionReference:
                     self._move_toward(a, core.pos[[0, 2]], stop=STANCE, sprint=False, slow=True)
                     self.explanation = f"{unit.label}: close in to break the shield"
                     return
-                self._cast(a, breaker, f"{unit.label}: break the shield with {breaker.name.lower()}")
+                self._cast(a, breaker, f"{unit.label}: break the shield with {breaker.name.lower()}", face=core.pos)
             else:
                 self._keep_out(a, core, PULSE_RADIUS + 1.5, f"{unit.label}: wait outside the pulse for "
                                                            f"{breaker.name.lower()}")
@@ -416,7 +439,8 @@ class ExpeditionReference:
                 if d > STANCE + 0.8:
                     self._move_toward(a, core.pos[[0, 2]], stop=STANCE, sprint=False, slow=True)
                     return
-                self._cast(a, interrupter, f"{unit.label}: interrupt the wind-up with {interrupter.name.lower()}")
+                self._cast(a, interrupter, f"{unit.label}: interrupt the wind-up with {interrupter.name.lower()}",
+                           face=core.pos)
             else:
                 self._keep_out(a, core, SLAM_RADIUS + 1.5, f"{unit.label}: back out of the slam")
             return
@@ -472,7 +496,7 @@ class ExpeditionReference:
         if idx != party.active_index and party.swap_timer <= 0:
             a["swap"] = idx + 1
 
-    def _cast(self, a, element, text):
+    def _cast(self, a, element, text, face=None):
         party = self.env.party
         idx = self._member(element)
         member = party.members[idx]
@@ -488,6 +512,9 @@ class ExpeditionReference:
             self.explanation = text + f" (waiting {member.skill_cd:.1f} s for the skill)"
             return
         if st.state != MoveState.GROUNDED:
+            return
+        if face is not None and not self._face(a, face):   # strikes are forward cones
+            self.explanation = text + " (turning)"
             return
         a["buttons"][BUTTON["skill"]] = 1
 

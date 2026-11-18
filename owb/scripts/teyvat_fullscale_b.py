@@ -29,7 +29,12 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ("open_world_bench/fullscale_b_env.py", "open_world_bench/fullscale_b_policy.py",
            "open_world_bench/fullscale_b_world.py", "open_world_bench/fullscale_mechanics.py",
            "open_world_bench/fullscale_nav.py", "open_world_bench/fullscale_physics.py",
-           "open_world_bench/fullscale_reach.py", "open_world_bench/fullscale_world.py")
+           "open_world_bench/fullscale_reach.py", "open_world_bench/fullscale_world.py",
+           # shared simulation code the course builds on
+           "open_world_bench/architecture.py", "open_world_bench/camera.py", "open_world_bench/campaign_env.py",
+           "open_world_bench/character.py", "open_world_bench/elements.py", "open_world_bench/env.py",
+           "open_world_bench/party.py", "open_world_bench/quests/engine.py", "open_world_bench/scatter.py",
+           "open_world_bench/terrain.py", "open_world_bench/world.py")
 PRESENTATION_SOURCES = ("owb/scripts/teyvat_fullscale_b.py", "owb/scripts/teyvat_fullscale_preview.py",
                         "owb/render/scene_export.py", "owb/render/blender_scene.py")
 SCENE_SIZE = (1280, 720)
@@ -81,6 +86,7 @@ def world_check(seeds, output, workers=9):
         started = time.time()
         report = check_world_parallel(seed, workers=workers)
         report["wall_seconds"] = round(time.time() - started, 1)
+        report["sources"] = {p: sha256(ROOT / p) for p in SOURCES + ("open_world_bench/fullscale_b_check.py",)}
         save_json(output / f"report-{seed}.json", report)
         reports[seed] = report["ok"]
         print(f"seed {seed}: {'ok' if report['ok'] else 'FAILED'} in {report['wall_seconds']} s", flush=True)

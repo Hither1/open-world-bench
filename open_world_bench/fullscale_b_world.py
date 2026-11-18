@@ -90,7 +90,7 @@ _GROUPS = {
     "hollow": {"arena_b13": (-90, 40)},
     "reserve": {"relay_b14": (170, 30)},
     "skylift": {"skylift_house": (-330, 95), "relay_b16": (-375, 110), "pad_b16": (-330, 60),
-                "stack_k1": (-330, 10)},
+                "stack_k1": (-330, -25)},
 }
 _CRATER_GROUPS = {
     # Crater sites move half as much, keeping their spacing to the ring.
@@ -128,7 +128,7 @@ STACKS = {
     "stack_k1": (10.0, 40.0),
     "stack_b18a": (8.0, 40.0), "shrine": (14.0, 46.0),
     "stack_b20a": (8.0, 40.0), "stack_b20b": (8.0, 42.0),
-    "stack_b24a": (9.0, CROWN - HIGHLAND + 24.0), "outpost": (14.0, CROWN - HIGHLAND + 40.0),
+    "stack_b24a": (9.0, CROWN - HIGHLAND + 30.0), "outpost": (14.0, CROWN - HIGHLAND + 46.0),
 }
 _STACK_BASE = {"stack_b05a": LOWLAND, "overlook_1": LOWLAND, "stack_b06a": LOWLAND, "stack_b06b": LOWLAND,
                "overlook_2": LOWLAND, "stack_b12a": PLATEAU, "post": PLATEAU, "stack_k1": PLATEAU,

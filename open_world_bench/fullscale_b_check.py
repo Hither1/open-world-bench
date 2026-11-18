@@ -31,7 +31,8 @@ HIGHLAND_SITES = ("stack_k1", "highland_rim", "crater_gate", "arena_b17", "relay
 CRATER_SITES = ("crater_inside", "relay_b19", "pad_b18", "stack_b18a", "shrine", "pad_b20", "stack_b20a",
                 "stack_b20b", "crown_landing", "relay_b21", "relay_b22", "relay_b23", "spire_pad", "outpost_pad",
                 "arena_b24")
-UPPER_TOPS = ("stack_b12a", "post", "stack_k1", "stack_b18a", "shrine", "stack_b20a", "stack_b20b", "outpost")
+UPPER_TOPS = ("stack_b12a", "post", "stack_k1", "stack_b18a", "shrine", "stack_b20a", "stack_b20b", "stack_b24a",
+              "outpost")
 
 
 def _stages():
@@ -42,10 +43,11 @@ def _stages():
          ("plateau", "highland", "crater_floor", "crown", "spire_top") + UPPER_TOPS),
         (CAUSEWAY_OPEN, f[:1], PLATEAU_SITES,
          ("highland", "crater_floor", "crown", "spire_top", "stack_k1", "stack_b18a", "shrine", "stack_b20a",
-          "stack_b20b", "outpost")),
+          "stack_b20b", "stack_b24a", "outpost")),
         (SKYLIFT_POWER, f[:3], HIGHLAND_SITES,
-         ("crater_floor", "crown", "spire_top", "stack_b18a", "shrine", "stack_b20a", "stack_b20b", "outpost")),
-        (CRATER_GATE_OPEN, f[:5], CRATER_SITES, ("spire_top", "outpost")),
+         ("crater_floor", "crown", "spire_top", "stack_b18a", "shrine", "stack_b20a", "stack_b20b", "stack_b24a",
+          "outpost")),
+        (CRATER_GATE_OPEN, f[:5], CRATER_SITES, ("spire_top", "stack_b24a", "outpost")),
         (SUMMIT_POWER, f[:6], ("spire_top",), ("outpost",)),
         (OUTPOST_CLEAR, f[:7], ("stack_b24a", "outpost"), ()),
     ]

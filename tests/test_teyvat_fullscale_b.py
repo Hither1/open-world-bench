@@ -130,3 +130,193 @@ def test_world_gates_and_vent_proofs():
     assert all(c["ok"] for c in report["no_vents"])
     assert all(f["on_shelf"] and f["fall_damage"] == 0.0 for f in report["flights"])
     assert report["ok"]
+
+
+# ------------------------------------------------------------- review fixes
+NEUTRAL = dict(move=np.zeros(2, np.float32), look=np.zeros(2, np.float32), buttons=np.zeros(7, np.int8), swap=0)
+JUMP, SKILL = 0, 5
+
+
+def _action(*buttons, swap=0):
+    a = {k: v.copy() if hasattr(v, "copy") else v for k, v in NEUTRAL.items()}
+    for b in buttons:
+        a["buttons"][b] = 1
+    a["swap"] = swap
+    return a
+
+
+def test_milestones_completed_in_one_step_still_finish():
+    env = TeyvatExpeditionEnv(7)
+    env.reset(seed=7)
+    c = env.course
+    c.finish_op()                                   # test setup: the keeper lesson is heard
+    c.relays["relay_b01"].active = c.relays["relay_b02"].active = True
+    obs, reward, terminated, truncated, info = env.step(_action())
+    done = [e["milestone"] for e in info["event_details"] if e["type"] == "milestone_complete"]
+    assert done == ["B01", "B02"]
+    assert env.quests.progress["fullscale_b"].stage == c.index == 2
+    # The engine follows any number of milestones in one step, through the finish.
+    from open_world_bench.events import Event
+    engine = type(env.quests)(env.graph)
+    engine.consume([Event("activate", {"entity": m.id}) for m in c.milestones], {})
+    assert engine.all_complete and engine.progress["fullscale_b"].stage == 24
+
+
+def test_sentinel_and_cast_damage_down_a_member_without_ending_the_episode():
+    env = TeyvatExpeditionEnv(7)
+    env.reset(seed=7)
+    c = env.course
+    tick, hits = c.tick, []
+
+    def tick_with_pulse(char, dt):                   # test setup: a pulse lands after the base defeat check
+        tick(char, dt)
+        if not hits:
+            hits.append(1)
+            c._hurt(char, 1e4, "test_pulse")
+    c.tick = tick_with_pulse
+    first = env.party.active.spec.id
+    obs, reward, terminated, truncated, info = env.step(_action())
+    assert not terminated and env.char.hp > 0.0
+    assert {"member_downed", "party_swap"} <= set(info["events"]) and env.party.active.spec.id != first
+    c.tick = tick
+    apply = c.apply_element
+
+    def apply_with_pulse(char, element, reach):      # test setup: a wrong-element cast is punished
+        apply(char, element, reach)
+        c._hurt(char, 1e4, "test_pulse")
+    c.apply_element = apply_with_pulse
+    for _ in range(40):                              # the swapped-in member's skill may be cooling down
+        obs, reward, terminated, truncated, info = env.step(_action(SKILL))
+        if "member_downed" in info["events"]:
+            break
+    assert "member_downed" in info["events"] and not terminated and env.char.hp > 0.0
+
+
+def test_reaction_splash_never_damages_a_sentinel(env):
+    c = env.course
+    world, combat = env.world, env.world.combat
+    sentinel = world.get(c.sentinels["b13_sentinel"].entity)
+    hp = float(sentinel.hp)
+    raiders = [e for e in world.entities.values() if e.alive and e.id.startswith("raider")][:2]
+    assert len(raiders) == 2
+    saved = [(r.pos.copy(), r.hp, r.home.copy()) for r in raiders]
+    splashed = False
+    for first, second in ((E, T), (T, E), (G, E), (E, G), (G, T), (T, G)):
+        for r in raiders:
+            r.pos = sentinel.pos + np.array([1.0, 0.0, 0.0], np.float32)
+            r.hp = r.max_hp
+            r.elemental.aura.element, r.elemental.aura.charge = Element.NONE, 0.0
+        combat._hit(raiders[0], env.char, 1.0, first)
+        events = combat._hit(raiders[0], env.char, 1.0, second)
+        splashed |= any(e.type == "enemy_hit" and e.get("entity") == raiders[1].id for e in events)
+    assert splashed                                  # the splash path ran
+    assert sentinel.alive and float(sentinel.hp) == hp
+    assert combat._damage(sentinel, 50.0, E) == [] and float(sentinel.hp) == hp
+    for r, (pos, rhp, home) in zip(raiders, saved):
+        r.pos, r.hp, r.home = pos, rhp, home
+
+
+def test_vent_launches_only_on_a_jump_in_the_safe_beat():
+    env = TeyvatExpeditionEnv(7)
+    env.reset(seed=7)
+    c = env.course
+    vent = next(v for v in c.vents.values() if v.requires is None)
+    dt = env.cfg.dt * env.cfg.action_repeat
+
+    def ready(safe):
+        _stand_at(env, vent.pad)
+        env.char.stamina = 100.0
+        c._was_grounded, c.launch = True, None
+        t = env.world.elapsed
+        while not all(vent.safe(t + k * 0.05, c.safe_beat) == safe for k in range(int(dt / 0.05) + 3)):
+            t += 0.05
+        env.world.elapsed = t                         # test setup: wait for the beat
+        c.apply_element(env.char, c.vent_element, 5.0)
+        assert vent.charged
+
+    def kinds(info):
+        return {e["type"] for e in info["event_details"]}
+
+    gale = next(i for i, m in enumerate(env.party.members) if m.spec.element == Element.GALE)
+    env.step(_action(swap=gale + 1))
+    ready(safe=True)
+    obs, reward, terminated, truncated, info = env.step(_action(SKILL))      # Updraft is not a launch
+    assert "vent_launch" not in kinds(info) and vent.charged
+    for _ in range(30):
+        obs, reward, terminated, truncated, info = env.step(_action())
+    ready(safe=False)
+    obs, reward, terminated, truncated, info = env.step(_action(JUMP))
+    assert "vent_sputter" in kinds(info) and not vent.charged and c.launch is None
+    for _ in range(10):
+        env.step(_action())
+    ready(safe=True)
+    obs, reward, terminated, truncated, info = env.step(_action(JUMP))
+    assert "vent_launch" in kinds(info) and not vent.charged
+
+
+def test_info_carries_no_step_pointer(env):
+    info = env._info([])
+    assert info["instruction"] == GOAL
+    titles = [m.title for m in env.course.milestones]
+    assert not any(t in env.course.local_text(env.char) for t in titles)
+
+
+def test_strict_carry_is_sound_against_the_real_controller():
+    """Climbs from proven-reachable ground never stand on unreached ground or rise above a face ceiling."""
+    from open_world_bench.character import CharacterConfig, Command
+    from open_world_bench.fullscale_b_world import build_world
+    from open_world_bench.fullscale_physics import FullScaleController
+    from open_world_bench.fullscale_reach import _shift, over_model, patch_centres, reach, strict_face_slack
+
+    world = build_world(7)
+    cell = world.terrain._cell
+    model = over_model(cell)
+    assert strict_face_slack(model, cell) > 3.0
+    proof = reach(world, (), model, strict_carry=True)
+    g = proof.graph
+    px, pz = patch_centres(world)
+    x0, z0 = float(px[0, 0]), float(pz[0, 0])
+    along_x_first = abs(float(px[1, 0] - px[0, 0])) > abs(float(px[0, 1] - px[0, 0]))
+
+    def patch(pos):
+        a = int(np.clip(np.floor((pos[0] - x0) / cell + 0.5), 0, g.rest.shape[0] - 1))
+        b = int(np.clip(np.floor((pos[2] - z0) / cell + 0.5), 0, g.rest.shape[0] - 1))
+        return (a, b) if along_x_first else (b, a)
+
+    stand = proof.rest & ~g.water
+    pairs = []
+    for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        ii, jj = np.nonzero(stand & _shift(g.steep, di, dj, False))
+        pairs += [((float(px[i, j]), float(pz[i, j])), (float(px[i + di, j + dj]), float(pz[i + di, j + dj])))
+                  for i, j in zip(ii, jj)]
+    rng = np.random.default_rng(5)
+    picks = [pairs[k] for k in rng.choice(len(pairs), size=36, replace=False)]
+    ctl = FullScaleController(world.terrain, world.props, CharacterConfig())
+    ctl.architecture = world.architecture
+    dt = 1 / 30
+    violations, gains = [], []
+    for n, ((sx, sz), (fx, fz)) in enumerate(picks):
+        into = np.array([fx - sx, fz - sz]) / np.hypot(fx - sx, fz - sz)
+        angle, stick, seconds = ((0.0, 1.0, 13.0), (1.15, 0.09, 30.0), (-0.7, 1.0, 13.0))[n % 3]
+        turn = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]]) @ into
+        st = ctl.spawn(sx, sz)
+        base = float(st.pos[1])
+        for _ in range(12):
+            ctl.step(st, Command(move=np.array([0.0, 1.0], np.float32), sprint=True),
+                     float(np.arctan2(into[0], -into[1])), dt)
+        if ctl.can_launch(st):                        # Updraft: launch speed plus its stamina refund
+            st.vel[1], st.grounded, st.state = 13.0, False, MoveState.AIRBORNE
+            st.stamina = min(100.0, st.stamina + 25.0)
+        yaw = float(np.arctan2(turn[0], -turn[1]))
+        for k in range(int(seconds / dt)):
+            regrab = n % 3 == 2 and k > 120 and (k % 20) < 6
+            ctl.step(st, Command(move=np.array([0.0, stick], np.float32), climb=not regrab), yaw, dt)
+            i, j = patch(st.pos)
+            y = float(st.pos[1])
+            if st.state == MoveState.GROUNDED and ctl.walkable(st.pos[0], st.pos[2]) and not proof.rest[i, j]:
+                violations.append(("stand", n, st.pos.tolist()))
+            if st.state == MoveState.CLIMBING and g.steep[i, j] and y > proof.ceiling[i, j] + 0.02:
+                violations.append(("ceiling", n, st.pos.tolist(), float(proof.ceiling[i, j])))
+            gains.append(y - base)
+    assert not violations, violations[:5]
+    assert max(gains) > 15.0                          # the climbs really climbed

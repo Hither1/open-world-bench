@@ -50,7 +50,6 @@ BRIGHT_TIME = 2.5
 CHARGE_TIME = 30.0
 RISE_SPEED = 14.0
 COLUMN_RADIUS = 2.0         # metres from the pad centre where a jump launches
-SPUTTER_HOP = 2.0
 
 
 def stable_unit(*parts) -> float:
