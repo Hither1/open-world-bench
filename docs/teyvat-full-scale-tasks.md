@@ -1,9 +1,10 @@
 # Teyvat full-scale tasks: design for Task A
 
 Status: **phase 1 implemented** (world, solid-terrain physics, gate proofs); see
-[Phase 1 results](#phase-1-results). Milestones, NPCs, items and the reference
-route are not implemented yet. All lengths and times are planning estimates,
-not measured rollouts.
+[Phase 1 results](#phase-1-results). A labelled [route preview](#route-preview)
+walks the whole journey with native movement and lifts. Milestone mechanics,
+NPCs, items and the reference solution are not implemented yet. Task lengths
+and times are planning estimates, not measured rollouts.
 
 This document extends the 12- and 24-milestone [legacy Teyvat designs](teyvat-legacy-tasks.md)
 from their [compact reference courses](teyvat-reference-demos.md) to full regional scale.
@@ -403,6 +404,64 @@ python -B -m owb.scripts.teyvat_fullscale world-check --seed 7 19 --output /tmp/
 Known limits of this phase: the terrain is still geometric (straight-ish river
 and walls, a sandy marsh), and structures reuse existing building kinds. Natural
 shaping and the dedicated assets follow with the task content.
+
+## Route preview
+
+Before the task mechanics exist, a **route preview** shows the whole Task A
+journey on the phase-1 world. It is labelled as a preview in the video and in
+every artifact. It is not a task solution.
+
+- `open_world_bench/fullscale_env.py`: `TeyvatFullScaleEnv`, the full-scale
+  world as a native `OpenWorldEnv` with the solid-terrain controller, the
+  ravine gate's collision, and two working lifts. Interacting at a lift end
+  rides it once its fact is open; the cabin carries the character up beside
+  the lower end, across a level cable, and down onto the upper end. Each
+  milestone is a list of checkpoints that completes when the character
+  arrives at them in order. Arriving at the lower ferry opens `ferry_open`,
+  at the quartermaster `corridor_open`, and at the service-lift socket
+  `cap_installed`, the places where the task logic will open them. Site
+  fixtures (relays, NPCs, chests, posts) are static.
+- `open_world_bench/fullscale_nav.py`: shortest routes on the phase-1 `under`
+  graph (gentle ground, shallows, open water), with solid props and a
+  clearance margin removed. Planned routes cross only ground the proofs
+  already accept.
+- `open_world_bench/fullscale_policy.py`: `RoutePreviewPolicy`, a privileged
+  controller that plans with the anchors, lift paths, and open facts, and acts
+  only through native actions (camera-relative movement, look, sprint, jump to
+  glide, interact to board). It rests at the west edge until stamina is full
+  before the glide, because a partial bar can run out mid-air.
+- `owb/scripts/teyvat_fullscale_preview.py`: `collect` runs the agent and
+  replays every action in a fresh env, comparing positions, events, rewards,
+  and the state digest after every action. `render` replays again, renders
+  sampled states with Blender Cycles on one or more GPUs (resumable from a
+  hashed frame cache), and assembles a captioned 1600 × 900 walkthrough.
+
+| Seed | Actions | Simulated time | Travel | HP | Re-plans |
+| --- | ---: | ---: | ---: | --- | ---: |
+| 7 | 5,445 | 18.2 min | 6.23 km | full throughout | 0 |
+| 19 | 5,339 | 17.8 min | 6.07 km | full throughout | 0 |
+
+Without the relay, combat, and item mechanics, the route takes about 18
+minutes, against the 45-minute estimate for the full task; the difference is
+mechanism time and the slower walking of a real agent.
+
+The video follows the [Skylands campaign](skylands-campaign-demos.md) format:
+a labelled timelapse of real replay states (walking 16×, lift rides 10×, the
+glide 4×), with event holds, a milestone list, a route map, and captions
+around the native 1280 × 720 Cycles scene (Blender 4.5.4 LTS, OptiX, 64
+samples, denoised). Lift towers, cables, and cabins are presentation geometry;
+the gate box matches its collision.
+
+```bash
+python -B -m owb.scripts.teyvat_fullscale_preview collect --seed 7 --output runs/fullscale-preview/seed-7
+python -B -m owb.scripts.teyvat_fullscale_preview render runs/fullscale-preview/seed-7 \
+  --cache .cache/teyvat-fullscale-preview/seed-7 --gpus 0 1 --per-gpu 2
+```
+
+`tests/test_teyvat_fullscale_preview.py` checks that lifts refuse to run
+before their fact, carry the character without harm, that the ravine route
+appears only with the gate open, and that a full seed-7 run completes and
+replays exactly.
 
 ## Implementation plan
 
