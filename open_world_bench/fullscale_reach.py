@@ -33,7 +33,7 @@ climbing. A glide may pass over them only above their top.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
@@ -47,6 +47,8 @@ HALF8 = ((1, 0), (0, 1), (1, 1), (1, -1))
 TOP_OUT = VAULT_RISE    # metres a climber can pull up onto the top of a face
 LIFT_REACH = 4.0        # metres from a lift endpoint to its platform
 SUBSAMPLES = 9          # samples per patch side when measuring walkable heights
+VENT_REACH = 2.0        # metres from a vent's centre where a launch can start
+VENT_MARGIN = 4.0       # metres the over model adds to every vent column
 
 
 @dataclass(frozen=True)
@@ -284,6 +286,48 @@ def _spread(seeds, steep, steps):
     return ceiling
 
 
+class _FaceGraph:
+    """Patch-step graph over face (steep) patches, for the strict-carry spread."""
+
+    def __init__(self, steep, hop_axis, hop_diag):
+        from scipy.sparse import coo_matrix
+        self.steep = steep
+        self.index = np.full(steep.shape, -1, np.int64)
+        self.n = int(steep.sum())
+        self.index[steep] = np.arange(self.n)
+        rows, cols, weights = [], [], []
+        for di, dj in ALL8:
+            nb = _shift(self.index, di, dj, -1)
+            ok = steep & (nb >= 0)
+            rows.append(nb[ok])                 # from the neighbour ...
+            cols.append(self.index[ok])         # ... to this patch
+            weights.append(np.full(int(ok.sum()), hop_diag if di and dj else hop_axis))
+        self.rows, self.cols, self.weights = np.concatenate(rows), np.concatenate(cols), np.concatenate(weights)
+        self._coo = coo_matrix
+
+    def spread(self, seeds):
+        """ceiling(v) = max over faces u of seeds(u) - path cost(u, v): one multi-source shortest path."""
+        from scipy.sparse.csgraph import dijkstra
+        values = seeds[self.steep]
+        finite = np.isfinite(values)
+        if not finite.any():
+            return seeds.copy()
+        top = float(values[finite].max())
+        source = self.n
+        src = np.flatnonzero(finite)
+        rows = np.concatenate([self.rows, np.full(src.size, source)])
+        cols = np.concatenate([self.cols, src])
+        weights = np.concatenate([self.weights, top - values[src] + 1e-9])
+        graph = self._coo((weights, (rows, cols)), shape=(self.n + 1, self.n + 1)).tocsr()
+        dist = dijkstra(graph, directed=True, indices=source)[:self.n]
+        out = np.full(seeds.shape, -np.inf)
+        out[self.steep] = np.where(np.isfinite(dist), top + 1e-9 - dist, -np.inf)
+        return np.maximum(out, seeds)
+
+
+CARRY_QUANTUM = 0.05        # strict-carry ceilings are rounded up to this, so the fixed point is reached
+
+
 def patch_centres(world):
     x, z = world.grid()
     return (x[:-1, :-1] + x[1:, 1:]) / 2.0, (z[:-1, :-1] + z[1:, 1:]) / 2.0
@@ -330,9 +374,11 @@ def _nearest_rest(world, graph, xz):
     return index
 
 
-def _glide(start, carry, g, model, cell, climbing):
+def _glide(start, carry, g, model, cell, climbing, decay_carry=False):
     """Spread glides from ``start`` heights; return the glide field, the face
-    patches hit (with the hit height) and the largest ``carry`` value arriving."""
+    patches hit (with the hit height) and the largest ``carry`` value arriving.
+    With ``decay_carry`` the carried value loses the same height as the glide
+    on every step, so it stays tied to the path it came from."""
     glide, value = start, carry
     hit = np.full(start.shape, -np.inf)
     hit_value = np.full(start.shape, -np.inf)
@@ -343,13 +389,22 @@ def _glide(start, carry, g, model, cell, climbing):
         for di, dj in ALL8:
             cost = cell * (SQRT2 if di and dj else 1.0) / model.glide_ratio
             incoming = np.maximum(incoming, _shift(glide, di, dj, -np.inf) - cost)
-            incoming_value = np.maximum(incoming_value, _shift(value, di, dj, -np.inf))
+            incoming_value = np.maximum(incoming_value, _shift(value, di, dj, -np.inf) - (cost if decay_carry else 0.0))
         passable = incoming > g.glide_top + model.glide_clearance
         if climbing:
             touch = steep & (incoming >= g.corner_lo)
             hit = np.maximum(hit, np.where(touch, incoming, -np.inf))
             hit_value = np.maximum(hit_value, np.where(touch, incoming_value, -np.inf))
         grow = passable & (incoming > glide)
+        if decay_carry:
+            # Carry wherever any glide passes, not only where the height improves: a lower path
+            # may carry more. This can only overestimate, so the bound stays sound.
+            more = passable & (incoming_value > value)
+            if not grow.any() and not more.any():
+                break
+            glide = np.where(grow, incoming, glide)
+            value = np.where(more, incoming_value, value)
+            continue
         if not grow.any():
             break
         glide = np.where(grow, incoming, glide)
@@ -357,14 +412,39 @@ def _glide(start, carry, g, model, cell, climbing):
     return glide, hit, hit_value
 
 
+def vent_glide_model(model: TraversalModel, cell: float, char_cfg: CharacterConfig | None = None) -> TraversalModel:
+    """The glide a vent launch may use. ``over`` keeps its own optimistic glide;
+    ``under`` glides at its conservative ratio over 80 % of one real stamina bar."""
+    if model.name == "over":
+        return model
+    cfg = char_cfg or CharacterConfig()
+    real_range = cfg.stamina_max / cfg.glide_cost * cfg.glide_speed
+    return replace(model, glide_steps=int(real_range * 0.8 / cell))
+
+
 def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
-          use_lifts: bool = True, char_cfg=None, party=None) -> Reach:
+          use_lifts: bool = True, char_cfg=None, party=None, use_vents: bool = True,
+          strict_carry: bool = False, trace=None) -> Reach:
     """Fixed point of everything ``model`` can reach from ``start``.
 
     Stamina recovers only while standing on walkable ground or swimming. A
     climb, fall or glide that begins on standing ground may grab a face with a
     full climb budget. One that begins on a face keeps the ceiling it already
     had and gains no new height.
+
+    A vent (``world.vents``; Task A has none) whose pad is reached and whose
+    power fact holds launches a glide from its column top: ``over`` adds
+    ``VENT_MARGIN`` metres and its usual glide, ``under`` its conservative one.
+
+    ``strict_carry`` tightens how a climb ceiling travels, without giving up
+    soundness. A glide from a hold carries the climb still left (ceiling minus
+    hold height), not the ceiling, so a face grabbed lower gives a lower
+    ceiling. Along faces, a ceiling loses half a glide step of height per patch
+    step, whether the climber shifts sideways (which really costs about 2 m of
+    climb per patch) or drops to a neighbouring face (at least part of a patch
+    crossed), so a ceiling cannot slide along a long face indefinitely. The
+    default mode instead carries a ceiling free for the climb budget's distance
+    and keeps it through drops; Task A's phase-1 evidence uses the default.
     """
     cell = world.terrain._cell
     model = model or over_model(cell, char_cfg, party)
@@ -382,8 +462,17 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
                 a = rest & ~g.water & (np.hypot(x - lift.bottom[0], z - lift.bottom[1]) <= LIFT_REACH)
                 b = rest & ~g.water & (np.hypot(x - lift.top[0], z - lift.top[1]) <= LIFT_REACH)
                 lifts.append((a, b))
+    vents = []
+    if use_vents:
+        for vent in getattr(world, "vents", ()):
+            if vent.requires is None or vent.requires in facts:
+                pad = rest & ~g.water & (np.hypot(x - vent.pad[0], z - vent.pad[1]) <= VENT_REACH)
+                vents.append((pad, vent.apex + (VENT_MARGIN if model.name == "over" else 0.0)))
+    vent_model = vent_glide_model(model, cell, char_cfg) if vents else None
     climbing = model.climb_budget > 0.0
     spread_steps = int(np.ceil(model.climb_budget / cell))
+    hop_axis = 0.5 * cell / model.glide_ratio if model.glide_ratio else 0.0
+    faces = _FaceGraph(steep, hop_axis, hop_axis * SQRT2) if strict_carry and climbing else None
     none = np.full(rest.shape, -np.inf)
     seeds = none.copy()                          # climb ceilings where climbs begin
     memo = {}                                    # glide results keyed by their unchanged inputs
@@ -402,7 +491,11 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
         if climbing:
             for di, dj in ALL8:
                 seeds = np.maximum(seeds, np.where(steep, _shift(stand, di, dj, -np.inf) + model.climb_budget, -np.inf))
-            ceiling = _spread(seeds, steep, spread_steps)
+            if strict_carry:
+                seeds = np.where(np.isfinite(seeds), np.ceil(seeds / CARRY_QUANTUM) * CARRY_QUANTUM, seeds)
+                ceiling = faces.spread(seeds)
+            else:
+                ceiling = _spread(seeds, steep, spread_steps)
             hanging = steep & (g.corner_lo <= ceiling)
             hold = np.where(hanging, np.minimum(ceiling, g.corner_hi), -np.inf)
             held_ceiling = np.where(hanging, ceiling, -np.inf)
@@ -416,18 +509,28 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
                 if climbing:
                     seeds = np.maximum(seeds, np.where(steep & (g.corner_lo < from_stand),
                                                        from_stand + model.climb_budget, -np.inf))
-                    seeds = np.maximum(seeds, np.where(steep & (g.corner_lo < from_hold),
-                                                       _shift(held_ceiling, di, dj, -np.inf), -np.inf))
+                    if not strict_carry:     # strict mode: drops are part of the decaying spread
+                        seeds = np.maximum(seeds, np.where(steep & (g.corner_lo < from_hold),
+                                                           _shift(held_ceiling, di, dj, -np.inf), -np.inf))
         if climbing:
             for di, dj in ALL8:
                 reached |= rest & (g.lo <= _shift(held_ceiling, di, dj, -np.inf) + TOP_OUT)
                 # A face inside two neighbouring standing patches, climbed from rest.
                 reached |= rest & (g.lo <= _shift(stand, di, dj, -np.inf) + model.climb_budget + TOP_OUT)
+        vent_launch = none
+        for pad, apex in vents:
+            vent_launch = np.maximum(vent_launch, np.where(reached & pad, apex, -np.inf))
+        if vents and model.name == "under" and np.isfinite(vent_launch).any():
+            key = ("vent", vent_launch.tobytes())
+            if key not in memo:
+                memo[key] = _glide(vent_launch, none, g, vent_model, cell, False)
+            glide = memo[key][0]
+            reached |= rest & ~g.water & np.isfinite(glide) & (glide >= g.hi)
         if model.glide_steps:
             if model.name == "under":
                 launch = np.where(reached & rest & ~g.water, g.lo + model.glide_start, -np.inf)
             else:
-                launch = np.where(reached & rest, g.hi + model.glide_start, -np.inf)
+                launch = np.maximum(np.where(reached & rest, g.hi + model.glide_start, -np.inf), vent_launch)
             landing = g.lo if model.name == "over" else g.hi
             if "stand" not in memo or not np.array_equal(memo["stand"][0], launch):
                 memo["stand"] = (launch, _glide(launch, none, g, model, cell, climbing))
@@ -439,12 +542,29 @@ def reach(world, facts=(), model: TraversalModel | None = None, start="spawn",
                 if "hold" not in memo or not (np.array_equal(memo["hold"][0], hold)
                                               and np.array_equal(memo["hold"][1], held_ceiling)):
                     memo["hold"] = (hold, held_ceiling, _glide(hold, held_ceiling, g, model, cell, climbing))
-                glide, _, hit_ceiling = memo["hold"][2]
+                glide, hit, hit_ceiling = memo["hold"][2]
                 reached |= rest & np.isfinite(glide) & (glide >= landing)
-                seeds = np.maximum(seeds, hit_ceiling)
+                if strict_carry:
+                    # A climber leaving a hold at height h with ceiling C can, after gliding down by d,
+                    # grab a face no higher than min(C, h + budget) - d. That value is carried down
+                    # with the glide (one path, no mixing of maxima) and capped by the face top.
+                    reach_top = np.minimum(held_ceiling, np.where(np.isfinite(hold), hold, -np.inf) + model.climb_budget)
+                    if "left" not in memo or not (np.array_equal(memo["left"][0], hold)
+                                                  and np.array_equal(memo["left"][1], reach_top)):
+                        memo["left"] = (hold, reach_top,
+                                        _glide(hold, reach_top, g, model, cell, climbing, decay_carry=True)[2])
+                    bound = np.minimum(memo["left"][2], g.corner_hi + model.climb_budget)
+                    seeds = np.maximum(seeds, np.where(np.isfinite(memo["left"][2]), bound, -np.inf))
+                else:
+                    seeds = np.maximum(seeds, hit_ceiling)
+        if trace is not None:
+            trace(iterations, reached, before_reached, seeds, before_seeds)
         if np.array_equal(reached, before_reached) and np.array_equal(seeds, before_seeds):
             break
-    ceiling = _spread(seeds, steep, spread_steps) if climbing else none
+    if climbing:
+        ceiling = faces.spread(seeds) if strict_carry else _spread(seeds, steep, spread_steps)
+    else:
+        ceiling = none
     climb = steep & (g.corner_lo <= ceiling)
     return Reach(model=model, facts=facts, graph=g, rest=reached, climb=climb, ceiling=ceiling,
                  iterations=iterations)

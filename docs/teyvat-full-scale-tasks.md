@@ -14,7 +14,8 @@ It follows the path Skylands took from its compact testbed to its
 local mechanics, and replaces the world. The milestone IDs, count, and order stay the same.
 
 Task A, *The Relay Keeper's Apprenticeship*, is specified here in full. Task B,
-*The Expedition of Three Arts*, follows after Task A is validated (see
+*The Expedition of Three Arts*, has its own design and seed-7 implementation in
+[teyvat-full-scale-task-b.md](teyvat-full-scale-task-b.md) (see
 [Task B outlook](#task-b-outlook)).
 
 | | Compact course (today) | Full-scale Task A (this design) |
@@ -528,4 +529,5 @@ route planner, and recording tools. Two pieces of new mechanics are needed:
 - sentinels that deal active damage, which the compact course left out;
 - vent routes whose shelves and landings are validated on real terrain.
 
-Task B's design is written after Task A passes phase 3.
+The full design, its review, and the seed-7 implementation (island of 1,760 m,
+geography scale 2.75) are in [teyvat-full-scale-task-b.md](teyvat-full-scale-task-b.md).
