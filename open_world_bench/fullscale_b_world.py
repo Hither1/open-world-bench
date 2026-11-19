@@ -33,7 +33,8 @@ import numpy as np
 from .architecture import Architecture, Building, RADII
 from .campaign_env import GateCollisions
 from .fullscale_world import FactState, _dilate, _stable_int, _step
-from .scatter import PropField, scatter_props
+from .fullscale_sites import SiteArchitecture, place_sites, scatter_biomes
+from .scatter import PropField
 from .terrain import Terrain, TerrainConfig
 
 SUITE_VERSION = "teyvat-fullscale-b-v1"
@@ -106,16 +107,29 @@ _FIXED = {
 _CUT_X, _NOTCH_X = 40.0, 0.0
 
 
+def _inland(x):
+    """1 inland, fading to 0 toward the east and west coasts, where the walls meet the sea
+    cliffs and their proven shape is kept."""
+    t = np.clip((690.0 - np.abs(np.asarray(x, dtype=float))) / 70.0, 0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
+
+
 def scarp_z(x):
     """z of the Great Scarp face; the upper valley lies north (smaller z)."""
     x = np.asarray(x, dtype=float)
-    return 300.0 + 9.0 * np.sin(x / 90.0) + 4.0 * np.sin(x / 41.0 + 1.0)
+    # Broad sweeps plus promontories and bays, so the face is not a ruled line.
+    # They fade out around the Scarp Cut, where the gate box must meet a plain face.
+    rough = np.clip((np.abs(x - _CUT_X) - 45.0) / 45.0, 0.0, 1.0)
+    rough = rough * rough * (3.0 - 2.0 * rough) * _inland(x)
+    return (300.0 + 9.0 * np.sin(x / 90.0) + 4.0 * np.sin(x / 41.0 + 1.0)
+            + rough * (8.0 * np.sin(x / 23.0 + 2.1) * np.sin(x / 67.0) + 3.5 * np.sin(x / 9.5 + 0.7)))
 
 
 def wall_z(x):
     """z of the highland wall; the highland lies north (smaller z)."""
     x = np.asarray(x, dtype=float)
-    return -80.0 + 10.0 * np.sin(x / 85.0 + 0.7)
+    return (-80.0 + 10.0 * np.sin(x / 85.0 + 0.7)
+            + _inland(x) * (8.0 * np.sin(x / 26.0 + 0.4) * np.sin(x / 71.0 + 1.3) + 3.5 * np.sin(x / 10.5 + 2.0)))
 
 
 # Stacks: name -> (radius m, height above the stack's own base tier). Rises are at
@@ -224,6 +238,7 @@ class ExpeditionWorld:
     state: FactState
     architecture: GateCollisions
     tops: dict = field(default_factory=dict)        # stack name -> top height
+    pieces: list = field(default_factory=list)      # site structures beyond the shared building kinds
 
     @property
     def gates(self):
@@ -276,7 +291,8 @@ class ExpeditionWorld:
         h = hashlib.sha256()
         h.update(np.ascontiguousarray(self.terrain.height).tobytes())
         h.update(np.ascontiguousarray(self.props.pos).tobytes())
-        for b in self.buildings:
+        h.update(np.ascontiguousarray(self.props.kind).tobytes())
+        for b in list(self.buildings) + list(self.pieces):
             h.update(repr(b.metadata()).encode())
         for g in self.gates:
             h.update(repr(sorted(g.items())).encode())
@@ -367,7 +383,16 @@ def author_terrain(layout: Layout) -> Terrain:
     for name, (radius, _) in STACKS.items():
         sx, sz = p(name)
         top = stack_top(name)
-        w = _step(radius - np.hypot(x - sx, z - sz), 2.0)
+        # Buttresses: the outline bulges outward by up to 16 % and never shrinks, so the
+        # designed shelf (radius) is always there.
+        angle = np.arctan2(z - sz, x - sx)
+        turn = (_stable_int(layout.seed, "stack-lobes", name) % 628) / 100.0
+        lobes = 0.05 * (1.0 + np.sin(3.0 * angle + turn)) + 0.03 * (1.0 + np.sin(5.0 * angle + 2.3 * turn))
+        # A stack whose neighbours stand close keeps its plain outline, so no bulge reaches a pad.
+        nearest = min(float(np.hypot(sx - ox, sz - oz)) for other, (ox, oz) in layout.anchors.items() if other != name)
+        if nearest < radius * 1.16 + 16.0:
+            lobes = 0.0 * lobes
+        w = _step(radius * (1.0 + lobes) - np.hypot(x - sx, z - sz), 2.0)
         h = np.maximum(h, _blend(h, top, w))
 
     # Coast: beaches below 20 m, sea cliffs above.
@@ -400,68 +425,77 @@ def make_vents(terrain: Terrain, layout: Layout) -> list:
     return vents
 
 
-def scatter_scenery(terrain: Terrain, layout: Layout) -> PropField:
-    props = scatter_props(terrain, layout.seed, 0.5)
-    steep = _dilate(terrain.slope > np.radians(35.0), 4)
-    cell = terrain._cell
-    gi = np.clip(np.rint((props.pos[:, 0] + terrain._half) / cell).astype(int), 0, terrain.cfg.resolution - 1)
-    gj = np.clip(np.rint((props.pos[:, 2] + terrain._half) / cell).astype(int), 0, terrain.cfg.resolution - 1)
-    keep = ~steep[gi, gj] & (props.pos[:, 1] > 1.0)
-    sites = np.array(list(layout.anchors.values()))
-    near = np.min(np.hypot(props.pos[:, None, 0] - sites[None, :, 0], props.pos[:, None, 2] - sites[None, :, 1]), axis=1)
-    keep &= near > 16.0
-    mouth = float(scarp_z(layout.cut_x))
-    keep &= ~((np.abs(props.pos[:, 0] - layout.cut_x) < CUT_HALF_WIDTH + 8.0)
-              & (props.pos[:, 2] < mouth + 20.0) & (props.pos[:, 2] > mouth - CUT_LENGTH - 30.0))
-    nx = layout.notch_x
-    cz = layout.crater[1]
-    keep &= ~((np.abs(props.pos[:, 0] - nx) < NOTCH_HALF_WIDTH + 8.0) & (props.pos[:, 2] > cz + CRATER_INNER - 30.0)
-              & (props.pos[:, 2] < cz + CRATER_OUTER + 30.0))
-    return PropField(props.pos[keep], props.yaw[keep], props.scale[keep], props.kind[keep])
-
-
-# (building kind, site anchor, distance from the anchor in metres)
-_STRUCTURES = (
-    ("timber_house", "spawn", 24.0), ("windmill", "spawn", 42.0), ("market_stall", "spawn", 17.0),
-    ("timber_house", "keeper", 16.0), ("windmill", "relay_b02", 26.0), ("pavilion", "warden", 14.0),
-    ("pavilion", "guide", 14.0),
-    ("windmill", "depot", 12.0), ("watchtower", "depot", 20.0), ("market_stall", "depot", 22.0),
-    ("watchtower", "camp", 18.0), ("market_stall", "camp", 13.0), ("market_stall", "camp", 22.0),
-    ("watchtower", "cut_mouth", 16.0), ("watchtower", "cut_top", 14.0),
-    ("ruin_gate", "relay_b11", 22.0), ("timber_house", "skylift_house", 0.0),
-    ("watchtower", "crater_gate", 22.0), ("ruin_gate", "relay_b19", 20.0),
+# Trails between sites that stay free of plants, so the designed routes read as paths.
+_TRAILS = (
+    ("spawn", "keeper"), ("keeper", "relay_b01"), ("spawn", "relay_b02"), ("relay_b01", "relay_b02"),
+    ("spawn", "warden"), ("warden", "arena_b03"), ("warden", "arena_b04"), ("arena_b03", "arena_b04"),
+    ("relay_b02", "guide"), ("guide", "pad_b05"), ("guide", "pad_b06"), ("arena_b04", "guide"),
+    ("pad_b06", "depot"), ("overlook_2", "depot"), ("depot", "depot_statue"), ("depot", "camp"), ("depot", "lake"),
+    ("camp", "lake"), ("lake", "cut_mouth"), ("depot", "cut_mouth"), ("camp", "cut_mouth"), ("cut_mouth", "cut_top"),
+    ("cut_top", "relay_b11"), ("cut_top", "pad_b12"), ("cut_top", "arena_b13"), ("relay_b11", "arena_b13"),
+    ("pad_b12", "arena_b13"), ("arena_b13", "relay_b14"), ("relay_b14", "cut_top"), ("relay_b14", "skylift_house"),
+    ("arena_b13", "skylift_house"), ("relay_b11", "skylift_house"), ("skylift_house", "relay_b16"),
+    ("skylift_house", "pad_b16"), ("relay_b16", "pad_b16"),
+    ("highland_rim", "crater_gate"), ("crater_gate", "arena_b17"), ("crater_gate", "relay_b17"),
+    ("crater_gate", "crater_inside"), ("crater_inside", "relay_b19"), ("relay_b19", "pad_b18"),
+    ("relay_b19", "pad_b20"), ("crater_inside", "pad_b18"),
+    ("crown_landing", "relay_b21"), ("crown_landing", "relay_b22"), ("relay_b21", "relay_b22"),
+    ("relay_b22", "relay_b23"), ("relay_b21", "relay_b23"), ("relay_b23", "spire_pad"), ("relay_b22", "outpost_pad"),
 )
 
 
-def place_structures(terrain: Terrain, layout: Layout) -> list:
-    buildings: list[Building] = []
-    names = list(layout.anchors)
-    for index, (kind, anchor, distance) in enumerate(_STRUCTURES):
-        ax, az = layout.anchors[anchor]
-        sites = np.array([layout.anchors[n] for n in names if n != anchor])
-        r = RADII[kind]
-        start = _stable_int(layout.seed, kind, anchor, index) % 12
-        for k in range(12 if distance > 0 else 1):
-            angle = (start + k) * np.pi / 6.0
-            xz = np.array((ax + np.cos(angle) * distance, az + np.sin(angle) * distance))
-            samples = xz + np.array([(a, b) for a in (-r, 0, r) for b in (-r, 0, r)])
-            hs = terrain.height_at(samples[:, 0], samples[:, 1])
-            if distance > 0:
-                if hs.min() < 0.8 or np.ptp(hs) > 2.5:
-                    continue
-                if np.max(terrain.slope_at(samples[:, 0], samples[:, 1])) > np.radians(30.0):
-                    continue
-                others = [b for b in buildings if np.hypot(*(xz - np.asarray(b.pos)[[0, 2]])) < r + RADII[b.kind] + 2.0]
-                clear = np.hypot(sites[:, 0] - xz[0], sites[:, 1] - xz[1]) > r + 6.0
-                if others or not clear.all():
-                    continue
-            yaw = float(np.arctan2(ax - xz[0], az - xz[1])) if distance > 0 else 0.0
-            buildings.append(Building(f"fullscale-b:{anchor}:{kind}:{index}", kind,
-                                      (float(xz[0]), float(hs.max()), float(xz[1])), yaw,
-                                      _stable_int(layout.seed, "appearance", anchor, kind, index),
-                                      float(np.ceil(np.ptp(hs) * 10) / 10)))
-            break
-    return buildings
+def _zones(layout: Layout):
+    """Vegetation zone of each point: orchard, lakeside, hills, plateau, highland, crater, crown."""
+    lake = layout.point("lake")
+    cx, cz = layout.crater
+    kx, kz = layout.crown
+
+    def zone(x, z, h):
+        d_s, d_w = scarp_z(x) - z, wall_z(x) - z
+        r_crater, r_crown = np.hypot(x - cx, z - cz), np.hypot(x - kx, z - kz)
+        out = np.full(np.shape(x), "", dtype="<U8")
+        low = (d_s < -3.0) & (h < LOWLAND + 22.0)
+        out[low] = "hills"
+        out[low & (x < -100.0)] = "orchard"
+        out[low & (np.hypot(x - lake[0], z - lake[1]) < 150.0)] = "lakeside"
+        out[(d_s > 3.0) & (d_w < -3.0) & (np.abs(h - PLATEAU) < 8.0)] = "plateau"
+        out[(d_w > 3.0) & (r_crater > CRATER_OUTER + 3.0) & (np.abs(h - HIGHLAND) < 8.0)] = "highland"
+        out[(r_crater < CRATER_INNER - 3.0) & (r_crown > CROWN_RADIUS + 3.0) & (np.abs(h - HIGHLAND) < 8.0)] = "crater"
+        out[(r_crown < CROWN_RADIUS - 3.0) & (r_crown > SPIRE_RADIUS + 3.0) & (np.abs(h - CROWN) < 6.0)] = "crown"
+        return out
+    return zone
+
+
+def _reserved(layout: Layout) -> list:
+    """Discs no structure may enter: stacks and the two gate passages."""
+    discs = [(*layout.anchors[name], radius + 7.0) for name, (radius, _) in STACKS.items()]
+    mouth = float(scarp_z(layout.cut_x))
+    discs += [(layout.cut_x, mouth - k * 14.0, CUT_HALF_WIDTH + 5.0) for k in range(0, 10)]
+    cz = layout.crater[1]
+    discs += [(layout.notch_x, cz + CRATER_INNER - 12.0 + k * 14.0, NOTCH_HALF_WIDTH + 5.0) for k in range(4)]
+    discs.append((layout.crown[0], layout.crown[1], SPIRE_RADIUS + 7.0))
+    return discs
+
+
+def place_structures(terrain: Terrain, layout: Layout):
+    """Site compounds: (shared-kind buildings, site pieces, ids skipped for want of level ground)."""
+    return place_sites(terrain, layout, reserved=_reserved(layout))
+
+
+def scatter_scenery(terrain: Terrain, layout: Layout, buildings=(), pieces=()) -> PropField:
+    """Regional groves, with sites, trails, gate passages and stack feet kept clear."""
+    from .architecture import RADII as SHARED_RADII
+    from .fullscale_sites import PIECE_RADII
+    from .fullscale_sites import compound_extent
+    clear = [(x, z, 16.0) for x, z in layout.anchors.values()]
+    clear += [(*layout.anchors[site], min(compound_extent(site), 46.0) + 7.0) for site in layout.anchors
+              if compound_extent(site) > 0.0]
+    clear += [(b.pos[0], b.pos[2], SHARED_RADII[b.kind] + 3.5) for b in buildings]
+    clear += [(q.pos[0], q.pos[2], PIECE_RADII[q.kind] + 3.5) for q in pieces]
+    clear += _reserved(layout)[len(STACKS):]
+    trails = [(layout.anchors[a], layout.anchors[b]) for a, b in _TRAILS]
+    tops = [(*layout.anchors[name], radius, stack_top(name)) for name, (radius, _) in STACKS.items()]
+    return scatter_biomes(terrain, layout, zones=_zones(layout), trails=trails, clear=clear, stack_tops=tops)
 
 
 def causeway_gate(layout: Layout) -> dict:
@@ -483,11 +517,11 @@ def crater_gate(layout: Layout) -> dict:
 def build_world(seed: int = 7, facts=()) -> ExpeditionWorld:
     layout = make_layout(seed)
     terrain = author_terrain(layout)
-    props = scatter_scenery(terrain, layout)
-    buildings = place_structures(terrain, layout)
+    buildings, pieces, _ = place_structures(terrain, layout)
+    props = scatter_scenery(terrain, layout, buildings, pieces)
     vents = make_vents(terrain, layout)
     state = FactState(gates=[causeway_gate(layout), crater_gate(layout)], facts=set(facts))
-    architecture = GateCollisions(Architecture(buildings), state)
+    architecture = GateCollisions(SiteArchitecture(buildings, pieces), state)
     tops = {name: float(terrain.height_at(*layout.anchors[name])) for name in STACKS}
     return ExpeditionWorld(seed=int(seed), layout=layout, terrain=terrain, props=props, buildings=buildings,
-                           lifts=[], vents=vents, state=state, architecture=architecture, tops=tops)
+                           lifts=[], vents=vents, state=state, architecture=architecture, tops=tops, pieces=pieces)

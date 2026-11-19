@@ -303,7 +303,9 @@ def _teyvat(native, size, view="presentation"):
     scene.metadata["haze"] = dict(start=70.0, distance=1100.0, amount=.85)
     # Observation budgets must not reduce presentation geometry or vegetation.
     settings = replace(native.cfg.render, width=size[0], height=size[1],
-                       draw_props=True, draw_entities=True, draw_character=view != "first_person",
+                       draw_props=True, draw_entities=True,
+                       # A caller that draws its own character sets ``presentation_hides_character``.
+                       draw_character=view != "first_person" and not getattr(native, "presentation_hides_character", False),
                        ground_cover=layout is None,
                        prop_draw_distance=max(260, native.cfg.render.prop_draw_distance))
     forward = _unit(target - eye)

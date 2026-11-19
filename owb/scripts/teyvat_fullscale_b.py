@@ -29,15 +29,23 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ("open_world_bench/fullscale_b_env.py", "open_world_bench/fullscale_b_policy.py",
            "open_world_bench/fullscale_b_world.py", "open_world_bench/fullscale_mechanics.py",
            "open_world_bench/fullscale_nav.py", "open_world_bench/fullscale_physics.py",
-           "open_world_bench/fullscale_reach.py", "open_world_bench/fullscale_world.py",
+           "open_world_bench/fullscale_reach.py", "open_world_bench/fullscale_sites.py",
+           "open_world_bench/fullscale_world.py",
            # shared simulation code the course builds on
            "open_world_bench/architecture.py", "open_world_bench/camera.py", "open_world_bench/campaign_env.py",
            "open_world_bench/character.py", "open_world_bench/elements.py", "open_world_bench/env.py",
            "open_world_bench/party.py", "open_world_bench/quests/engine.py", "open_world_bench/scatter.py",
            "open_world_bench/terrain.py", "open_world_bench/world.py")
 PRESENTATION_SOURCES = ("owb/scripts/teyvat_fullscale_b.py", "owb/scripts/teyvat_fullscale_preview.py",
+                        "open_world_bench/render/site_assets.py", "open_world_bench/render/anime_assets.py",
+                        "open_world_bench/render/soft_renderer.py",
                         "owb/render/scene_export.py", "owb/render/blender_scene.py")
 SCENE_SIZE = (1280, 720)
+VEGETATION_RANGE, VEGETATION_BUDGET = 420.0, 900      # presentation: plants drawn per frame
+STRUCTURE_RANGE = 700.0                                # presentation: site pieces drawn per frame
+FIGURE_RANGE = 220.0                                   # presentation: people and sentinels drawn per frame
+PRESENTATION_STYLE = "anime"                           # soft toon shading, lawn carpet, painted sky
+GRASS_RADIUS, GRASS_DENSITY = 60.0, 14.0               # presentation: lawn carpet near the camera
 CANVAS = (1600, 900)
 FPS = 10
 # Actions per rendered frame; at 0.2 s per action and 10 fps, speed = 2 x stride.
@@ -229,8 +237,66 @@ def expedition_scene(env, width, height):
     from open_world_bench.render.meshes import MeshBatch
     from owb.render.scene_export import _add_batch, capture_scene
 
-    scene = capture_scene(env, width=width, height=height)
+    from open_world_bench.render.site_assets import add_site_pieces, add_vegetation
+    from open_world_bench.scatter import PropField
+
+    # The shared capture draws at most 212 plants, which thins the groves. Capture without
+    # plants, then add every plant in view here. Props are static; the field is restored.
+    props = env.world.props
+    env.world.props = PropField(props.pos[:0], props.yaw[:0], props.scale[:0], props.kind[:0])
+    from open_world_bench.world import EntityKind
+    figures = [e for e in env.world.entities.values()
+               if e.alive and e.kind in (EntityKind.NPC, EntityKind.ENEMY, EntityKind.BOSS)] if PRESENTATION_STYLE else []
+    env.presentation_hides_character = bool(PRESENTATION_STYLE)
+    env.world.presentation_hidden = {e.id for e in figures}
+    try:
+        scene = capture_scene(env, width=width, height=height)
+    finally:
+        env.world.props = props
+        env.presentation_hides_character = False
+        env.world.presentation_hidden = ()
+    if PRESENTATION_STYLE:
+        from open_world_bench.render.site_assets import GRASS_VARIANTS, grass_clump
+        scene.metadata["style"] = dict(name=PRESENTATION_STYLE)
+        names = []
+        for k in range(GRASS_VARIANTS):
+            vertices, colors, normals, _, _ = grass_clump(k)
+            names.append(f"Lawn clump {k}")
+            scene.add(names[-1], vertices, colors, normals=normals, material="foliage")
+            scene.meshes[-1]["prototype"] = True
+        from open_world_bench.render.site_assets import far_peaks
+        vertices, colors = far_peaks(int(env.fullscale.seed))
+        scene.add("Far peaks", vertices, colors, material="terrain")
+        scene.metadata["ground_cover"] = dict(target="Island terrain", prototypes=names, radius=GRASS_RADIUS,
+                                              density=GRASS_DENSITY, seed=int(env.fullscale.seed), min_up=0.9,
+                                              min_height=2.4, clump_floor=0.2)
+    eye = np.asarray(scene.metadata["camera"]["eye"], float)
+    forward = np.asarray(scene.metadata["camera"]["target"], float) - eye
     batch = MeshBatch()
+    plants = add_vegetation(batch, props, eye, forward, env.char.pos, max_distance=VEGETATION_RANGE,
+                            budget=VEGETATION_BUDGET, stylised=bool(PRESENTATION_STYLE))
+    if PRESENTATION_STYLE:
+        from open_world_bench.render.anime_assets import add_hero, outline_hull
+        from open_world_bench.render.anime_assets import RAIDER_LOOK, add_person, add_sentinel
+        first = add_hero(batch, env.char, env.party.active.spec)
+        sentinel_of = {unit.entity: (k, unit) for k, unit in enumerate(env.course.sentinels.values())}
+        for e in figures:
+            offset = env.char.pos - e.pos
+            distance = float(np.hypot(offset[0], offset[2]))
+            if float(np.hypot(e.pos[0] - eye[0], e.pos[2] - eye[2])) > FIGURE_RANGE:
+                continue
+            facing = float(np.arctan2(offset[0], -offset[2]))
+            if e.id in sentinel_of:
+                k, unit = sentinel_of[e.id]
+                add_sentinel(batch, e.pos, facing, unit.phase, env.course.live_sentinel(unit.id), env.world.elapsed, variant=k)
+            elif e.kind == EntityKind.ENEMY:
+                chasing = 1.9 < distance < e.aggro_radius and not e.elemental.disabled
+                add_person(batch, e.id, e.pos, e.yaw if chasing else facing, phase=(e.bob * 1.7) % 1.0,
+                           speed=3.2 if chasing else 0.0, look=RAIDER_LOOK)
+            else:
+                add_person(batch, e.id, e.pos, facing if distance < 14.0 else e.yaw, phase=(e.bob * .22) % 1.0)
+        scene.add("Figure outlines", outline_hull(batch.verts[first:]), (0.1, 0.08, 0.14), material="outline")
+    add_site_pieces(batch, env.fullscale.pieces, eye, STRUCTURE_RANGE)
     c = env.course
     for i, gate in enumerate(env.fullscale.architecture.active()):
         centre = np.asarray(gate["position"], float) + (0.0, gate["size"][1] / 2, 0.0)
@@ -262,7 +328,7 @@ def expedition_scene(env, width, height):
                           obj_id=32000 + k, emissive=1.2)
     for k, unit in enumerate(c.sentinels.values()):
         e = env.world.get(unit.entity)
-        if not e.alive or np.linalg.norm(e.pos - eye) > 120:
+        if PRESENTATION_STYLE or not e.alive or np.linalg.norm(e.pos - eye) > 120:
             continue
         colour = PHASE_COLOURS[unit.phase] if c.live_sentinel(unit.id) else (.3, .3, .32)
         ring_glow = .9 if c.live_sentinel(unit.id) else 0.0
@@ -273,7 +339,7 @@ def expedition_scene(env, width, height):
                           emissive=ring_glow)
     _add_batch(scene, batch)
     scene.metadata["fullscale_b"] = dict(kind="reference-solution", state_digest=env.state_digest(),
-                                         facts=sorted(c.facts),
+                                         facts=sorted(c.facts), plants_drawn=int(plants),
                                          note="Vent pads, columns and sentinel phase rings are presentation cues; "
                                               "gate boxes match their collision.")
     return scene
@@ -294,7 +360,9 @@ def render(directory, cache, *, gpus=(0,), per_gpu=1, samples=64, threads=8, dev
     plan = frame_plan(rows)
     blender = resolve_blender(blender)
     settings = dict(renderer="cycles", blender=blender_version(blender), device=device, samples=samples,
-                    size=list(SCENE_SIZE), denoising=True, max_bounces=6, view_transform="AgX")
+                    size=list(SCENE_SIZE), denoising=True, max_bounces=6,
+                    view_transform="Standard" if PRESENTATION_STYLE else "AgX", style=PRESENTATION_STYLE or "default",
+                    plants_per_frame=VEGETATION_BUDGET, lawn_radius=GRASS_RADIUS)
     frames_dir = cache / "frames"
     frames_dir.mkdir(parents=True, exist_ok=True)
     work = cache / "work"

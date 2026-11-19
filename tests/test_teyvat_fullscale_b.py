@@ -320,3 +320,44 @@ def test_strict_carry_is_sound_against_the_real_controller():
             gains.append(y - base)
     assert not violations, violations[:5]
     assert max(gains) > 15.0                          # the climbs really climbed
+
+
+def test_sites_have_compounds_and_groves(env):
+    """Every site has its landmark pieces, they collide, and the groves leave sites and trails open."""
+    from open_world_bench.fullscale_b_world import _TRAILS, place_structures
+    from open_world_bench.fullscale_sites import PIECE_RADII, _segment_distance
+    world = env.fullscale
+    buildings, pieces, skipped = place_structures(world.terrain, world.layout)
+    assert len(pieces) > 180 and len(buildings) > 18 and len(skipped) < 10
+    kinds = {(p.site, p.kind) for p in pieces}
+    assert {("depot", "granary"), ("relay_b11", "signal_mast"), ("relay_b19", "shrine_hall"),
+            ("crown_landing", "beacon_tower"), ("camp", "palisade"), ("arena_b03", "standing_stone")} <= kinds
+    assert world.digest() == env.world_digest
+    granary = next(p for p in pieces if p.kind == "granary")
+    inside = np.array([granary.pos[0], granary.pos[1] + 1.0, granary.pos[2]])
+    assert world.architecture.blocked(inside[None])[0]
+    props = world.props
+    solid = props.radius > 0
+    assert solid.sum() > 3000 and len(set(props.kind.tolist())) >= 7
+    anchors = np.array(list(world.layout.anchors.values()))
+    near = np.min(np.hypot(props.pos[solid][:, None, 0] - anchors[None, :, 0],
+                           props.pos[solid][:, None, 2] - anchors[None, :, 1]), axis=1)
+    assert near.min() > 15.0
+    for a, b in _TRAILS:
+        d = _segment_distance(props.pos[solid][:, 0], props.pos[solid][:, 2], world.layout.anchors[a], world.layout.anchors[b])
+        assert d.min() > 5.0, (a, b)
+    for p in pieces:                                   # no trunk inside a structure
+        d = np.hypot(props.pos[solid][:, 0] - p.pos[0], props.pos[solid][:, 2] - p.pos[2])
+        assert d.min() > PIECE_RADII[p.kind] + 2.0, p.id
+
+
+def test_observations_show_the_site_pieces():
+    from open_world_bench.render.meshes import MeshBatch
+    e = TeyvatExpeditionEnv(7, render_enabled=True, width=96, height=54)
+    e.reset(seed=7)
+    eye = e.char.pos + np.array([0.0, 2.0, 0.0])
+    with_pieces = e._renderer._build_meshes(e.world, e.char, eye, np.array([0.0, 0.0, -1.0]), batch=MeshBatch())
+    ids = np.concatenate(with_pieces.ids)
+    assert (ids >= 24000).any()                         # site pieces carry ids from 24000
+    obs, *_ = e.step(_action())
+    assert obs["rgb"].shape == (54, 96, 3) and obs["rgb"].std() > 1.0

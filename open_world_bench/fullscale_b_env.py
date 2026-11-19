@@ -892,6 +892,21 @@ class ExpeditionCombat(FullScaleCombat):
         return super()._hit(enemy, char, damage, element, charge)
 
 
+def _expedition_renderer(settings):
+    """The soft observation renderer, plus the island's site pieces."""
+    from .render.site_assets import add_site_pieces
+    from .render.soft_renderer import SoftRenderer
+
+    class ExpeditionRenderer(SoftRenderer):
+        def _build_meshes(self, world, char, eye, fwd, *, batch=None, full_detail=False):
+            batch = super()._build_meshes(world, char, eye, fwd, batch=batch, full_detail=full_detail)
+            if self.settings.draw_props:
+                pieces = getattr(getattr(world.architecture, "base", world.architecture), "pieces", ())
+                add_site_pieces(batch, pieces, eye, self.settings.prop_draw_distance)
+            return batch
+    return ExpeditionRenderer(settings)
+
+
 class ExpeditionQuests(QuestEngine):
     """Advances through every stage whose milestone completed this step.
 
@@ -929,6 +944,8 @@ class TeyvatExpeditionEnv(OpenWorldEnv):
         from gymnasium import spaces
         import string
         self.observation_space["local_text"] = spaces.Text(max_length=1024, charset=string.printable)
+        self._renderer.close()
+        self._renderer = _expedition_renderer(self.cfg.render)
 
     def _build(self, seed):
         c = self.cfg
