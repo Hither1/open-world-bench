@@ -583,6 +583,8 @@ reuse the mechanics module.
 | `open_world_bench/fullscale_mechanics.py` | `RelayUnit`, `SentinelUnit`, `VentState`: the R, G and T rules |
 | `open_world_bench/fullscale_b_env.py` | `TeyvatExpeditionEnv` and `ExpeditionCourse`: 24 milestones, locks, leads, statues, observations |
 | `open_world_bench/fullscale_b_policy.py` | `ExpeditionReference`, the privileged reference controller |
+| `open_world_bench/fullscale_sites.py` | Site compounds (colliding pieces placed around anchors) and zoned vegetation |
+| `open_world_bench/render/site_assets.py`, `anime_assets.py` | Presentation meshes: site pieces, plants, far peaks, the player's character, people, sentinels |
 | `owb/scripts/teyvat_fullscale_b.py` | `world-check`, `collect`, `verify`, `render` (step-range passes can share one frame cache) |
 | `tests/test_teyvat_fullscale_b.py` | Rule units, locks, observation and `info` contract, same-step milestones, sentinel deaths, reaction splash, vent launch detection, a real-controller check of `strict_carry`, world proofs, and a full collect plus replay |
 
@@ -635,18 +637,18 @@ another layout.
 | Measure | Seed 7 | Seed 19 |
 | --- | --- | --- |
 | Result | 24 / 24 milestones, success | 24 / 24 milestones, success |
-| Actions | 8,224 native actions | 7,896 native actions |
-| Simulated time | 27.4 minutes | 26.3 minutes |
-| Travel | 8.92 km | 8.70 km |
+| Actions | 8,324 native actions | 7,936 native actions |
+| Simulated time | 27.7 minutes | 26.5 minutes |
+| Travel | 8.96 km | 8.76 km |
 | Deaths | 0 | 0 |
 | Falls with damage | 0 | 0 |
-| Lowest HP | 64 | 74 |
+| Lowest HP | 70 | 68 |
 | Vent launches | 17, one per leg, no sputters | 17, one per leg, no sputters |
 | Route restarts | 0 | 0 |
 | Relay applications rejected | 0 | 0 |
 | Unnecessary drains at B22 | 0 | 0 |
 | Relay interruptions handled | 3 (B02, B23, B24) | 3 (B02, B23, B24) |
-| Sentinel interrupts | 9 | 8 |
+| Sentinel interrupts | 11 | 9 |
 | Missed wind-up windows | 0 | 0 |
 | Slams | 0 | 0 |
 | Replay | Every action matches | Every action matches |
@@ -665,7 +667,7 @@ Action share by controller mode:
 | Combat | 5 % |
 | Other mechanisms | 1 % |
 
-**Measured delays against the memory schedule:**
+**Measured delays against the memory schedule** (measured before the scenery pass below, which lengthened the seed-7 run by 0.3 minutes; not re-measured):
 
 | Exposure | Probe | Planned delay | Measured delay |
 | --- | --- | ---: | ---: |
@@ -693,7 +695,7 @@ solution*. Vent pads, vent columns, and sentinel phase rings are presentation cu
 boxes match their collision. It plays walking and resting at 16×, and vent legs, glides,
 and mechanisms at 4×.
 
-The seed-7 video renders 2,254 sampled replay states of the run above. It is a
+The seed-7 video renders 2,283 sampled replay states of the run above (2,903 frames, 4:50). It is a
 1600 × 900 canvas around 1280 × 720 Blender 4.5.4 Cycles scenes (OptiX, 64 samples,
 denoised); its frame count, duration, settings and decode check are recorded in
 `video-manifest.json`. Rendering runs as four step-range passes sharing one frame cache;
@@ -711,8 +713,8 @@ python -B -m owb.scripts.teyvat_fullscale_b render runs/fullscale-b/seed-7 \
 - **Scope.** The recorded run and the video are for seed 7. World proofs pass on seeds 3, 7,
   11, 19 and 23, and the reference completes seeds 7 and 19; other seeds' reference runs are
   untested.
-- **Geometry.** Stacks are smooth geometric columns; the terrain is still authored geometry.
-- **Sentinels.** They reuse the generic enemy figure, with phase rings as the cue.
+- **Geometry.** The terrain is still authored geometry; shaded cliff faces read as flat.
+- **Sentinels.** In observations they reuse the generic enemy figure with phase rings; the Cycles presentation has its own sentinel model.
 - **`local_text` labels.** Labels are not occlusion-tested.
 - **Elevated receivers.** Elevated relay receivers are deferred.
 - **Crown shortcuts.** Inside the crater, some vent columns can reach a later shelf by gliding
@@ -798,3 +800,38 @@ Kept as known limits:
   spread. The differential climbs found 19 such states and none led to a violation.
 - The environment builds any seed. Registration (phase B5) should expose only seeds whose
   `world-check` passed.
+
+## Scenery and presentation pass
+
+A later pass changed how the island looks. It touches the simulated world in three places,
+so the proofs and reference runs above were redone on the new world (`world-check` passes
+on seeds 3, 7, 11, 19 and 23; the reference completes seeds 7 and 19 with replay).
+
+**Simulated world (changes collisions and the world digest):**
+
+- **Site compounds.** Each site anchor gets a small compound of colliding pieces
+  (granary, storehouse, workshop, well, fences, palisades, tents, standing stones, masts,
+  pylons, shrine hall, crates, carts, ruins). `SiteArchitecture` adds their boxes to the
+  shared building collisions; roofs are never platforms. A piece that does not fit swings
+  around its anchor in 20° steps, and a piece that still does not fit is skipped and logged.
+- **Vegetation.** Plants sit on a jittered 7 m grid, thinned by a grove mask, with a plant
+  table per zone (orchard, lakeside, hills, plateau, highland, crater, crown). Anchors,
+  compounds, trails, gate passages and stack tops are kept clear.
+- **Irregular walls and stacks.** The Great Scarp and the highland wall follow a rougher
+  line away from the Scarp Cut and the coasts, and stacks bulge into lobes of up to 16 %.
+  A stack whose neighbour is close keeps a round plan, so no lobe covers a vent pad.
+
+**Presentation only (Cycles recordings; observations and simulation unchanged):**
+
+- An opt-in style, recorded as `style: anime` in the video manifest: toon shading mixed
+  over the physical shader, terrain coloured from slope and height, faceted rock shading,
+  a procedural cloud sky, the Standard view transform, haze, a lawn within 60 m of the
+  camera, and ink outlines on figures.
+- Original stylised models for plants (three detail tiers, 900 plants per frame), the
+  player's character with pose animation and a glider, other people, and sentinels, plus
+  presentation-only mountains out at sea.
+- The observation renderer draws the site pieces but keeps its own plant and figure models.
+
+**Known gaps in the look:** relays, vents, gates, chests and statues keep their earlier
+models; there are no skill, hit or downed animations; ground paths are not drawn; water is
+only recoloured; shaded cliffs have no geometric relief.
