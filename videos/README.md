@@ -34,3 +34,35 @@ verification, chapters and render settings are in
 camera, lighter shadows) are not in this video. See
 [the design and results](../docs/teyvat-full-scale-task-b.md).
 
+
+# Lemon tart (mobile manipulation)
+
+The current task is [mobile-manipulation-tasks.md](../docs/mobile-manipulation-tasks.md).
+
+- [lemon-tart-full.mp4](lemon-tart-full.mp4) is one continuous run of that procedure from `reset`, at 6x, 7 minutes 41 seconds, MuJoCo's own renderer. Log: [lemon-tart-full.json](lemon-tart-full.json), 20/21 milestones, `success` false.
+  From 0:00 to about 6:07 are the first 19 milestones, through `ingredients_restored` at step 44087.
+  From 6:07 to 6:41 the tools go into the dishwasher. `tools_washed` latches at step 48075, but the rack placement in this stretch was changed after the recording.
+  After 6:41 the run fails: the whisk does not come off the rack, and the last caption says the run stopped. Do not treat that stretch as a result.
+
+- [lemon-tart-reference.mp4](lemon-tart-reference.mp4) is an **older version**.
+  The PandaOmron finishes the previous nine milestones with its own 12-dimensional
+  actions: seed 1, 22402 control steps, shown at 4x. Summary:
+  [lemon-tart-reference.json](lemon-tart-reference.json). It needs `--horizon 24000`;
+  the default 20000-step limit cuts it off at 7/9. On-screen captions in this file
+  are Chinese and describe those old milestones. Rendered with MuJoCo's native
+  offscreen renderer: RoboCasa has no Cycles exporter.
+- [State walkthrough](lemon-tart-state-walkthrough.mp4): poses written directly into
+  the simulator for the same old milestones. Not robot actions. Captions are Chinese.
+- [lemon-tart-mix.mp4](lemon-tart-mix.mp4): bowl, flour, and a sugar cube. The flour
+  bag is one rigid body and nothing pours out. Seed 1, 4857 steps.
+- [lemon-tart-mix-usable.mp4](lemon-tart-mix-usable.mp4), plus
+  [flour](lemon-tart-usable-flour-pour.mp4), [sugar](lemon-tart-usable-sugar-pour.mp4),
+  and [egg](lemon-tart-usable-egg-pour.mp4): grains pour. The same usable run
+  also cuts the butter and the lemon. Captions are Chinese.
+- [lemon-tart-oven-lock.mp4](lemon-tart-oven-lock.mp4) and
+  [lemon-tart-oven-knobs.mp4](lemon-tart-oven-knobs.mp4): optional door lock and
+  knob order. Captions are Chinese.
+- [lemon-tart-tart-pan.png](lemon-tart-tart-pan.png): the metal tart pan used when
+  `usable_ingredients=True`. The default task and the old reference video still use a plate.
+
+Details: [../docs/lemon_tart_reference.md](../docs/lemon_tart_reference.md).
