@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "actions": 8324,
+  "success": true,
+  "checked": [
+    "positions before and after every action",
+    "event streams",
+    "rewards and flags",
+    "state digest after every action",
+    "initial and final digests",
+    "world digest",
+    "course verdict",
+    "source hashes"
+  ],
+  "actions_sha256": "2bc1106a81cdcbe3fe62901f7860529df59dcdee7ece7c8c6dea9da618b4f2e8",
+  "sources": {
+    "open_world_bench/fullscale_b_env.py": "93f1e63255b987c5e76212630ceb840b9feb92cc329274c82927d02e88d9723a",
+    "open_world_bench/fullscale_b_policy.py": "48cf30f56cc5180c1eda1a11b6c33c242ce92482029ccec40045a17eab27d687",
+    "open_world_bench/fullscale_b_world.py": "9ca14f60d338ee288e948f84f20c6f2a05956b9cee0c9a9554e52f1ebd4b5922",
+    "open_world_bench/fullscale_mechanics.py": "cc4fd85eb769f14d06837f6e7802a5dcb4ee0a24d1d40e26911b3642a75a064f",
+    "open_world_bench/fullscale_nav.py": "4f990cfd121b1d827c6e52622dc2777e6956d404eabcda865eeb7a2bad9d4c49",
+    "open_world_bench/fullscale_physics.py": "284348ecdb1f475d842226161f32a3e8891c5e43e848d83e80920fdd40cd2b71",
+    "open_world_bench/fullscale_reach.py": "55ffee69698cedbdfe94e386e6dea31d40a8af04a1c0028bc0b82598ddb1b271",
+    "open_world_bench/fullscale_sites.py": "98c9bc5294cfb60cf0c06e41d81baabca6f3010bb22949af61d475de5d130824",
+    "open_world_bench/fullscale_world.py": "3e3f3e691cb6b562d6492c4fcb6772c8c5c99ef6294fdfec631c99515b781721",
+    "open_world_bench/architecture.py": "d9af7ac0ee3ea7b06a703563100aed35b43036375fccd25f69e5fd10d1d21833",
+    "open_world_bench/camera.py": "a1669aa0d09375f8771d8d601d7f877a441b669fdf7da2ac16bd02528b4cb0b8",
+    "open_world_bench/campaign_env.py": "aecf2ac78f0b281b9c4620f53e708e107f13121e7f3ce1bc0bc371e2ae8133d0",
+    "open_world_bench/character.py": "89b169a174af06df3307e46f0a824e15bc7b76bd2bb08ae5e8b318da9eddc072",
+    "open_world_bench/elements.py": "04e371edf0579a051409747b33f22c9601c1bf311f47bcb8051531bc95af118b",
+    "open_world_bench/env.py": "59b311170707351f014ce67bb7e8ad920c0e690ef024ce29bd560df3da5466ab",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/quests/engine.py": "c6db76a69c52667550ca58a32eabb55e6cf98336a389d8111f5be4757aaf0ff6",
+    "open_world_bench/scatter.py": "51542646055dc279417940ea34f2bb86942bfd20447742c8e522ea4d66a874f4",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425"
+  }
+}

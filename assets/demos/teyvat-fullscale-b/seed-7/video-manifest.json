@@ -1,0 +1,76 @@
+{
+  "kind": "reference-solution",
+  "label": "REFERENCE SOLUTION",
+  "disclaimer": "A privileged reference controller reads the hidden rule assignments and positions and acts only through native actions (move, look, jump/glide, sprint, interact, attack, skill, party swap). It shows that the course is solvable; it is not a model evaluation.",
+  "presentation": {
+    "renderer": "cycles",
+    "blender": "Blender 4.5.4 LTS",
+    "device": "OPTIX",
+    "samples": 64,
+    "size": [
+      1280,
+      720
+    ],
+    "denoising": true,
+    "max_bounces": 6,
+    "view_transform": "Standard",
+    "style": "anime",
+    "plants_per_frame": 900,
+    "lawn_radius": 60.0
+  },
+  "canvas": [
+    1600,
+    900
+  ],
+  "fps": 10,
+  "frames": 2903,
+  "seconds": 290.3,
+  "rendered_states": 2283,
+  "timelapse": {
+    "walk": "16x",
+    "swim": "16x",
+    "rest": "16x",
+    "glide": "4x",
+    "vent": "4x",
+    "mechanism": "4x",
+    "fight": "4x",
+    "done": "2x"
+  },
+  "timelapse_note": "each rendered frame is a real replay state; event holds repeat it",
+  "decoded_frames": 2903,
+  "video_sha256": "cb12d699447746181f15acc8a30031740837ba170a1e06eb36c8666d2e625f8e",
+  "actions_sha256": "2bc1106a81cdcbe3fe62901f7860529df59dcdee7ece7c8c6dea9da618b4f2e8",
+  "encoder": {
+    "ffmpeg": "ffmpeg version 7.0.2-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2024 the FFmpeg developers",
+    "codec": "libx264 baseline, yuv420p, faststart"
+  },
+  "sources": {
+    "open_world_bench/fullscale_b_env.py": "93f1e63255b987c5e76212630ceb840b9feb92cc329274c82927d02e88d9723a",
+    "open_world_bench/fullscale_b_policy.py": "48cf30f56cc5180c1eda1a11b6c33c242ce92482029ccec40045a17eab27d687",
+    "open_world_bench/fullscale_b_world.py": "9ca14f60d338ee288e948f84f20c6f2a05956b9cee0c9a9554e52f1ebd4b5922",
+    "open_world_bench/fullscale_mechanics.py": "cc4fd85eb769f14d06837f6e7802a5dcb4ee0a24d1d40e26911b3642a75a064f",
+    "open_world_bench/fullscale_nav.py": "4f990cfd121b1d827c6e52622dc2777e6956d404eabcda865eeb7a2bad9d4c49",
+    "open_world_bench/fullscale_physics.py": "284348ecdb1f475d842226161f32a3e8891c5e43e848d83e80920fdd40cd2b71",
+    "open_world_bench/fullscale_reach.py": "55ffee69698cedbdfe94e386e6dea31d40a8af04a1c0028bc0b82598ddb1b271",
+    "open_world_bench/fullscale_sites.py": "98c9bc5294cfb60cf0c06e41d81baabca6f3010bb22949af61d475de5d130824",
+    "open_world_bench/fullscale_world.py": "3e3f3e691cb6b562d6492c4fcb6772c8c5c99ef6294fdfec631c99515b781721",
+    "open_world_bench/architecture.py": "d9af7ac0ee3ea7b06a703563100aed35b43036375fccd25f69e5fd10d1d21833",
+    "open_world_bench/camera.py": "a1669aa0d09375f8771d8d601d7f877a441b669fdf7da2ac16bd02528b4cb0b8",
+    "open_world_bench/campaign_env.py": "aecf2ac78f0b281b9c4620f53e708e107f13121e7f3ce1bc0bc371e2ae8133d0",
+    "open_world_bench/character.py": "89b169a174af06df3307e46f0a824e15bc7b76bd2bb08ae5e8b318da9eddc072",
+    "open_world_bench/elements.py": "04e371edf0579a051409747b33f22c9601c1bf311f47bcb8051531bc95af118b",
+    "open_world_bench/env.py": "59b311170707351f014ce67bb7e8ad920c0e690ef024ce29bd560df3da5466ab",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/quests/engine.py": "c6db76a69c52667550ca58a32eabb55e6cf98336a389d8111f5be4757aaf0ff6",
+    "open_world_bench/scatter.py": "51542646055dc279417940ea34f2bb86942bfd20447742c8e522ea4d66a874f4",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425",
+    "owb/scripts/teyvat_fullscale_b.py": "f02db2eb5d54b7f373940bd997759b9408818ee9e2d7bbd1f424485ec46807d1",
+    "owb/scripts/teyvat_fullscale_preview.py": "018f68445ec5238018eea4c759d0efed9b016f50ef5b5322fbfa893b483f2b57",
+    "open_world_bench/render/site_assets.py": "81128074b215a21df1bd25344b9d044c4e051ff873ccf616840216a870d93e1d",
+    "open_world_bench/render/anime_assets.py": "fd34449301ad15b3a42092126665d283daf077da8b9227d2e76d96984943db67",
+    "open_world_bench/render/soft_renderer.py": "b672361b6c76c19456754eb044e8cfa67326427bf894396c6de49dee2ba06668",
+    "owb/render/scene_export.py": "3dbb17b13459e936371390b0ead18d442e8844b9f6988f41d3a6efeca907f8dd",
+    "owb/render/blender_scene.py": "5dab5e2adfa3944bbca510fe63fbe2c0d868425b5904d46931b79b9f8c43e0b3"
+  }
+}

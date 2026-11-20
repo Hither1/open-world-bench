@@ -1,0 +1,202 @@
+[
+  {
+    "id": "B01",
+    "title": "Complete the relay lesson",
+    "start_seconds": 0.0,
+    "simulation_start": 0.2,
+    "action_start": 0,
+    "end_seconds": 2.5
+  },
+  {
+    "id": "B02",
+    "title": "Repair the workshop's faulty relay",
+    "start_seconds": 2.5,
+    "simulation_start": 17.2,
+    "action_start": 85,
+    "end_seconds": 7.1
+  },
+  {
+    "id": "B03",
+    "title": "Complete the sentinel lesson",
+    "start_seconds": 7.1,
+    "simulation_start": 43.8,
+    "action_start": 218,
+    "end_seconds": 15.3
+  },
+  {
+    "id": "B04",
+    "title": "Clear the second training arena",
+    "start_seconds": 15.3,
+    "simulation_start": 101.8,
+    "action_start": 508,
+    "end_seconds": 22.1
+  },
+  {
+    "id": "B05",
+    "title": "Complete the wind guide's crossing",
+    "start_seconds": 22.1,
+    "simulation_start": 131.6,
+    "action_start": 657,
+    "end_seconds": 37.5
+  },
+  {
+    "id": "B06",
+    "title": "Reach the second training overlook",
+    "start_seconds": 37.5,
+    "simulation_start": 218.8,
+    "action_start": 1093,
+    "end_seconds": 61.8
+  },
+  {
+    "id": "B07",
+    "title": "Survey the expedition cache",
+    "start_seconds": 61.8,
+    "simulation_start": 316.4,
+    "action_start": 1581,
+    "end_seconds": 69.5
+  },
+  {
+    "id": "B08",
+    "title": "Recover the causeway repair kit",
+    "start_seconds": 69.5,
+    "simulation_start": 357.4,
+    "action_start": 1786,
+    "end_seconds": 74.0
+  },
+  {
+    "id": "B09",
+    "title": "Retrieve the submerged ferry coupling",
+    "start_seconds": 74.0,
+    "simulation_start": 405.0,
+    "action_start": 2024,
+    "end_seconds": 79.2
+  },
+  {
+    "id": "B10",
+    "title": "Reopen the expedition causeway",
+    "start_seconds": 79.2,
+    "simulation_start": 463.0,
+    "action_start": 2314,
+    "end_seconds": 86.3
+  },
+  {
+    "id": "B11",
+    "title": "Restore the valley signal station",
+    "start_seconds": 86.3,
+    "simulation_start": 533.0,
+    "action_start": 2664,
+    "end_seconds": 91.3
+  },
+  {
+    "id": "B12",
+    "title": "Reach the cliff observation post",
+    "start_seconds": 91.3,
+    "simulation_start": 585.0,
+    "action_start": 2924,
+    "end_seconds": 122.4
+  },
+  {
+    "id": "B13",
+    "title": "Recover the warden's field seal",
+    "start_seconds": 122.4,
+    "simulation_start": 704.4,
+    "action_start": 3521,
+    "end_seconds": 140.3
+  },
+  {
+    "id": "B14",
+    "title": "Stabilize the reserve-power relay",
+    "start_seconds": 140.3,
+    "simulation_start": 806.0,
+    "action_start": 4029,
+    "end_seconds": 145.6
+  },
+  {
+    "id": "B15",
+    "title": "Retrieve the expedition service tools",
+    "start_seconds": 145.6,
+    "simulation_start": 849.8,
+    "action_start": 4248,
+    "end_seconds": 154.8
+  },
+  {
+    "id": "B16",
+    "title": "Open the sky-lift route",
+    "start_seconds": 154.8,
+    "simulation_start": 972.2,
+    "action_start": 4860,
+    "end_seconds": 182.9
+  },
+  {
+    "id": "B17",
+    "title": "Restore the guarded crater gate",
+    "start_seconds": 182.9,
+    "simulation_start": 1203.6,
+    "action_start": 6017,
+    "end_seconds": 191.4
+  },
+  {
+    "id": "B18",
+    "title": "Recover the high shrine's access seal",
+    "start_seconds": 191.4,
+    "simulation_start": 1281.8,
+    "action_start": 6408,
+    "end_seconds": 214.6
+  },
+  {
+    "id": "B19",
+    "title": "Commission a double-ring relay",
+    "start_seconds": 214.6,
+    "simulation_start": 1366.4,
+    "action_start": 6831,
+    "end_seconds": 222.2
+  },
+  {
+    "id": "B20",
+    "title": "Establish the remote landing route",
+    "start_seconds": 222.2,
+    "simulation_start": 1405.6,
+    "action_start": 7027,
+    "end_seconds": 239.8
+  },
+  {
+    "id": "B21",
+    "title": "Repair another double-ring relay",
+    "start_seconds": 239.8,
+    "simulation_start": 1474.4,
+    "action_start": 7371,
+    "end_seconds": 242.8
+  },
+  {
+    "id": "B22",
+    "title": "Restore an older single-ring station",
+    "start_seconds": 242.8,
+    "simulation_start": 1495.8,
+    "action_start": 7478,
+    "end_seconds": 245.5
+  },
+  {
+    "id": "B23",
+    "title": "Recover the summit beacon heart",
+    "start_seconds": 245.5,
+    "simulation_start": 1510.2,
+    "action_start": 7550,
+    "end_seconds": 260.1
+  },
+  {
+    "id": "B24",
+    "title": "Commission a distant outpost from saved memory",
+    "start_seconds": 260.1,
+    "simulation_start": 1573.2,
+    "action_start": 7865,
+    "end_seconds": 286.3
+  },
+  {
+    "id": null,
+    "title": null,
+    "start_seconds": 286.3,
+    "simulation_start": 1664.8,
+    "action_start": 8323,
+    "end_seconds": 290.3
+  }
+]

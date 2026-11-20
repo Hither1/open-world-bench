@@ -1,0 +1,22 @@
+{
+  "file": "videos/teyvat-fullscale-24-milestones.mp4",
+  "sha256": "376fd467c63a125a63aa9b3cb047e3ad0c1a92287b502afbd80beb0ef4b4c2db",
+  "bytes": 23656530,
+  "size": [
+    1280,
+    720
+  ],
+  "fps": 10,
+  "frames": 2903,
+  "seconds": 290.3,
+  "codec": "libx264 High, yuv420p, about 650 kbit/s",
+  "source": {
+    "note": "Downscaled copy of the 1600x900 recording described by video-manifest.json; the original (321 MB) is not in git.",
+    "video_sha256": "cb12d699447746181f15acc8a30031740837ba170a1e06eb36c8666d2e625f8e",
+    "actions_sha256": "2bc1106a81cdcbe3fe62901f7860529df59dcdee7ece7c8c6dea9da618b4f2e8"
+  },
+  "code_commit": "b36a90a",
+  "omitted": [
+    "actions.jsonl (9 MB) and frames.json: regenerate with `python -B -m owb.scripts.teyvat_fullscale_b collect --seed 7`"
+  ]
+}

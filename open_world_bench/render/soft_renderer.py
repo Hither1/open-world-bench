@@ -331,8 +331,9 @@ class SoftRenderer(Renderer):
             add_campaign_seals(batch, world)
             from ..world import ENTITY_NAMES
             from ..elements import Element, ELEMENT_COLORS
+            hidden = getattr(world, "presentation_hidden", ())      # drawn by the caller instead
             for n, e in enumerate(world.entities.values()):
-                if not e.alive:
+                if not e.alive or e.id in hidden:
                     continue
                 dxz = float(np.linalg.norm((e.pos - eye)[[0, 2]]))
                 if dxz > s.prop_draw_distance * 1.6:
