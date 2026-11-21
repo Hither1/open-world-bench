@@ -37,7 +37,7 @@
   "error": null,
   "note": "The flour bag is a single rigid body: it is tipped over the bowl but nothing comes out of it.",
   "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
-  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-mix.mp4",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart/lemon-tart-mix.mp4",
   "video_frames": 2488,
-  "actions": "videos/lemon-tart-mix-actions.npz"
+  "actions": "videos/lemon-tart/lemon-tart-mix-actions.npz"
 }

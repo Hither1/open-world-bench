@@ -41,7 +41,7 @@
   ],
   "videos": [
     {
-      "file": "videos/teyvat-12-milestones.mp4",
+      "file": "videos/teyvat/teyvat-12-milestones.mp4",
       "source": "assets/demos/teyvat-reference-cycles/task-a-seed-7/walkthrough.mp4",
       "codec": "h264",
       "stream": "Stream #0:0[0x1](und): Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p(progressive), 1280x720, 691 kb/s, 10 fps, 10 tbr, 10240 tbn (default)",
@@ -69,7 +69,7 @@
       "actions_sha256": "0fa9ea2e6d7681d2a199268d40ef3bc6c0da6116581ee3dcdd2c71a922772b37"
     },
     {
-      "file": "videos/teyvat-24-milestones.mp4",
+      "file": "videos/teyvat/teyvat-24-milestones.mp4",
       "source": "assets/demos/teyvat-reference-cycles/task-b-seed-7/walkthrough.mp4",
       "codec": "h264",
       "stream": "Stream #0:0[0x1](und): Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p(progressive), 1280x720, 693 kb/s, 10 fps, 10 tbr, 10240 tbn (default)",

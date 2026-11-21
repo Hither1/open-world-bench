@@ -189,7 +189,7 @@
   ],
   "error": "could not take the whisk off the rack",
   "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
-  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-full.mp4",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart/lemon-tart-full.mp4",
   "video_speed": 6,
-  "actions": "videos/lemon-tart-full-actions.npz"
+  "actions": "videos/lemon-tart/lemon-tart-full-actions.npz"
 }

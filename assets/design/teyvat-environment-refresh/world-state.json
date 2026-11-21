@@ -22,7 +22,7 @@
     540
   ],
   "samples": 48,
-  "comparison": "Same full-world state and camera as videos/teyvat-full-cycles-preview.png",
+  "comparison": "Same full-world state and camera as videos/teyvat/teyvat-full-cycles-preview.png",
   "simulation_unchanged_by_export": true,
   "renderer": "Blender Cycles",
   "threads": 8,

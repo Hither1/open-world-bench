@@ -175,7 +175,7 @@ def main():
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-state-walkthrough.mp4"),
+        default=Path("/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart/lemon-tart-state-walkthrough.mp4"),
     )
     args = parser.parse_args()
     env = LemonTart(

@@ -779,10 +779,10 @@ def main():
     parser.add_argument("--replay", type=Path, default=None, help="replay a saved action log instead of running the controller")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--usable", action="store_true", help="ingredients that pour and cut (LemonTart(usable_ingredients=True)), and the longer demo")
-    parser.add_argument("--out", type=Path, default=None, help="default: videos/lemon-tart-mix[-usable].mp4")
+    parser.add_argument("--out", type=Path, default=None, help="default: videos/lemon-tart/lemon-tart-mix[-usable].mp4")
     parser.add_argument("--no-video", action="store_true")
     parser.add_argument("--every", type=int, default=2, help="render every N-th control step")
-    parser.add_argument("--summary", type=Path, default=None, help="default: videos/lemon-tart-mix[-usable].json")
+    parser.add_argument("--summary", type=Path, default=None, help="default: videos/lemon-tart/lemon-tart-mix[-usable].json")
     parser.add_argument("--actions", type=Path, default=None, help="save the action log (.npz)")
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--clips", type=Path, default=None, help="with --usable --no-video: write one close-up video per usable ingredient into this directory")
@@ -792,8 +792,8 @@ def main():
         print(json.dumps(result, indent=2))
         return 0 if result["success"] else 1
     stem = "lemon-tart-mix-usable" if args.usable else "lemon-tart-mix"
-    args.out = args.out or REPO / "videos" / f"{stem}.mp4"
-    args.summary = args.summary or REPO / "videos" / f"{stem}.json"
+    args.out = args.out or REPO / "videos" / "lemon-tart" / f"{stem}.mp4"
+    args.summary = args.summary or REPO / "videos" / "lemon-tart" / f"{stem}.json"
     summary = run(
         seed=args.seed,
         usable=args.usable,

@@ -401,18 +401,18 @@ def main():
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--mode", choices=lock.MODES, default="recipe")
     parser.add_argument("--demo", choices=("lock", "knobs"), default="lock")
-    parser.add_argument("--out", type=Path, default=None, help="default: videos/lemon-tart-oven-<demo>.mp4")
+    parser.add_argument("--out", type=Path, default=None, help="default: videos/lemon-tart/lemon-tart-oven-<demo>.mp4")
     parser.add_argument("--no-video", action="store_true")
     parser.add_argument("--every", type=int, default=2)
-    parser.add_argument("--summary", type=Path, default=None, help="default: videos/lemon-tart-oven-<demo>.json")
+    parser.add_argument("--summary", type=Path, default=None, help="default: videos/lemon-tart/lemon-tart-oven-<demo>.json")
     parser.add_argument("--actions", type=Path, default=None)
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
     if args.replay is not None:
         print(json.dumps(replay(args.replay), indent=2))
         return 0
-    args.out = args.out or REPO / "videos" / f"lemon-tart-oven-{args.demo}.mp4"
-    args.summary = args.summary or REPO / "videos" / f"lemon-tart-oven-{args.demo}.json"
+    args.out = args.out or REPO / "videos" / "lemon-tart" / f"lemon-tart-oven-{args.demo}.mp4"
+    args.summary = args.summary or REPO / "videos" / "lemon-tart" / f"lemon-tart-oven-{args.demo}.json"
     summary = run(
         seed=args.seed, video=None if args.no_video else args.out, every=args.every, verbose=not args.quiet,
         actions_path=args.actions, mode=args.mode, demo=args.demo,

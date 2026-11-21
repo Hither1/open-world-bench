@@ -78,7 +78,7 @@
   "error": null,
   "note": "Flour, sugar and egg are open containers of loose grains; the checks count the grains inside the bowl. Butter and lemon are two welded halves that the environment releases when the knife blade comes down through the seam.",
   "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
-  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-mix-usable.mp4",
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart/lemon-tart-mix-usable.mp4",
   "video_frames": 3973,
-  "actions": "videos/lemon-tart-mix-usable-actions.npz"
+  "actions": "videos/lemon-tart/lemon-tart-mix-usable-actions.npz"
 }

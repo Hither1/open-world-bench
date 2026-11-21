@@ -1,0 +1,23 @@
+[
+  {
+    "id": "B01",
+    "title": "Accept the lifeline commission",
+    "video_seconds": 0,
+    "source_seconds": 0.2,
+    "step": 1
+  },
+  {
+    "id": "B02",
+    "title": "Commission the training barge",
+    "video_seconds": 1.2,
+    "source_seconds": 2.400000000000001,
+    "step": 12
+  },
+  {
+    "id": "B20",
+    "title": "Survey the replacement lock approach",
+    "video_seconds": 143.8,
+    "source_seconds": 4851.200000000117,
+    "step": 24256
+  }
+]

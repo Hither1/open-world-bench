@@ -117,6 +117,6 @@
   "success": true,
   "error": null,
   "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
-  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart-oven-knobs.mp4",
-  "actions": "videos/lemon-tart-oven-knobs-actions.npz"
+  "video": "/home/yirantao/long-horizon/open-world-bench/videos/lemon-tart/lemon-tart-oven-knobs.mp4",
+  "actions": "videos/lemon-tart/lemon-tart-oven-knobs-actions.npz"
 }

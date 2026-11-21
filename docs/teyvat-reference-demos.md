@@ -14,16 +14,16 @@ itself remains the compact prototype described below.
 
 | Course | Video | Evidence |
 | --- | --- | --- |
-| Task A: Relay Keeper's Apprenticeship, 12 milestones | [H.264 MP4](../videos/teyvat-12-milestones.mp4) | [Chapters](../assets/demos/teyvat-reference-cycles/task-a-seed-7/chapters.json) · [Verification](../assets/demos/teyvat-reference-cycles/task-a-seed-7/verification.json) |
-| Task B: Expedition of Three Arts, 24 milestones | [H.264 MP4](../videos/teyvat-24-milestones.mp4) | [Chapters](../assets/demos/teyvat-reference-cycles/task-b-seed-7/chapters.json) · [Verification](../assets/demos/teyvat-reference-cycles/task-b-seed-7/verification.json) |
+| Task A: Relay Keeper's Apprenticeship, 12 milestones | [H.264 MP4](../videos/teyvat/teyvat-12-milestones.mp4) | [Chapters](../assets/demos/teyvat-reference-cycles/task-a-seed-7/chapters.json) · [Verification](../assets/demos/teyvat-reference-cycles/task-a-seed-7/verification.json) |
+| Task B: Expedition of Three Arts, 24 milestones | [H.264 MP4](../videos/teyvat/teyvat-24-milestones.mp4) | [Chapters](../assets/demos/teyvat-reference-cycles/task-b-seed-7/chapters.json) · [Verification](../assets/demos/teyvat-reference-cycles/task-b-seed-7/verification.json) |
 
 Both use seed 7. The display includes the current milestone, reference action,
 party health/stamina, simulator time, and mechanism state. Navigation is sampled
 and sped up; explicit event pauses make interactions readable. The full action
 logs preserve every decision at the native 0.2-second decision interval.
-For embedded viewers, open the H.264 MP4 copies in `videos/`. They use
+For embedded viewers, open the H.264 MP4 copies in `videos/teyvat/`. They use
 Constrained Baseline H.264, `yuv420p`, and fast-start metadata. Every frame was
-decoded successfully. [Playback verification](../videos/playback-verification.json)
+decoded successfully. [Playback verification](../videos/teyvat/playback-verification.json)
 records the encoding options, render settings, toolchain, and source/output
 hashes. The new evidence packages are in `assets/demos/teyvat-reference-cycles/`.
 The original CPU recordings in `assets/demos/teyvat-reference/` retain their

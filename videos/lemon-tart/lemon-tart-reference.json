@@ -96,12 +96,12 @@
   "wrong_opens": 0,
   "error": null,
   "renderer": "MuJoCo native offscreen renderer (no Cycles exporter for RoboCasa)",
-  "video": "videos/lemon-tart-reference.mp4",
+  "video": "videos/lemon-tart/lemon-tart-reference.mp4",
   "video_frames": 5660,
-  "actions": "videos/lemon-tart-reference-actions.npz",
+  "actions": "videos/lemon-tart/lemon-tart-reference-actions.npz",
   "video_encoding": "H.264, yuv420p, crf 28, faststart; every 4th control step at 20 fps (4x), plus a 3 s hold on the last frame",
   "replay": {
-    "command": "python -m owb.scripts.lemon_tart_reference --replay videos/lemon-tart-reference-actions.npz --horizon 24000",
+    "command": "python -m owb.scripts.lemon_tart_reference --replay videos/lemon-tart/lemon-tart-reference-actions.npz --horizon 24000",
     "result": {
       "seed": 1,
       "steps": 22402,

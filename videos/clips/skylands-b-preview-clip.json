@@ -1,0 +1,54 @@
+{
+  "renderer": {
+    "engine": "Blender Cycles",
+    "device": "OPTIX GPU",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "denoising": true,
+    "max_bounces": 6,
+    "upscaling": false,
+    "geometry": "exact full-world surfaces",
+    "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+    "blender_version": "4.5.4 LTS",
+    "accelerators": [
+      "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+    ],
+    "render_sources": {
+      "blender_campaign.py": "0b5f0bd6dbf8670e43ff6c9f7fb34006dea6a806764a07d0d6355de7e8e05c88",
+      "blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+      "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+    },
+    "ground_cover": {
+      "method": "fixed native meshes in one collection instance",
+      "source_instances": 6038608,
+      "triangles": 120772160,
+      "vertices": 241544320,
+      "stored_faces": 67428352,
+      "prototype_triangulation_verified": true,
+      "full_geometry": true,
+      "distance_culling": false
+    }
+  },
+  "playback": "PREVIEW CLIP of steps 1-950,24250-24340; production sampling (16x walking / 8x craft / 1x mechanisms).",
+  "duration_seconds": 166.5999999999997,
+  "frames": 1666,
+  "rendered_states": 187,
+  "source_seconds": 6087.600000004615,
+  "trace_sha256": "642253088681a1a8e6eb755c1e7ee698521da86033af1b366a2320e85edd8366",
+  "video_sha256": "51f394e02467f471e739fb6594d33a2ea13df86b8768eeb77e7638086f5987b1",
+  "encoded_size": [
+    1600,
+    900
+  ],
+  "source_render_size": [
+    1280,
+    720
+  ],
+  "encoded_fps": 10,
+  "upscaling": false,
+  "assembly_sources": {
+    "owb/scripts/skylands_campaign_video.py": "922f96bcfb6e14e7bf96ee2a420cd21f7b1d6f67e959c848f1a6c9b6146190a5",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  }
+}
