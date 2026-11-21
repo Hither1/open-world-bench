@@ -31,7 +31,8 @@ from open_world_bench.render.assets import (
 from open_world_bench.render.meshes import MeshBatch
 
 TERRAIN = 7  # MATERIAL_NAMES index of "terrain"
-LAYOUT_VERSION = 1
+METAL = 4    # MATERIAL_NAMES index of "metal"
+LAYOUT_VERSION = 2
 
 
 def _rng(*identity):
@@ -625,6 +626,10 @@ def paint_ground(layout, resolution=2048, margin=24.0):
         r0 = max(0, int((center[1] - reach - z0) / pixel)); r1 = min(resolution, int((center[1] + reach - z0) / pixel) + 1)
         return np.s_[r0:r1, c0:c1]
     for line in layout.paths:
+        halfwidth = None
+        if isinstance(line, dict):
+            halfwidth = np.asarray(line["halfwidth"], float)
+            line = line["points"]
         line = np.asarray(line, float)
         segs = np.stack((line[:-1], line[1:]), 1)
         segs = segs[np.linalg.norm(segs[:, 1] - segs[:, 0], axis=1) > 1e-6]
@@ -639,6 +644,10 @@ def paint_ground(layout, resolution=2048, margin=24.0):
         pts = np.stack((x[sub].ravel(), z[sub].ravel()), 1)
         d = _segment_distance(pts, segs).reshape(x[sub].shape) + wobble[sub]
         width = .8 + .3 * value_noise(x[sub], z[sub], 23, 303)
+        if halfwidth is not None:
+            # Road: worn centre tracks inside the gravel width, softer verges.
+            nearest = np.argmin(((pts[:, None, :] - line[None, ::4, :]) ** 2).sum(-1), axis=1)
+            width = (halfwidth[::4][nearest].reshape(x[sub].shape) - .25) * (.9 + .2 * value_noise(x[sub], z[sub], 7, 309))
         wear = _smooth(width + .45, width - .25, d) * (.72 + .28 * value_noise(x[sub], z[sub], 1.3, 304))
         path[sub] = np.maximum(path[sub], wear)
         soil[sub] = np.maximum(soil[sub], .4 * _smooth(width + 1.4, width + .2, d))
@@ -1005,18 +1014,19 @@ def voxel_allowed(world, forbid, *, sea_level, min_clear=3):
 
 def wildlands_reference_layout(native):
     """Set pieces on the natural ground around the Wildlands reference course."""
+    from scipy import ndimage
     from ..env import wildlands_reference as W
     world = native.world
     coords = [p for _, _, p in (W.A if native.task == "a" else W.B_TASK)]
-    forbid = np.zeros((world.size_x, world.size_z), bool)
-    for x, z in coords:
-        forbid[max(0, x - 13):x + 17, max(0, z - 12):z + 13] = True
-    for z in (24, 60, 96, 128):
-        forbid[17:153, z - 4:z + 5] = True
-    for x in (24, 52, 80, 108, 136):
-        forbid[x - 4:x + 5, 17:136] = True
-    forbid[119:145, 85:103] = True
-    segments = [((20, z), (149, z)) for z in (24, 60, 96, 128)] + [((x, 20), (x, 132)) for x in (24, 52, 80, 108, 136)]
+    surface, _, _ = W.course_ground(world.vox.shape[::2], set(coords), int(native._seed))
+    river = W.RIVER.mask(world.vox.shape[::2])
+    # Keep pieces off the course, its banks and the river valley.
+    forbid = ndimage.binary_dilation(surface, iterations=5) | ndimage.binary_dilation(river, iterations=4)
+    roads = world.meta.get("course_roads", [])
+    segments = [np.stack((np.asarray(r["points"])[:-1], np.asarray(r["points"])[1:]), 1) for r in roads]
+    segments = np.concatenate(segments) if segments else np.zeros((0, 2, 2))
+    # Worn wheel tracks and verges painted along each curved road.
+    paths = [dict(points=r["points"], halfwidth=r["halfwidth"]) for r in roads]
     roles = {"clue": "survey", "balance": "lift", "thermal": "crossing", "exchange": "exchange",
              "flow": "workshop", "cook": "lesson", "calibrate": "relay", "report": "survey"}
     sites, seen = [], set()
@@ -1026,7 +1036,7 @@ def wildlands_reference_layout(native):
         seen.add(tuple(m.site))
         sites.append((m.id, (m.site[0] + 1.5, m.site[1]), roles.get(m.kind, "workshop")))
     layout = voxel_layout(native, identity=("wildlands-reference", int(native._seed), native.task, LAYOUT_VERSION),
-                          sites=sites, routes=np.asarray(segments, float),
+                          sites=sites, routes=np.asarray(segments, float), paths=paths,
                           region=(4, world.size_x - 4, 4, world.size_z - 4),
                           allowed=voxel_allowed(world, forbid, sea_level=world.sea_level))
     layout.point_margin = 12.0
@@ -1061,6 +1071,15 @@ def wildlands_course_trim(native, batch):
         batch.box((x + .5, 35.1, z + 7.0), (12.9, .26, 2.5), _stone(rng, base, .05))
         batch.box((x + .5, 35.32, z + 7.0), (12.4, .18, 2.2), _stone(rng, (.48, .46, .41), .05))
         batch.box((x + .5, 34.5, z + 5.94), (1.0, 1.1, .14), _stone(rng, (.62, .58, .50), .05))
+    # Hanging lanterns under the lintel; their glass glows after dusk.
+    lit = 1.6 if hasattr(native, "lantern_positions") and (native.elements.climate.time > .72 or native.elements.climate.time < .28) else 0.0
+    for lx, ly, lz in getattr(native, "lantern_positions", lambda: [])():
+        batch.current_material = METAL
+        batch.tube((lx, 34.0, lz), (lx, ly + .32, lz), .015, (.18, .17, .16))
+        batch.box((lx, ly + .3, lz), (.3, .05, .3), (.2, .19, .17))
+        batch.box((lx, ly - .22, lz), (.26, .05, .26), (.2, .19, .17))
+        batch.current_material = 0
+        batch.box((lx, ly + .04, lz), (.22, .44, .22), (1.0, .78, .45), emissive=lit)
     batch.current_material = 0
 
 

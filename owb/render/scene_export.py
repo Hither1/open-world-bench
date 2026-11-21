@@ -47,7 +47,10 @@ class SceneSnapshot:
         self.textures[name] = (pixels, dict(mapping))
 
     def add(self, name, triangles, colors, *, normals=None, emission=None, smooth=False, water=False,
-            material="surface", occluder=False):
+            material="surface", occluder=False, blend=False):
+        """``blend`` averages the per-triangle colours onto shared vertices in
+        the renderer, so natural terrain shades smoothly instead of flipping
+        colour from one small triangle to the next."""
         triangles = np.asarray(triangles, np.float32).reshape(-1, 3, 3)
         if not len(triangles):
             return
@@ -56,7 +59,7 @@ class SceneSnapshot:
                                 normals=np.zeros_like(triangles) if normals is None else np.asarray(normals, np.float32).copy(),
                                 emission=np.zeros(len(triangles), np.float32) if emission is None else np.asarray(emission, np.float32).copy(),
                                 smooth=bool(smooth), water=bool(water), material=material,
-                                occluder=bool(occluder)))
+                                occluder=bool(occluder), blend=bool(blend)))
 
     def save(self, path):
         """Write a new snapshot, refusing to overwrite an existing artifact."""
@@ -71,7 +74,7 @@ class SceneSnapshot:
                 arrays[f"texture_{name}"] = pixels
         for i, mesh in enumerate(self.meshes):
             spec = {k: mesh[k] for k in ("name", "smooth", "water", "material")}
-            for flag in ("occluder", "prototype"):
+            for flag in ("occluder", "prototype", "blend"):
                 if mesh.get(flag):
                     spec[flag] = True
             metadata["meshes"].append(spec)
@@ -84,6 +87,34 @@ class SceneSnapshot:
 
 def _unit(v):
     return v / np.maximum(np.linalg.norm(v, axis=-1, keepdims=True), 1e-8)
+
+
+def natural_terrain_colors(lookup, triangles):
+    """Per-triangle colour of a smooth natural-terrain mesh.
+
+    ``lookup(points)`` returns the block ids at world points. The block just
+    inside the surface sets the colour; where that sample lands in air or a
+    built block (common on smoothed one-block risers), deeper and straight-down
+    samples are tried before falling back to stone, so risers do not show as
+    grey seams. Level and moderately sloped soil reads as grass.
+    """
+    from .landscape import _NATURAL
+    from . import palette as P
+    from ..core import blocks as B
+    p = triangles.mean(axis=1)
+    n = _unit(np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]))
+    down = np.array((0.0, 1.0, 0.0), np.float32)
+    block = np.asarray(lookup(p - n * 0.6)).copy()
+    for probe in (lambda q, m: q[m] - n[m] * 1.4, lambda q, m: q[m] - down * 0.6, lambda q, m: q[m] - down * 1.6):
+        missing = ~_NATURAL[block]
+        if not missing.any():
+            break
+        block[missing] = lookup(probe(p, missing))
+    block[~_NATURAL[block]] = B.STONE
+    color = P.COLOR_F[block].copy()
+    grass = np.clip((n[:, 1] - 0.5) / 0.35, 0, 1)
+    grass[~np.isin(block, (B.GRASS, B.DIRT, B.MOSS_STONE))] = 0
+    return color * (1 - grass[:, None]) + np.array((0.46, 0.59, 0.24)) * grass[:, None]
 
 
 def _grid_triangles(points):
@@ -167,6 +198,32 @@ def _voxel_faces(voxels, occupied):
     if not output:
         return np.empty((0, 3, 3), np.float32), np.empty(0, np.uint8)
     return np.concatenate(output).astype(np.float32), np.concatenate(blocks)
+
+
+def _water_surface(world):
+    """Smooth water surface following the voxel water exactly where it is
+    open to the air, with rounded outlines; it extends a cell into adjacent
+    ground so shorelines meet the terrain without seams."""
+    from scipy import ndimage
+    from ..core import blocks as B
+    water = world.vox == B.WATER
+    if not water.any():
+        return np.empty((0, 3, 3), np.float32)
+    solid = B.SOLID[world.vox]
+    extended = water.copy()
+    for axis in (0, 2):
+        for shift in (1, -1):
+            extended |= np.roll(water, shift, axis=axis) & solid
+    extended |= np.roll(water, 1, axis=1) & solid   # bed under the water
+    lo = np.maximum(np.argwhere(extended).min(0) - 3, 0)
+    hi = np.minimum(np.argwhere(extended).max(0) + 4, extended.shape)
+    sub = extended[lo[0]:hi[0], lo[1]:hi[1], lo[2]:hi[2]].astype(np.float32)
+    density = ndimage.gaussian_filter(np.pad(sub, 1), sigma=(0.8, 0.3, 0.8))
+    triangles = _isosurface(density) + lo.astype(np.float32)
+    # Sit a few centimetres below the physical top so flush banks never
+    # share a plane with the water.
+    triangles[..., 1] -= 0.06
+    return triangles.astype(np.float32)
 
 
 def _add_batch(scene, batch, faded=(), fade_triangles=None):
@@ -405,30 +462,55 @@ def _wildlands(native, size):
         lighting=dict(direction=keys["sun"]["dir"].tolist(), color=keys["sun"]["color"].tolist(),
                       strength=keys["sun"]["intensity"], sky=keys["zenith"].tolist(), horizon=keys["horizon"].tolist())))
     triangles = _isosurface(renderer._density)
-    p = triangles.mean(axis=1)
-    normal = _unit(np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]))
-    block = world.blocks_at(p - normal * 0.6)
-    block[~_NATURAL[block]] = B.STONE
-    color = P.COLOR_F[block].copy()
-    grass = np.clip((normal[:, 1] - 0.65) / 0.3, 0, 1)
-    grass[~np.isin(block, (B.GRASS, B.DIRT, B.MOSS_STONE))] = 0
-    color = color * (1 - grass[:, None]) + np.array((0.46, 0.59, 0.24)) * grass[:, None]
-    scene.add("Terrain with caves", triangles, color, smooth=True, material="terrain")
+    color = natural_terrain_colors(world.blocks_at, triangles)
+    scene.add("Terrain with caves", triangles, color, smooth=True, material="terrain", blend=True)
     triangles, block = _voxel_faces(renderer._detail.vox, renderer._detail.vox != B.AIR)
     scene.add("Architecture", triangles, P.COLOR_F[block], material="stone")
-    triangles, _ = _voxel_faces(world.vox, world.vox == B.WATER)
-    scene.add("Water", triangles, (0.16, 0.61, 0.66), water=True)
-    entities = native.npcs.render_list(agent.pos) + native.bodies.render_list() + native.gameplay.render_list()
+    # Presentation grade for dusk and night: a readable moonlit scene. Policy
+    # observations and the simulation are unaffected.
+    sun_elevation = float(P.sky_colors(native.elements.climate.time)["sun"]["elevation"])
+    if getattr(native, "presentation_kind", "") == "wildlands_reference" and sun_elevation < 0.08:
+        k = float(np.clip((0.08 - sun_elevation) / 0.25, 0, 1))
+        scene.metadata["night_grade"] = dict(moon=1 + 2.0 * k, sky=1 + 3.5 * k, exposure=0.7 * k,
+                                             tint=[0.62, 0.72, 1.0])
+    triangles = _water_surface(world)
+    scene.add("Water", triangles, (0.16, 0.61, 0.66), smooth=True, water=True)
+    scene.metadata["water_volume"] = True
+    from . import creatures
+    living = native.npcs.render_list(agent.pos)
+    drawn = [e for e in living if e.get("kind") in creatures.DRAW or e.get("kind") in creatures.MONSTERS
+             or e.get("kind") in ("bird", "fish", "frog")]
+    pickups = native.gameplay.render_list()
+    apples = [e for e in pickups if e.get("item") == "apple"]
+    entities = ([e for e in living if e not in drawn] + native.bodies.render_list()
+                + [e for e in pickups if e.get("item") != "apple"])
     if world.meta.get("theme") == "skylands":
         entities += native._extra_entities()
         scene.metadata["environment"] = "skylands"
     if hasattr(native, "presentation_lights"):
         scene.metadata["point_lights"] = native.presentation_lights()
-    if cfg.render_cfg.third_person:
+    riding = getattr(native, "riding", None)
+    mounted = riding is not None and riding.mounted
+    if cfg.render_cfg.third_person and not mounted:
         entities.append(dict(pos=tuple(agent.pos + (0, 0.9, 0)), radius=0.35, height=1.75,
             color=(59, 128, 147), semantic=B.SEM_SELF, yaw=agent.yaw,
             gliding=agent.gliding, phase=agent.distance_travelled * 2.5))
     batch = renderer._meshes(world, cam.pos, forward, entities, native.ticks)
+    night = bool(native.elements.climate.is_night)
+    seat = creatures.emit(batch, drawn, float(native.elapsed), night=night)
+    if mounted and seat is not None and cfg.render_cfg.third_person:
+        creatures.rider(batch, seat[0], seat[1], np.array((59, 128, 147)) / 255, agent.distance_travelled)
+    dens = {tuple(n.data["den"]) for n in native.npcs.npcs if n.alive and n.data.get("den")}
+    for den in sorted(dens):
+        if np.linalg.norm(np.asarray(den) - cam.pos) < 150:
+            creatures.den(batch, den, ("den", int(native._seed)) + tuple(np.round(den, 1)))
+    orchard = getattr(native, "orchard", None)
+    if orchard is not None:
+        for tree in orchard.trees:
+            if tree["apples"] and np.linalg.norm(np.asarray(tree["trunk"]) - cam.pos) < 150:
+                creatures.apples_on_tree(batch, tree, tree["apples"])
+    for e in apples:
+        creatures.apple(batch, np.asarray(e["pos"]) - (0, 0.45, 0))
     _wildlands_landscape(scene, native, batch, cam.pos, forward)
     focus = agent.pos + np.array((0.0, 1.0, 0.0))
     fade = None

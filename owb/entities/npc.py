@@ -106,6 +106,10 @@ _reg(NpcKind("crab", 4.0, 1.0, 1.8, 7.0, 1.2, hostile=False, flees=True,
              color=(206, 112, 88), radius=0.3, height=0.5,
              semantic=B.SEM_ANIMAL, drops=(("meat_raw", 1, 0.7),), xp=0.2))
 
+_reg(NpcKind("horse", 30.0, 0.0, 4.2, 9.0, 1.6, hostile=False, flees=False,
+             color=(120, 84, 56), semantic=B.SEM_ANIMAL, radius=0.55, height=1.7,
+             xp=0.0))
+
 # ----------------------------- friendly ------------------------------------
 _reg(NpcKind("merchant", 20.0, 0.0, 1.4, 10.0, 2.0, hostile=False,
              color=(96, 132, 196), semantic=B.SEM_NPC, height=1.8, xp=0.0))
@@ -140,6 +144,11 @@ class Npc:
     @property
     def hostile(self) -> bool:
         return self.spec.hostile
+
+    @property
+    def present(self) -> bool:
+        """Alive, out of its den, and not carrying a rider."""
+        return self.alive and not self.data.get("denned") and self.data.get("rider") is None
 
     @property
     def conductive(self) -> bool:
@@ -190,14 +199,15 @@ class NpcSystem:
 
     @property
     def alive(self) -> list[Npc]:
-        return [n for n in self.npcs if n.alive]
+        """Creatures present in the world (not resting in a den or ridden)."""
+        return [n for n in self.npcs if n.present]
 
     def near(self, pos, radius: float, hostile_only: bool = False) -> list[Npc]:
         p = np.asarray(pos, dtype=np.float64)
         r2 = radius * radius
         out = []
         for n in self.npcs:
-            if not n.alive or (hostile_only and not n.hostile):
+            if not n.present or (hostile_only and not n.hostile):
                 continue
             if float(((n.pos - p) ** 2).sum()) <= r2:
                 out.append(n)
@@ -219,9 +229,35 @@ class NpcSystem:
         ap = np.asarray(agent.pos, dtype=np.float64)
 
         for n in self.npcs:
-            if not n.alive:
+            if not n.alive or n.data.get("rider") is not None:
                 continue
             spec = n.spec
+            den = n.data.get("den")
+            if den is not None:
+                # Monsters keep to their dens by day; all come out after dusk.
+                out = is_night or bool(n.data.get("day_active"))
+                if not out:
+                    if n.data.get("denned"):
+                        continue
+                    home = np.asarray(den, float) - n.pos
+                    home[1] = 0.0
+                    far = float(np.linalg.norm(home))
+                    if far < 1.5:
+                        n.data["denned"] = True
+                        n.state, n.patrol_target, n.aggro_timer = IDLE, None, 0.0
+                        n.vel[:] = 0.0
+                        ev.append(dict(type="npc_denned", npc=n.id, kind=n.kind))
+                    else:
+                        self._integrate(world, n, home / far, spec.speed * 0.8, dt)
+                    continue
+                if n.data.get("denned"):
+                    n.data["denned"] = False
+                    n.pos = np.asarray(den, float).copy()
+                    n.state, n.patrol_target = IDLE, None
+                    ev.append(dict(type="npc_emerged", npc=n.id, kind=n.kind))
+            if n.data.get("route"):
+                ev.extend(self._answer_whistle(world, n, dt))
+                continue
             if n.frozen > 0:
                 n.frozen -= dt
                 continue
@@ -276,14 +312,21 @@ class NpcSystem:
             elif n.state == FLEE:
                 move = -d / max(dist, 1e-5)
                 speed *= 1.25
+                leash = n.data.get("leash")
+                if leash is not None:
+                    # Tethered animals bolt only as far as their lead allows.
+                    back = np.array([n.home[0] - n.pos[0], 0.0, n.home[1] - n.pos[2]])
+                    if float(np.linalg.norm(back)) > leash:
+                        move = back / float(np.linalg.norm(back))
             elif n.state == PATROL or n.state == IDLE:
                 if n.patrol_target is None or \
                         float(np.linalg.norm(n.patrol_target - n.pos)) < 1.2:
                     if self.rng.random() < 0.02 or n.patrol_target is None:
                         hx, hz = n.home
+                        roam = float(n.data.get("roam", 7.0))
                         n.patrol_target = np.array(
-                            [hx + self.rng.uniform(-7, 7), n.pos[1],
-                             hz + self.rng.uniform(-7, 7)])
+                            [hx + self.rng.uniform(-roam, roam), n.pos[1],
+                             hz + self.rng.uniform(-roam, roam)])
                     else:
                         n.patrol_target = None
                 if n.patrol_target is not None:
@@ -304,16 +347,52 @@ class NpcSystem:
         return ev
 
     # ------------------------------------------------------------------
+    def _answer_whistle(self, world, n: Npc, dt: float) -> list[dict]:
+        """A summoned horse canters along its walking route to the rider."""
+        route = n.data["route"]
+        while route and float(np.hypot(route[0][0] + .5 - n.pos[0], route[0][1] + .5 - n.pos[2])) < 0.6:
+            route.pop(0)
+        if not route:
+            return self._settle_horse(n, "horse_arrived")
+        x, z, _ = route[0]
+        move = np.array([x + .5 - n.pos[0], 0.0, z + .5 - n.pos[2]])
+        move /= max(float(np.linalg.norm(move)), 1e-6)
+        speed = n.spec.speed * 1.6
+        before = n.pos.copy()
+        self._integrate(world, n, move, speed, dt, step_height=1.1, radius=0.4)
+        moved = float(np.hypot(*(n.pos - before)[[0, 2]]))
+        n.data["stall"] = n.data.get("stall", 0.0) + dt if moved < 0.15 * speed * dt else 0.0
+        if n.data["stall"] > 3.0:
+            return self._settle_horse(n, "horse_stuck")
+        return []
+
+    @staticmethod
+    def _settle_horse(n: Npc, kind: str) -> list[dict]:
+        n.data.pop("route", None)
+        n.data.pop("stall", None)
+        n.home = (float(n.pos[0]), float(n.pos[2]))
+        n.data.update(roam=1.5, leash=3.0)
+        n.state, n.patrol_target = IDLE, None
+        n.vel[0] = n.vel[2] = 0.0
+        return [dict(type=kind, npc=n.id, pos=[round(float(v), 3) for v in n.pos])]
+
     def _integrate(self, world, n: Npc, move: np.ndarray, speed: float,
-                   dt: float) -> None:
+                   dt: float, step_height: float = 0.7, radius: float | None = None) -> None:
         spec = n.spec
-        half = np.array([spec.radius, spec.height * 0.5, spec.radius])
+        # A route-following animal threads one-block trails with a slimmer box.
+        r = spec.radius if radius is None else radius
+        half = np.array([r, spec.height * 0.5, r])
         center = n.pos + np.array([0.0, spec.height * 0.5, 0.0])
         swim = world.get_f(n.pos[0], n.pos[1] + 0.3, n.pos[2]) == B.WATER
         if float(np.linalg.norm(move)) > 1e-4:
             n.yaw = float(np.arctan2(move[2], move[0]))
         n.vel[0] += (move[0] * speed - n.vel[0]) * min(1.0, 7.0 * dt)
         n.vel[2] += (move[2] * speed - n.vel[2]) * min(1.0, 7.0 * dt)
+        if n.data.get("aquatic"):
+            ahead = n.pos + n.vel * dt + np.sign(n.vel) * np.array([spec.radius, 0.0, spec.radius])
+            if world.get_f(ahead[0], n.pos[1] + 0.3, ahead[2]) != B.WATER:
+                n.vel[0] = n.vel[2] = 0.0
+                n.patrol_target = None
         if spec.name == "fish":
             n.vel[1] += ((0.0 if swim else -2.0) - n.vel[1]) * min(1.0, 4.0 * dt)
         elif swim:
@@ -322,7 +401,7 @@ class NpcSystem:
             n.vel[1] += self.cfg.gravity * dt
             n.vel[1] = max(n.vel[1], self.cfg.max_fall_speed)
         new, hit = C.move_and_collide(world, center, half, n.vel * dt,
-                                      step_height=0.7)
+                                      step_height=step_height)
         if hit[1]:
             n.vel[1] = 0.0
         if hit[0]:
@@ -378,7 +457,7 @@ class NpcSystem:
         out = []
         p = np.asarray(near, dtype=np.float64) if near is not None else None
         for n in self.npcs:
-            if not n.alive:
+            if not n.alive or n.data.get("denned"):
                 continue
             if p is not None and float(np.linalg.norm(n.pos - p)) > radius:
                 continue
@@ -392,7 +471,10 @@ class NpcSystem:
                 pos=(float(n.pos[0]), float(n.pos[1] + spec.height * 0.5),
                      float(n.pos[2])),
                 radius=spec.radius, height=spec.height, color=col,
-                kind=n.kind, yaw=n.yaw,
+                kind=n.kind, yaw=n.yaw, npc=n.id,
+                speed=float(np.hypot(n.vel[0], n.vel[2])),
+                ridden=n.data.get("rider") is not None,
+                state=n.state,
                 semantic=spec.semantic,
                 emissive=spec.element == "fire" or n.burning > 0))
         return out
@@ -401,7 +483,7 @@ class NpcSystem:
         p = np.asarray(near, dtype=np.float64) if near is not None else None
         out = []
         for n in self.npcs:
-            if not n.alive:
+            if not n.present:
                 continue
             if p is not None and float(np.linalg.norm(n.pos - p)) > radius:
                 continue

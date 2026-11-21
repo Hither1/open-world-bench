@@ -189,7 +189,8 @@ class AgentState:
         return base * (1.0 + 0.35 * self.effect(I.EFF_ATTACK_UP))
 
     def speed_mult(self) -> float:
-        return 1.0 + 0.22 * self.effect(I.EFF_SPEED_UP)
+        # ``ride_mult`` is present only while mounted (see owb.sim.riding).
+        return (1.0 + 0.22 * self.effect(I.EFF_SPEED_UP)) * self.flags.get("ride_mult", 1.0)
 
     def has_glider(self) -> bool:
         return self.inventory.has("glider")
