@@ -96,7 +96,11 @@ def update_scene(scene,metadata):
     camera=scene.camera;eye=Vector(z_up(metadata['camera']['eye']));target=Vector(z_up(metadata['camera']['target']))
     camera.location=eye;camera.rotation_euler=(target-eye).to_track_quat('-Z','Y').to_euler()
     camera.data.lens=camera.data.sensor_height/(2*np.tan(np.radians(metadata['camera']['fov_y'])/2))
-    lighting=metadata['lighting'];sun=bpy.data.objects['Sun'];sun.data.energy=max(0,lighting['strength'])*3;sun.data.color=lighting['color']
+    grade=metadata.get('night_grade') or {}
+    lighting=metadata['lighting'];sun=bpy.data.objects['Sun'];sun.data.energy=max(0,lighting['strength'])*3*grade.get('moon',1.);sun.data.color=lighting['color']
+    background=next(n for n in scene.world.node_tree.nodes if n.type=='BACKGROUND')
+    background.inputs['Strength'].default_value=SKY_STRENGTH*grade.get('sky',1.)
+    scene.view_settings.exposure=grade.get('exposure',0.)
     sun.rotation_euler=Vector(-z_up(lighting['direction'])).to_track_quat('-Z','Y').to_euler()
     ramp=next(n for n in scene.world.node_tree.nodes if n.type=='VALTORGB').color_ramp
     ramp.elements[0].color=(*linear(np.array(lighting['horizon'])),1);ramp.elements[1].color=(*linear(np.array(lighting['sky'])),1)

@@ -103,6 +103,41 @@ def first_person_camera(env,width=1280,height=720):
     return dict(eye=eye.tolist(),target=(eye+forward).tolist(),fov_y=float(fov_y))
 
 
+def smooth_terrain(vox,chunk=64):
+    """Natural terrain as a smooth surface (marching tetrahedra over the same
+    narrow-filtered density as Wildlands), computed in x slabs to bound memory.
+    Collision stays voxel-exact; this is presentation geometry."""
+    from .scene_export import _isosurface
+    sx,sy,sz=vox.shape; out=[]
+    for c0 in range(0,sx+1,chunk):
+        c1=min(c0+chunk,sx+1)
+        lo,hi=max(c0-3,0),min(c1+1,sx)
+        density=_NATURAL[vox[lo:hi]].astype(np.float32)
+        for axis in (0,2):
+            pad=[(0,0)]*3; pad[axis]=(1,1)
+            padded=np.pad(density,pad,mode='edge')
+            a,b=[slice(None)]*3,[slice(None)]*3
+            a[axis],b[axis]=slice(0,-2),slice(2,None)
+            density=density*.84+(padded[tuple(a)]+padded[tuple(b)])*.08
+        index=np.arange(c0,c1+1)-1
+        slab=np.zeros((len(index),sy+2,sz+2),np.float32)
+        valid=(index>=0)&(index<sx)
+        slab[valid,1:-1,1:-1]=density[index[valid]-lo]
+        tri=_isosurface(slab)
+        if len(tri):
+            tri[...,0]+=c0
+            out.append(tri.astype(np.float32))
+    return np.concatenate(out) if out else np.empty((0,3,3),np.float32)
+
+
+def terrain_colors(vox,triangles):
+    """Per-triangle colour from the block just inside the surface, as in the
+    Wildlands export (see ``natural_terrain_colors``)."""
+    from .scene_export import natural_terrain_colors
+    hi=np.array(vox.shape)-1
+    return natural_terrain_colors(lambda q:vox[tuple(np.clip(np.floor(q).astype(int),0,hi).T)],triangles)
+
+
 def metadata(env,width=1280,height=720,camera=None):
     camera=safe_camera(env) if camera is None else camera
     keys=P.sky_colors(env.elements.climate.time,env.elements.climate.weather)
@@ -122,12 +157,25 @@ def static_scene(env):
     dynamic_bounds=[env.vault_gate] if env.task=='a' else [env.closure_bounds()]
     for lo,hi in dynamic_bounds: vox[tuple(slice(a,b+1) for a,b in zip(lo,hi))]=B.AIR
     scene=SceneSnapshot(metadata(env)); natural,nb,architecture,ab,water,area=exact_surfaces(vox)
-    scene.add('Exact regional terrain',natural,P.COLOR_F[nb],material='terrain')
+    organic=getattr(env,'organic_world',False)
+    if organic:
+        # Smooth natural terrain and water surfaces; trails and banks read as
+        # landforms rather than voxel terraces. Architecture stays exact.
+        from .scene_export import _water_surface
+        terrain=smooth_terrain(vox)
+        scene.add('Smooth regional terrain',terrain,terrain_colors(vox,terrain),smooth=True,material='terrain',blend=True)
+        held=type('World',(),{'vox':vox})()
+        scene.add('All waterways',_water_surface(held),(.16,.61,.66),smooth=True,water=True)
+        scene.metadata['water_volume']=True
+    else:
+        scene.add('Exact regional terrain',natural,P.COLOR_F[nb],material='terrain')
     scene.add('Exact architecture and regional trails',architecture,P.COLOR_F[ab],material='stone')
-    scene.add('All waterways',water,(.16,.61,.66),water=True)
+    if not organic:
+        scene.add('All waterways',water,(.16,.61,.66),water=True)
     scene.metadata['geometry_contract']=dict(method='lossless coplanar voxel face merging',exposed_face_area=area,
         world_shape=list(vox.shape),spatial_culling=False,tree_detail=2,ground_cover_repeats=4)
     batch=models.ModelBatch(); logs=vox==B.LOG; below=np.zeros_like(logs); below[:,1:]=logs[:,:-1]
+    apple_trunks={(int(t['trunk'][0]),int(t['trunk'][2])) for t in env.orchard.trees} if organic and getattr(env,'orchard',None) else set()
     trees=[]
     for x,y,z in np.argwhere(logs & ~below):
         top=int(y)
@@ -135,13 +183,23 @@ def static_scene(env):
         if top-y<2:
             batch.box((x+.5,y+.5,z+.5),(1,1,1),P.COLOR_F[B.LOG]);continue
         kind=BIOMES[int(w.biome[x,z])].tree_kind
-        if y>env.levels[1]+6: kind='golden'
+        if organic:
+            # Some stands are conifers, by a stable hash of their map region
+            # (never per frame). Apple trees stay broadleaf.
+            if (x,z) not in apple_trunks and N.hash_unit(np.array([x//28]),np.array([z//28]),191)[0]<.4: kind='pine'
+            if y>env.levels[2]-20: kind='golden'
+        elif y>env.levels[1]+6: kind='golden'
         leaves=vox[max(0,x-3):x+4,max(y,top-4):top+4,max(0,z-3):z+4]==B.LEAVES
         if not leaves.any(): kind='dead'
         pos=(x+.5,float(y),z+.5); v=float(N.hash_unit(np.array([x]),np.array([z]),83)[0])
         models.tree(batch,pos,top-y,kind,v,2); trees.append(pos)
     for x,y,z in np.argwhere(np.isin(vox,[B.BUSH,B.COOKPOT,B.CAMPFIRE,B.CAMPFIRE_LIT,B.TORCH_WALL,B.CRYSTAL,B.VINE,B.GLASS])):
         models.prop(batch,int(vox[x,y,z]),(x+.5,y,z+.5),0)
+    if organic:
+        from . import creatures
+        dens={tuple(n.data['den']) for n in env.npcs.npcs if n.data.get('den')}
+        for den in sorted(dens):
+            creatures.den(batch,den,('den',int(env._seed))+tuple(np.round(den,1)))
     _add_batch(scene,batch)
     _landscape(scene,env)
     if hasattr(env, 'static_presentation_meshes'):
@@ -151,13 +209,16 @@ def static_scene(env):
         scene.metadata['geometry_contract']['architecture'] = env.architecture
     # Match high-tier native ground-cover density, but keep the entire world.
     # Instance geometry in Blender instead of replicating millions of blades.
-    natural_height=np.empty(w.height.shape,np.int16)
-    ys=np.arange(w.size_y,dtype=np.int16)[None,:,None]
+    # Every exposed grass block, so ground beneath sky islands is covered too
+    # (not only the topmost natural block of each column).
+    found=[]
     for start in range(0,w.size_x,32):
-        natural_height[start:start+32]=np.where(_NATURAL[vox[start:start+32]],ys,-1).max(axis=1)
-    xx,zz=np.indices(w.height.shape); yy=np.maximum(natural_height,0)
-    gx,gz=np.nonzero((vox[xx,yy,zz]==B.GRASS)&(N.hash_unit(xx,zz,731)>.12))
-    points=np.stack((gx+.5,yy[gx,gz]+1.,gz+.5),axis=1).astype(np.float32)
+        sub=vox[start:start+32]; above=sub[:,1:]
+        exposed=(sub[:,:-1]==B.GRASS)&~B.SOLID[above]&(above!=B.WATER)
+        x,y,z=np.nonzero(exposed); found.append(np.stack((x+start,y,z),axis=1))
+    gx,gy,gz=np.concatenate(found).T
+    keep=N.hash_unit(gx,gz,731)>.12; gx,gy,gz=gx[keep],gy[keep],gz[keep]
+    points=np.stack((gx+.5,gy+1.,gz+.5),axis=1).astype(np.float32)
     points=np.repeat(points,4,axis=0); i=np.arange(len(points))
     points[:,0]+=(N.hash_unit(i,i,84)-.5)*.8;points[:,2]+=(N.hash_unit(i,i,32)-.5)*.8
     variants=(N.hash_unit(i,i,12)*12).astype(np.int32).clip(0,11)
@@ -212,8 +273,47 @@ def dynamic_scene(env,first_person=False):
         scene.metadata['view']='first_person'
         return scene
     character=models.ModelBatch()
-    models.traveler(character,env.agent.pos,env.agent.yaw,phase=env.agent.distance_travelled*2.5,gliding=env.agent.gliding)
+    if not getattr(env,'organic_world',False):
+        models.traveler(character,env.agent.pos,env.agent.yaw,phase=env.agent.distance_travelled*2.5,gliding=env.agent.gliding)
+        _add_batch(scene,character)
+        return scene
+    # Creatures near the camera, the horse and rider, and apples. Every
+    # material keeps a fixed slot (possibly empty): the replay loader keys
+    # dynamic meshes by slot, and creatures come and go between frames.
+    from . import creatures
+    focus=np.asarray(scene.metadata['camera']['eye'],float)
+    living=[e for e in env.npcs.render_list(focus,radius=160.0)]
+    night=bool(env.elements.climate.is_night)
+    seat=creatures.emit(character,living,float(env.elapsed),night=night)
+    if env.riding is not None and env.riding.mounted and seat is not None:
+        creatures.rider(character,seat[0],seat[1],np.array((59,128,147))/255,env.agent.distance_travelled)
+    else:
+        models.traveler(character,env.agent.pos,env.agent.yaw,phase=env.agent.distance_travelled*2.5,gliding=env.agent.gliding)
+    if env.orchard is not None:
+        for tree in env.orchard.trees:
+            if tree['apples'] and np.linalg.norm(np.asarray(tree['trunk'])-focus)<160:
+                creatures.apples_on_tree(character,tree,tree['apples'])
+    for item in env.gameplay.render_list():
+        if item.get('item')=='apple': creatures.apple(character,np.asarray(item['pos'])-(0,.45,0))
     _add_batch(scene,character)
+    from open_world_bench.render.meshes import MATERIAL_NAMES
+    merged={}
+    for mesh in scene.meshes:
+        if mesh['name'] in merged:
+            m=merged[mesh['name']]
+            for key in ('triangles','colors','normals','emission'):
+                m[key]=np.concatenate([m[key],mesh[key]])
+        else: merged[mesh['name']]=dict(mesh)
+    empty=lambda name,material: dict(name=name,triangles=np.empty((0,3,3),np.float32),colors=np.empty((0,3),np.float32),
+        normals=np.empty((0,3,3),np.float32),emission=np.empty(0,np.float32),smooth=False,water=False,material=material)
+    names=['Characters and props: '+name for name in MATERIAL_NAMES]
+    extra=[n for n in merged if n not in names]
+    if extra: raise RuntimeError(f'Unexpected dynamic mesh slots: {extra}')
+    scene.meshes=[merged.get(name) or empty(name,material) for name,material in zip(names,MATERIAL_NAMES)]
+    sun=float(P.sky_colors(env.elements.climate.time)['sun']['elevation'])
+    if sun<.08:
+        k=float(np.clip((.08-sun)/.25,0,1))
+        scene.metadata['night_grade']=dict(moon=1+2.0*k,sky=1+3.5*k,exposure=.7*k)
     return scene
 
 

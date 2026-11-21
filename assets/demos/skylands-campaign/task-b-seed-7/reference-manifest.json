@@ -1,10 +1,10 @@
 {
   "task": "b",
   "seed": 7,
-  "initial_digest": "b33206c5cb2786ac037706dca0c5ff45bbaaa7c14d17f0c53f76245dcfd982ac",
-  "final_digest": "31c6be22f814ca4a5b09c62b8992a6f21df4904661c5e6e30425204fae6b25bf",
-  "decisions": 37321,
-  "simulated_seconds": 7464.200000009623,
+  "initial_digest": "c7b679152014d5badc00691e1e84f067014af3957a957223f4b38ef98ccefb43",
+  "final_digest": "e7b44ffd2ad30e3ae3213f734f6ce9a0f243286912d5fd3a843ca68771726040",
+  "decisions": 30438,
+  "simulated_seconds": 6087.600000004615,
   "milestones": [
     {
       "id": "B01",
@@ -13,118 +13,118 @@
     },
     {
       "id": "B02",
-      "step": 1208,
-      "seconds": 241.6
+      "step": 943,
+      "seconds": 188.6
     },
     {
       "id": "B03",
-      "step": 2028,
-      "seconds": 405.6
+      "step": 1747,
+      "seconds": 349.4
     },
     {
       "id": "B04",
-      "step": 2233,
-      "seconds": 446.6
+      "step": 1951,
+      "seconds": 390.2
     },
     {
       "id": "B05",
-      "step": 2663,
-      "seconds": 532.6
+      "step": 2380,
+      "seconds": 476.0
     },
     {
       "id": "B06",
-      "step": 3693,
-      "seconds": 738.6
+      "step": 3402,
+      "seconds": 680.4
     },
     {
       "id": "B07",
-      "step": 4893,
-      "seconds": 978.6
+      "step": 4602,
+      "seconds": 920.4
     },
     {
       "id": "B08",
-      "step": 7033,
-      "seconds": 1406.6
+      "step": 6742,
+      "seconds": 1348.4
     },
     {
       "id": "B09",
-      "step": 9432,
-      "seconds": 1886.4
+      "step": 9129,
+      "seconds": 1825.8
     },
     {
       "id": "B10",
-      "step": 11377,
-      "seconds": 2275.4
+      "step": 9997,
+      "seconds": 1999.4
     },
     {
       "id": "B11",
-      "step": 13895,
-      "seconds": 2779.0
+      "step": 10963,
+      "seconds": 2192.6
     },
     {
       "id": "B12",
-      "step": 16206,
-      "seconds": 3241.2
+      "step": 12708,
+      "seconds": 2541.6
     },
     {
       "id": "B13",
-      "step": 17416,
-      "seconds": 3483.2
+      "step": 13918,
+      "seconds": 2783.6
     },
     {
       "id": "B14",
-      "step": 17674,
-      "seconds": 3534.8
+      "step": 14175,
+      "seconds": 2835.0
     },
     {
       "id": "B15",
-      "step": 18304,
-      "seconds": 3660.8
+      "step": 14804,
+      "seconds": 2960.8
     },
     {
       "id": "B16",
-      "step": 24721,
-      "seconds": 4944.2
+      "step": 19563,
+      "seconds": 3912.6
     },
     {
       "id": "B17",
-      "step": 25374,
-      "seconds": 5074.8
+      "step": 20210,
+      "seconds": 4042.0
     },
     {
       "id": "B18",
-      "step": 28989,
-      "seconds": 5797.8
+      "step": 23855,
+      "seconds": 4771.0
     },
     {
       "id": "B19",
-      "step": 29311,
-      "seconds": 5862.2
+      "step": 24177,
+      "seconds": 4835.4
     },
     {
       "id": "B20",
-      "step": 32973,
-      "seconds": 6594.6
+      "step": 26110,
+      "seconds": 5222.0
     },
     {
       "id": "B21",
-      "step": 35986,
-      "seconds": 7197.2
+      "step": 29118,
+      "seconds": 5823.6
     },
     {
       "id": "B22",
-      "step": 36274,
-      "seconds": 7254.8
+      "step": 29394,
+      "seconds": 5878.8
     },
     {
       "id": "B23",
-      "step": 36932,
-      "seconds": 7386.4
+      "step": 30049,
+      "seconds": 6009.8
     },
     {
       "id": "B24",
-      "step": 37321,
-      "seconds": 7464.2
+      "step": 30438,
+      "seconds": 6087.6
     }
   ],
   "required": 24,
@@ -133,27 +133,41 @@
   "events": {
     "clue_exposed": 3,
     "milestone_complete": 24,
+    "npc_denned": 174,
+    "horse_calmed": 1,
+    "swing": 6,
+    "tree_struck": 3,
+    "apple_fell": 565,
+    "gather": 1,
+    "mounted": 8,
+    "riding_improved": 2,
+    "dismounted": 8,
     "part_picked": 20,
     "part_mounted": 20,
+    "fan_struck": 3,
     "cargo_loaded": 5,
     "craft_moved": 1427,
     "cargo_delivered": 5,
     "ascended": 15,
     "gallery_serviced": 3,
     "land": 9,
+    "npc_emerged": 146,
     "reversal_started": 4,
     "platform_reversed": 112,
     "reversal_cancelled": 4,
     "platform_landing_reached": 4,
-    "new_day": 6,
+    "new_day": 5,
     "layer_changed": 8,
     "reserves_cached": 2,
+    "whistled": 4,
+    "horse_arrived": 4,
     "service_part_recovered": 2,
     "cache_retrieved": 2,
     "outpost_opened": 1,
     "cargo_towed": 5,
     "station_engaged": 3,
     "maintenance_bridge_closed": 1,
+    "jump": 1,
     "lock_coupling_installed": 1,
     "cargo_berth_opened": 1
   },
@@ -170,7 +184,7 @@
     144,
     1408
   ],
-  "walked_metres": 25568.59875170586,
+  "walked_metres": 24051.796696705795,
   "return_dock": null,
   "cache_bindings": {
     "lamp_kit": 1,
@@ -179,19 +193,26 @@
   "controller": "privileged action-only full-campaign reference policy",
   "sources": {
     "owb/env/skylands_reference.py": "f9c92b38ef9fdf308f40c5305d3f814d2bc53e7ad73be20d9e0a494c500808e8",
-    "owb/bench/baselines/skylands_reference.py": "724843066e5563616aed8cfd3bc858f9d337c9ba6ac204a31cfa0e8875c33b2a",
+    "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
     "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
-    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
-    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/env/skylands.py": "4c13573c8b7a92ad046a674a4ea72099405df36df2d5751d657f77929a988073",
+    "owb/env/wildlands.py": "0baa4cbad44fbc35b5e5e15873a6ef0e8568863ba46f633042db249efe97da0b",
     "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
-    "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
-    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
-    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/scene_export.py": "fde4b810af1245922fffb3e04ed983f7f42bd6df21e4b0327949015d3209f549",
+    "owb/render/blender_scene.py": "b20764917da72b0a5ab9797d80a1480c8c3d38279529631e928c1bfc9242423f",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
     "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
-    "owb/env/skylands_campaign.py": "8593ea9d8a6a71c5877f7fcad40c86d2fb5bb5907e28b3959224e5e083aedf7c",
-    "owb/bench/baselines/skylands_campaign.py": "6bf93abd9ad9d38c8436dc17eb7e99fe69ee3761348e76452c69011a214dccc6",
-    "owb/scripts/skylands_campaign.py": "2d4e8373477417f0f0414b489dd28f6374e9bc57a83a234a1839f913a2075d80"
+    "owb/env/skylands_campaign.py": "5c5f0536431a50ea4e52bf433fc72cd2830774fe36df52f51e26c9a3b3bbd602",
+    "owb/bench/baselines/skylands_campaign.py": "29dc570f3fdbdd624d4cdda812efd875af2d962b6dcd104a8b551a8c758c0111",
+    "owb/scripts/skylands_campaign.py": "5fd009c3909f305e4ddbba77ff4ed827df06586f441b00459b12da21d399b4b6",
+    "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
+    "owb/world/fauna.py": "1cda9e895bddf976250b452aeeba77405fe2bbedc6f0634be4f37688bdb3eb92",
+    "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "4fba32ab206fe7f01f2818125d31697c666abcaef79b6059928b91e23f059931",
+    "owb/sim/orchard.py": "f096a850736120a58d9ca9954e53beaf9de10a9d5a108756b66d6231df3573a5",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454"
   },
-  "actions_sha256": "a634f169bde7418dd32728ddb3e14a8a04975fd19e8560db8c8a534d10a37034"
+  "actions_sha256": "642253088681a1a8e6eb755c1e7ee698521da86033af1b366a2320e85edd8366"
 }

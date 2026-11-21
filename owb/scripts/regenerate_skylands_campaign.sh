@@ -6,8 +6,8 @@
 # Run from the repository root on a Slurm login node:
 #   bash owb/scripts/regenerate_skylands_campaign.sh
 # Then, after the final job succeeds:
-#   cp assets/demos/skylands-campaign/task-a-seed-7/walkthrough.mp4 videos/skylands-15-milestones.mp4
-#   cp assets/demos/skylands-campaign/task-b-seed-7/walkthrough.mp4 videos/skylands-24-milestones.mp4
+#   cp assets/demos/skylands-campaign/task-a-seed-7/walkthrough.mp4 videos/skylands/skylands-15-milestones.mp4
+#   cp assets/demos/skylands-campaign/task-b-seed-7/walkthrough.mp4 videos/skylands/skylands-24-milestones.mp4
 set -euo pipefail
 [ -f owb/render/blender_campaign.py ] || { echo "Run from the repository root" >&2; exit 1; }
 if [ -n "$(git status --porcelain -- owb open_world_bench assets/demos/skylands-campaign/render-source)" ]; then

@@ -230,5 +230,7 @@ __marimo__/
 # Rendered videos over GitHub's 100 MB limit (kept locally, not tracked)
 assets/demos/skylands-campaign/task-a-seed-7/walkthrough.mp4
 assets/demos/skylands-campaign/task-b-seed-7/walkthrough.mp4
-videos/skylands-15-milestones.mp4
-videos/skylands-24-milestones.mp4
+videos/skylands/skylands-15-milestones.mp4
+videos/skylands/skylands-24-milestones.mp4
+videos/skylands/skylands-15-milestones-first-person.mp4
+assets/demos/skylands-campaign-first-person/task-a-seed-7/walkthrough.mp4

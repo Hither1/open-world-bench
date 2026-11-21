@@ -228,7 +228,213 @@ def _ground_detail(nodes, links, base, bump_normal, shader, image):
     links.new(bump.outputs["Normal"], shader.inputs["Normal"])
 
 
-def material(name, *, emission=False, water=False, kind="surface", ground=None):
+# ---------------------------------------------------------------------------
+# Optional "anime" presentation style (metadata["style"]). Opt-in per snapshot:
+# snapshots without the key render exactly as before.
+# ---------------------------------------------------------------------------
+STYLE = None
+ANIME = dict(
+    view="Standard", look="None", exposure=0.0, sun_scale=0.72, sun_color=(1.0, 0.95, 0.84), sky_strength=1.0,
+    zenith=(0.11, 0.36, 0.86), horizon=(0.66, 0.86, 0.98), toon=0.85, toon_size=0.55, toon_smooth=0.16,
+    haze=dict(start=140.0, distance=1500.0, amount=0.8), haze_color=(0.66, 0.83, 0.97),
+    saturation=dict(foliage=1.12, cloth=1.2, stone=0.9, bark=1.05, metal=1.0, skin=1.08, surface=1.12),
+    value=dict(foliage=1.18, cloth=1.1, stone=1.3, bark=1.35, metal=1.1, skin=1.05, surface=1.12),
+    grass=((0.36, 0.63, 0.22), (0.48, 0.72, 0.27)), dry=(0.62, 0.74, 0.32),
+    rock=((0.70, 0.64, 0.56), (0.56, 0.52, 0.50)), rock_dark=(0.34, 0.33, 0.40), rock_light=(0.86, 0.80, 0.70),
+    sand=(0.90, 0.84, 0.64),
+    water=(0.06, 0.55, 0.70), clouds=0.5)
+
+
+def style_settings(metadata):
+    """Resolved style parameters, or None for the default look."""
+    spec = metadata.get("style")
+    if not spec:
+        return None
+    if spec.get("name") != "anime":
+        raise ValueError(f"unknown presentation style: {spec.get('name')}")
+    return dict(ANIME, **{k: v for k, v in spec.items() if k != "name"})
+
+
+def _rgb(nodes, color):
+    node = nodes.new("ShaderNodeRGB")
+    node.outputs[0].default_value = (*linear(np.asarray(color, float)), 1)
+    return node.outputs[0]
+
+
+def _mix(nodes, links, factor, a, b, blend="MIX"):
+    node = nodes.new("ShaderNodeMixRGB"); node.blend_type = blend
+    for socket, value in zip(node.inputs, (factor, a, b)):
+        if isinstance(value, (int, float)):
+            socket.default_value = value
+        else:
+            links.new(value, socket)
+    return node.outputs[0]
+
+
+def _range(nodes, links, value, lo, hi, to_min=0.0, to_max=1.0):
+    node = nodes.new("ShaderNodeMapRange")
+    node.inputs["From Min"].default_value = lo; node.inputs["From Max"].default_value = hi
+    node.inputs["To Min"].default_value = to_min; node.inputs["To Max"].default_value = to_max
+    links.new(value, node.inputs["Value"])
+    return node.outputs[0]
+
+
+def _noise(nodes, links, vector, scale, detail=2.0):
+    node = nodes.new("ShaderNodeTexNoise")
+    node.inputs["Scale"].default_value = scale; node.inputs["Detail"].default_value = detail
+    links.new(vector, node.inputs["Vector"])
+    return node.outputs["Fac"]
+
+
+def _anime_terrain(nodes, links, shader, style):
+    """Grass, rock and sand chosen per pixel from slope and height, not per triangle.
+
+    Grass covers level ground in two greens with dry patches; faces show light
+    rock with horizontal strata and darker crevices; the shore is sand."""
+    coordinates = nodes.new("ShaderNodeTexCoord").outputs["Object"]
+    geometry = nodes.new("ShaderNodeNewGeometry")
+    normal = nodes.new("ShaderNodeSeparateXYZ"); links.new(geometry.outputs["Normal"], normal.inputs["Vector"])
+    position = nodes.new("ShaderNodeSeparateXYZ"); links.new(geometry.outputs["Position"], position.inputs["Vector"])
+    broad, fine = _noise(nodes, links, coordinates, .018, 3), _noise(nodes, links, coordinates, .11, 3)
+    grass = _mix(nodes, links, _range(nodes, links, broad, .35, .7), _rgb(nodes, style["grass"][0]), _rgb(nodes, style["grass"][1]))
+    grass = _mix(nodes, links, _range(nodes, links, fine, .56, .78, 0, .55), grass, _rgb(nodes, style["dry"]))
+    # Strata: bands in height, bent by noise so they do not read as ruled lines.
+    bend = nodes.new("ShaderNodeMath"); bend.operation = "MULTIPLY_ADD"
+    links.new(_noise(nodes, links, coordinates, .05, 2), bend.inputs[0]); bend.inputs[1].default_value = 9.0
+    links.new(position.outputs["Z"], bend.inputs[2])
+    bands = nodes.new("ShaderNodeMath"); bands.operation = "PINGPONG"
+    links.new(bend.outputs[0], bands.inputs[0]); bands.inputs[1].default_value = 3.4
+    rock = _mix(nodes, links, _range(nodes, links, bands.outputs[0], .6, 2.6), _rgb(nodes, style["rock"][0]), _rgb(nodes, style["rock"][1]))
+    stretch = nodes.new("ShaderNodeVectorMath"); stretch.operation = "MULTIPLY"
+    stretch.inputs[1].default_value = (.9, .9, .12); links.new(coordinates, stretch.inputs[0])
+    crevice = _range(nodes, links, _noise(nodes, links, stretch.outputs["Vector"], .5, 4), .58, .72, 0, .7)
+    rock = _mix(nodes, links, crevice, rock, _rgb(nodes, style["rock_dark"]))
+    # Faceted rock: tall cells read as fractured columns. Each cell takes one flat tone,
+    # its edges darken into cracks, and its distance field tilts the shading like a cut face.
+    columns = nodes.new("ShaderNodeVectorMath"); columns.operation = "MULTIPLY"
+    columns.inputs[1].default_value = (1.0, 1.0, .3); links.new(coordinates, columns.inputs[0])
+    def cells(feature, scale):
+        node = nodes.new("ShaderNodeTexVoronoi"); node.feature = feature
+        node.inputs["Scale"].default_value = scale; node.inputs["Randomness"].default_value = .9
+        links.new(columns.outputs["Vector"], node.inputs["Vector"])
+        return node
+    big, edge, chips = cells("F1", .085), cells("DISTANCE_TO_EDGE", .085), cells("F1", .32)
+    tone = nodes.new("ShaderNodeSeparateColor"); links.new(big.outputs["Color"], tone.inputs["Color"])
+    rock = _mix(nodes, links, _range(nodes, links, tone.outputs[0], 0, 1, .0, .75), rock, _rgb(nodes, style["rock_light"]), "MIX")
+    rock = _mix(nodes, links, _range(nodes, links, tone.outputs[1], .5, 1, .0, .55), rock, _rgb(nodes, style["rock_dark"]))
+    rock = _mix(nodes, links, _range(nodes, links, edge.outputs["Distance"], .05, .0, 0, .8), rock, _rgb(nodes, style["rock_dark"]))
+    relief = nodes.new("ShaderNodeMath"); relief.operation = "MULTIPLY_ADD"
+    links.new(chips.outputs["Distance"], relief.inputs[0]); relief.inputs[1].default_value = .25
+    links.new(big.outputs["Distance"], relief.inputs[2])
+    ragged = nodes.new("ShaderNodeMath"); ragged.operation = "MULTIPLY_ADD"
+    links.new(_noise(nodes, links, coordinates, .6, 3), ragged.inputs[0]); ragged.inputs[1].default_value = .16
+    links.new(normal.outputs["Z"], ragged.inputs[2])
+    slope = _range(nodes, links, ragged.outputs[0], .93, .80)          # 0 on level ground, 1 on faces
+    color = _mix(nodes, links, slope, grass, rock)
+    shore = nodes.new("ShaderNodeMath"); shore.operation = "MULTIPLY"
+    links.new(_range(nodes, links, position.outputs["Z"], 2.6, 1.2), shore.inputs[0])
+    links.new(_range(nodes, links, normal.outputs["Z"], .7, .9), shore.inputs[1])
+    color = _mix(nodes, links, shore.outputs[0], color, _rgb(nodes, style["sand"]))
+    links.new(color, shader.inputs["Base Color"])
+    shader.inputs["Roughness"].default_value = 1.0
+    facets = nodes.new("ShaderNodeBump"); facets.inputs["Distance"].default_value = 6.0
+    links.new(relief.outputs[0], facets.inputs["Height"])
+    strength = nodes.new("ShaderNodeMath"); strength.operation = "MULTIPLY"; strength.inputs[1].default_value = .9
+    links.new(slope, strength.inputs[0]); links.new(strength.outputs[0], facets.inputs["Strength"])
+    links.new(facets.outputs["Normal"], shader.inputs["Normal"])
+    return color, facets.outputs["Normal"]
+
+
+def _stylize(mat, kind, style, *, water=False, emission=False, terrain_color=None, normal=None):
+    """Saturated albedo and a soft toon diffuse over the physically based base."""
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    if water:
+        shader.inputs["Base Color"].default_value = (*linear(np.asarray(style["water"])), 1)
+        for link in list(shader.inputs["Base Color"].links):
+            links.remove(link)
+        shader.inputs["Roughness"].default_value = .08
+        shader.inputs["Metallic"].default_value = .0
+        shader.inputs["Coat Weight"].default_value = .6
+        return
+    if emission:
+        return
+    source = terrain_color if terrain_color is not None else shader.inputs["Base Color"].links[0].from_socket
+    if terrain_color is None:
+        grade = nodes.new("ShaderNodeHueSaturation")
+        grade.inputs["Saturation"].default_value = style["saturation"].get(kind, 1.1)
+        grade.inputs["Value"].default_value = style["value"].get(kind, 1.1)
+        links.new(source, grade.inputs["Color"])
+        source = grade.outputs["Color"]
+        links.new(source, shader.inputs["Base Color"])
+        for node in nodes:                       # foliage also feeds a translucent lobe
+            if node.type == "BSDF_TRANSLUCENT":
+                links.new(source, node.inputs["Color"])
+    shader.inputs["Specular IOR Level"].default_value = .12 if kind == "metal" else .02
+    toon = nodes.new("ShaderNodeBsdfToon"); toon.component = "DIFFUSE"
+    toon.inputs["Size"].default_value = style["toon_size"]; toon.inputs["Smooth"].default_value = style["toon_smooth"]
+    links.new(source, toon.inputs["Color"])
+    if normal is not None:
+        links.new(normal, toon.inputs["Normal"])
+    def insert(nodes_, links_, socket):
+        mix = nodes_.new("ShaderNodeMixShader")
+        mix.inputs[0].default_value = style["toon"] * (.55 if kind == "foliage" else 1.0)   # leaves keep soft light
+        links_.new(socket, mix.inputs[1]); links_.new(toon.outputs[0], mix.inputs[2])
+        return mix.outputs[0]
+    _route_output(mat, insert)
+
+
+def _anime_sky(nodes, links, background, style, sun_direction):
+    """Deep zenith, pale horizon and soft cumulus banks with lit tops."""
+    tex = nodes.new("ShaderNodeTexCoord")
+    separate = nodes.new("ShaderNodeSeparateXYZ"); links.new(tex.outputs["Generated"], separate.inputs["Vector"])
+    up = nodes.new("ShaderNodeMath"); up.operation = "ABSOLUTE"; links.new(separate.outputs["Z"], up.inputs[0])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0; ramp.color_ramp.elements[0].color = (*linear(np.array(style["horizon"])), 1)
+    ramp.color_ramp.elements[1].position = .62; ramp.color_ramp.elements[1].color = (*linear(np.array(style["zenith"])), 1)
+    links.new(up.outputs[0], ramp.inputs["Fac"])
+    # Project the view direction onto a plane overhead so clouds recede to the horizon.
+    lift = nodes.new("ShaderNodeMath"); lift.operation = "ADD"; links.new(separate.outputs["Z"], lift.inputs[0]); lift.inputs[1].default_value = .22
+    plane = nodes.new("ShaderNodeVectorMath"); plane.operation = "DIVIDE"
+    links.new(tex.outputs["Generated"], plane.inputs[0])
+    spread = nodes.new("ShaderNodeCombineXYZ")
+    for k in range(3):
+        links.new(lift.outputs[0], spread.inputs[k])
+    links.new(spread.outputs[0], plane.inputs[1])
+    def density(offset):
+        shift = nodes.new("ShaderNodeVectorMath"); shift.operation = "ADD"; shift.inputs[1].default_value = offset
+        links.new(plane.outputs["Vector"], shift.inputs[0])
+        big = _noise(nodes, links, shift.outputs["Vector"], 1.5, 6)
+        return big
+    cover = _range(nodes, links, density((0, 0, 0)), 1.0 - style["clouds"] - .02, 1.0 - style["clouds"] + .09)
+    toward_sun = (float(sun_direction[0]) * .12, float(sun_direction[1]) * .12, 0.0)
+    lit = _range(nodes, links, density(toward_sun), 1.0 - style["clouds"] - .06, 1.0 - style["clouds"] + .14)
+    shade = _mix(nodes, links, lit, _rgb(nodes, (1.0, .99, .96)), _rgb(nodes, (.72, .78, .92)))
+    above = nodes.new("ShaderNodeMath"); above.operation = "MULTIPLY"
+    links.new(cover, above.inputs[0]); links.new(_range(nodes, links, separate.outputs["Z"], .015, .12), above.inputs[1])
+    sky = _mix(nodes, links, above.outputs[0], ramp.outputs["Color"], shade)
+    links.new(sky, background.inputs["Color"])
+
+
+def outline_material(color=(0.10, 0.08, 0.14)):
+    """Ink line for an outline hull: only its back faces show, and only to the camera."""
+    mat = bpy.data.materials.new("Ink outline")
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.remove(nodes.get("Principled BSDF"))
+    ink = nodes.new("ShaderNodeEmission")
+    ink.inputs["Color"].default_value = (*linear(np.asarray(color, float)), 1); ink.inputs["Strength"].default_value = 1.0
+    clear = nodes.new("ShaderNodeBsdfTransparent")
+    geometry, path = nodes.new("ShaderNodeNewGeometry"), nodes.new("ShaderNodeLightPath")
+    show = nodes.new("ShaderNodeMath"); show.operation = "MULTIPLY"
+    links.new(geometry.outputs["Backfacing"], show.inputs[0]); links.new(path.outputs["Is Camera Ray"], show.inputs[1])
+    mix = nodes.new("ShaderNodeMixShader")
+    links.new(show.outputs[0], mix.inputs[0]); links.new(clear.outputs[0], mix.inputs[1]); links.new(ink.outputs[0], mix.inputs[2])
+    links.new(mix.outputs[0], nodes.get("Material Output").inputs["Surface"])
+    return mat
+
+
+def material(name, *, emission=False, water=False, kind="surface", ground=None, volume=False):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -254,6 +460,8 @@ def material(name, *, emission=False, water=False, kind="surface", ground=None):
         links.new(vector,coarse.inputs["Vector"])
         variation=nodes.new("ShaderNodeValToRGB")
         variation.color_ramp.elements[0].color=(.56,.56,.56,1) if kind in ("terrain","stone","bark") else (.83,.83,.83,1)
+        if STYLE is not None:                 # flat colour blocks: keep only a trace of mottling
+            variation.color_ramp.elements[0].color=(.84,.84,.84,1) if kind in ("terrain","stone","bark") else (.93,.93,.93,1)
         variation.color_ramp.elements[1].color=(1.06,1.06,1.06,1)
         links.new(coarse.outputs["Fac"],variation.inputs["Fac"])
         multiply=nodes.new("ShaderNodeMixRGB")
@@ -304,7 +512,9 @@ def material(name, *, emission=False, water=False, kind="surface", ground=None):
     if emission:
         links.new(colors.outputs["Color"], shader.inputs["Emission Color"])
         shader.inputs["Emission Strength"].default_value = 2.0
-    if water:
+    if water and volume:
+        _clear_water(mat, shader, colors)
+    elif water:
         shader.inputs["Roughness"].default_value = 0.17
         shader.inputs["Metallic"].default_value = 0.22
         shader.inputs["Coat Weight"].default_value = 0.4
@@ -320,6 +530,9 @@ def material(name, *, emission=False, water=False, kind="surface", ground=None):
         bump.inputs["Distance"].default_value = 0.12
         links.new(noise.outputs["Fac"], bump.inputs["Height"])
         links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+    if STYLE is not None:
+        terrain = _anime_terrain(nodes, links, shader, STYLE) if kind == "terrain" and ground is None else (None, None)
+        _stylize(mat, kind, STYLE, water=water, emission=emission, terrain_color=terrain[0], normal=terrain[1])
     mat = add_haze(mat)
     if not emission:
         # Haze is distance fog seen by rays, not a light. With AUTO emission
@@ -328,6 +541,54 @@ def material(name, *, emission=False, water=False, kind="surface", ground=None):
         # is unchanged; real glow materials keep light sampling.
         mat.cycles.emission_sampling = "NONE"
     return mat
+
+
+def _clear_water(mat, shader, colors):
+    """Refractive water with depth absorption, two scales of ripples, and
+    shadow rays passing the surface so beds stay sunlit (closed water meshes)."""
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    for link in list(shader.inputs["Base Color"].links):
+        links.remove(link)
+    shader.inputs["Base Color"].default_value = (0.93, 0.98, 0.97, 1)
+    shader.inputs["Transmission Weight"].default_value = 1.0
+    shader.inputs["Roughness"].default_value = 0.03
+    shader.inputs["IOR"].default_value = 1.333
+    shader.inputs["Specular IOR Level"].default_value = 0.5
+    coordinates = nodes.new("ShaderNodeTexCoord")
+    normal = None
+    for scale, strength, distance in ((0.32, 0.22, 0.3), (3.2, 0.08, 0.04)):
+        noise = nodes.new("ShaderNodeTexNoise")
+        noise.inputs["Scale"].default_value = scale
+        noise.inputs["Detail"].default_value = 4
+        noise.inputs["Roughness"].default_value = 0.55
+        links.new(coordinates.outputs["Object"], noise.inputs["Vector"])
+        bump = nodes.new("ShaderNodeBump")
+        bump.inputs["Strength"].default_value = strength
+        bump.inputs["Distance"].default_value = distance
+        links.new(noise.outputs["Fac"], bump.inputs["Height"])
+        if normal is not None:
+            links.new(normal, bump.inputs["Normal"])
+        normal = bump.outputs["Normal"]
+    links.new(normal, shader.inputs["Normal"])
+    path = nodes.new("ShaderNodeLightPath")
+    transparent = nodes.new("ShaderNodeBsdfTransparent")
+    transparent.inputs["Color"].default_value = (0.9, 0.96, 0.95, 1)
+    mix = nodes.new("ShaderNodeMixShader")
+    links.new(path.outputs["Is Shadow Ray"], mix.inputs[0])
+    links.new(shader.outputs["BSDF"], mix.inputs[1])
+    links.new(transparent.outputs["BSDF"], mix.inputs[2])
+    output = next(n for n in nodes if n.type == "OUTPUT_MATERIAL")
+    links.new(mix.outputs[0], output.inputs["Surface"])
+    absorb = nodes.new("ShaderNodeVolumeAbsorption")
+    absorb.inputs["Color"].default_value = (0.36, 0.62, 0.55, 1)
+    absorb.inputs["Density"].default_value = 0.25
+    scatter = nodes.new("ShaderNodeVolumeScatter")
+    scatter.inputs["Color"].default_value = (0.55, 0.75, 0.7, 1)
+    scatter.inputs["Density"].default_value = 0.012
+    add = nodes.new("ShaderNodeAddShader")
+    links.new(absorb.outputs[0], add.inputs[0])
+    links.new(scatter.outputs[0], add.inputs[1])
+    links.new(add.outputs[0], output.inputs["Volume"])
 
 
 MATERIAL_KINDS = ("terrain", "stone", "bark", "foliage", "metal", "cloth", "skin")
@@ -341,9 +602,11 @@ def build_materials(metadata, data=None):
         ground = ground_detail_image("Ground detail", data["texture_ground_detail"], spec)
     materials = dict(surface=material("Painted surfaces"),
                      emission=material("Elemental glow", emission=True),
-                     water=material("Water", water=True))
+                     water=material("Water", water=True, volume=bool(metadata.get("water_volume"))))
     for kind in MATERIAL_KINDS:
         materials[kind] = material(kind.title(), kind=kind, ground=ground if kind == "terrain" else None)
+    if STYLE is not None:
+        materials["outline"] = outline_material()
     return materials
 
 
@@ -360,6 +623,34 @@ def mesh_material(materials, spec):
     if "emission:occluder" not in materials:
         materials["emission:occluder"] = occluder_variant(materials["emission"])
     return materials[key]
+
+
+# Blender's bulk attribute transfer fails on very large arrays: the smooth
+# Skylands campaign terrain (60M triangles) needs 722M per-corner colour floats
+# and foreach_set raises "Array length mismatch". Exported colours are per
+# triangle, so larger meshes store them once per face instead (a third of the
+# floats) and read them through an Attribute node, as baked grass already does.
+# The rendered colour is identical.
+FACE_COLOR_TRIANGLES = 20_000_000
+
+
+def face_color_material(base):
+    """Copy of ``base`` reading the face-domain "Color" attribute."""
+    name = base.name + " (face colors)"
+    if name in bpy.data.materials:
+        return bpy.data.materials[name]
+    mat = base.copy()
+    mat.name = name
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    for old in [n for n in nodes if n.bl_idname == "ShaderNodeVertexColor"]:
+        new = nodes.new("ShaderNodeAttribute")
+        new.attribute_type = "GEOMETRY"
+        new.attribute_name = old.layer_name
+        for socket in ("Color", "Alpha"):
+            for link in list(old.outputs[socket].links):
+                links.new(new.outputs[socket], link.to_socket)
+        nodes.remove(old)
+    return mat
 
 
 def add_mesh(data, index, spec, materials):
@@ -388,14 +679,36 @@ def add_mesh(data, index, spec, materials):
     mesh.update(calc_edges=True)
     obj = bpy.data.objects.new(spec["name"], mesh)
     bpy.context.collection.objects.link(obj)
-    colors = linear(np.repeat(data[prefix + "colors"], 3, axis=0))
+    blend = bool(spec.get("blend"))
+    per_face = not blend and len(triangles) > FACE_COLOR_TRIANGLES
+    colors = linear(np.asarray(data[prefix + "colors"]))
+    if blend:
+        # Area-weighted average of the adjacent triangles' colours per welded
+        # vertex, interpolated across faces.
+        area = np.linalg.norm(np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0]), axis=1)
+        weight = np.repeat(area, 3)
+        total = np.bincount(inverse, weight, minlength=len(vertices))
+        colors = np.stack([np.bincount(inverse, weight * np.repeat(colors[:, k], 3), minlength=len(vertices))
+                           for k in range(3)], axis=1) / np.maximum(total, 1e-12)[:, None]
+    elif not per_face:
+        colors = np.repeat(colors, 3, axis=0)
     rgba = np.concatenate((colors, np.ones((len(colors), 1))), axis=1).astype(np.float32)
-    attr = mesh.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="CORNER")
-    attr.data.foreach_set("color", rgba.ravel())
-    mesh.color_attributes.active_color = attr
-    mesh.materials.append(mesh_material(materials, spec))
+    if blend:
+        attr = mesh.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="POINT")
+        attr.data.foreach_set("color", rgba.ravel())
+        mesh.color_attributes.active_color = attr
+    elif per_face:
+        print(f"  per-face colors ({len(triangles):,} triangles)", flush=True)
+        attr = mesh.attributes.new(name="Color", type="FLOAT_COLOR", domain="FACE")
+        attr.data.foreach_set("color", rgba.ravel())
+    else:
+        attr = mesh.color_attributes.new(name="Color", type="FLOAT_COLOR", domain="CORNER")
+        attr.data.foreach_set("color", rgba.ravel())
+        mesh.color_attributes.active_color = attr
+    adapt = face_color_material if per_face else (lambda m: m)
+    mesh.materials.append(adapt(mesh_material(materials, spec)))
     if not spec["water"]:
-        mesh.materials.append(materials["emission:occluder" if spec.get("occluder") else "emission"])
+        mesh.materials.append(adapt(materials["emission:occluder" if spec.get("occluder") else "emission"]))
         mesh.polygons.foreach_set("material_index", (data[prefix + "emission"] > 0.1).astype(np.int32))
     mesh.polygons.foreach_set("use_smooth", np.full(len(mesh.polygons), spec["smooth"], dtype=bool))
     normals = data[prefix + "normals"]
@@ -453,6 +766,11 @@ def ground_cover(spec, objects, image=None):
     camera = nodes.new("GeometryNodeObjectInfo"); camera.inputs["Object"].default_value = bpy.context.scene.camera
     position = nodes.new("GeometryNodeInputPosition").outputs["Position"]
     near = math("LESS_THAN", vmath("DISTANCE", position, camera.outputs["Location"]), spec["radius"] + 6)
+    if "min_up" in spec:                          # level ground above the shore only
+        facing = nodes.new("ShaderNodeSeparateXYZ"); links.new(nodes.new("GeometryNodeInputNormal").outputs[0], facing.inputs[0])
+        height = nodes.new("ShaderNodeSeparateXYZ"); links.new(position, height.inputs[0])
+        near = math("MULTIPLY", near, math("GREATER_THAN", facing.outputs["Z"], spec["min_up"]))
+        near = math("MULTIPLY", near, math("GREATER_THAN", height.outputs["Z"], spec.get("min_height", 0.0)))
     scatter = nodes.new("GeometryNodeDistributePointsOnFaces")
     scatter.inputs["Density"].default_value = spec["density"]
     scatter.inputs["Seed"].default_value = spec.get("seed", 0) % 10000
@@ -463,7 +781,7 @@ def ground_cover(spec, objects, image=None):
     clumps = nodes.new("ShaderNodeTexNoise"); clumps.inputs["Scale"].default_value = .22
     clumps.inputs["Detail"].default_value = 2
     links.new(point, clumps.inputs["Vector"])
-    density = math("MULTIPLY", math("SUBTRACT", clumps.outputs["Fac"], .45), 2.6)
+    density = math("MULTIPLY", math("SUBTRACT", clumps.outputs["Fac"], spec.get("clump_floor", .45)), 2.6)
     if image is not None:
         mapping = json.loads(image["owb_mapping"])
         x0, z0 = mapping["origin"]; size = mapping["size"]
@@ -530,6 +848,10 @@ def setup_scene(metadata, samples, threads, device="CPU"):
     scene.view_settings.look = "AgX - Medium High Contrast"
     # Neutral exposure: the earlier +0.5 washed out ground and lifted green bounce.
     scene.view_settings.exposure = 0.0
+    if STYLE is not None:
+        scene.view_settings.view_transform = STYLE["view"]
+        scene.view_settings.look = STYLE["look"]
+        scene.view_settings.exposure = STYLE["exposure"]
     scene.render.film_transparent = False
 
     camera = bpy.data.cameras.new("Agent camera")
@@ -546,9 +868,11 @@ def setup_scene(metadata, samples, threads, device="CPU"):
     scene.camera = obj
 
     lighting = metadata["lighting"]
+    grade = metadata.get("night_grade") or {}
     sun = bpy.data.lights.new("Sun", "SUN")
-    sun.energy = max(0, lighting["strength"]) * SUN_SCALE
-    sun.color = lighting["color"]
+    sun.energy = (max(0, lighting["strength"]) * SUN_SCALE * (STYLE["sun_scale"] if STYLE else 1.0)
+                  * grade.get("moon", 1.0))
+    sun.color = STYLE["sun_color"] if STYLE else lighting["color"]
     sun.angle = np.radians(4)
     lamp = bpy.data.objects.new("Sun", sun)
     bpy.context.collection.objects.link(lamp)
@@ -559,7 +883,9 @@ def setup_scene(metadata, samples, threads, device="CPU"):
     scene.world = world
     nodes, links = world.node_tree.nodes, world.node_tree.links
     background = nodes.get("Background")
-    background.inputs["Strength"].default_value = SKY_STRENGTH
+    background.inputs["Strength"].default_value = SKY_STRENGTH * grade.get("sky", 1.0)
+    if grade:
+        scene.view_settings.exposure += grade.get("exposure", 0.0)
     tex = nodes.new("ShaderNodeTexCoord")
     separate = nodes.new("ShaderNodeSeparateXYZ")
     links.new(tex.outputs["Normal"], separate.inputs["Vector"])
@@ -575,6 +901,9 @@ def setup_scene(metadata, samples, threads, device="CPU"):
     links.new(separate.outputs["Z"], elevation.inputs[0])
     links.new(elevation.outputs[0], ramp.inputs["Fac"])
     links.new(ramp.outputs["Color"], background.inputs["Color"])
+    if STYLE is not None:
+        background.inputs["Strength"].default_value = STYLE["sky_strength"]
+        _anime_sky(nodes, links, background, STYLE, -z_up(np.asarray(lighting["direction"], float)))
     for index, spec in enumerate(metadata.get("point_lights", [])):
         light = bpy.data.lights.new(f"Task lamp {index}", "POINT")
         light.energy = spec["power"]
@@ -583,7 +912,10 @@ def setup_scene(metadata, samples, threads, device="CPU"):
         lamp_obj = bpy.data.objects.new(f"Task lamp {index}", light)
         bpy.context.collection.objects.link(lamp_obj)
         lamp_obj.location = z_up(spec["pos"])
-    haze_group(metadata.get("haze"), lighting["horizon"], SKY_STRENGTH)
+    if STYLE is not None:
+        haze_group(dict(metadata.get("haze") or {}, **STYLE["haze"]), STYLE["haze_color"], STYLE["sky_strength"])
+    else:
+        haze_group(metadata.get("haze"), lighting["horizon"], SKY_STRENGTH)
     scene["owb_snapshot"] = json.dumps(metadata)
     return scene
 
@@ -612,6 +944,8 @@ def main():
         print(f"Loaded {metadata['environment']} snapshot", flush=True)
         if metadata.get("version") != 1:
             raise ValueError("unsupported scene snapshot version")
+        global STYLE
+        STYLE = style_settings(metadata)
         scene = setup_scene(metadata, args.samples, args.threads, args.device)
         materials = build_materials(metadata, data)
         objects = {}

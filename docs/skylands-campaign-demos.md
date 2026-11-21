@@ -1,15 +1,18 @@
 # Skylands full-scale campaign demonstrations
 
-Status: both full-scale campaign solutions, independent replays, and GPU Cycles
-videos are complete. Every encoded video frame passed a playback decode check.
+Status: both campaigns were re-collected in the organic worlds (winding trails,
+contained water, creatures, riding, open-air gliding, fan striking and apple
+trees) and pass independent replay verification. **The Cycles videos below still
+show the previous rectangular-world traces and are pending re-render**; their
+durations will be updated when the new recordings finish.
 
 Open the [milestone chapter player](../assets/demos/skylands-campaign/index.html),
-or download the individual walkthroughs:
+or download the individual walkthroughs (previous traces):
 
 | Walkthrough | Video duration | Full simulated journey |
 | --- | ---: | ---: |
-| [A — The Fallen Observatory: 15 milestones](../videos/skylands-15-milestones.mp4) | 7 min 59.3 sec | 57 min 54.4 sec |
-| [B — The Three-Layer Lifeline: 24 milestones](../videos/skylands-24-milestones.mp4) | 15 min 14.5 sec | 2 hr 4 min 24.2 sec |
+| [A — The Fallen Observatory: 15 milestones](../videos/skylands/skylands-15-milestones.mp4) | pending re-render | 48 min 26.4 sec |
+| [B — The Three-Layer Lifeline: 24 milestones](../videos/skylands/skylands-24-milestones.mp4) | pending re-render | 1 hr 41 min 27.6 sec |
 
 These original Tears of the Kingdom-inspired environments implement full regional
 journeys for the [15- and 24-milestone task designs](skylands-long-horizon-tasks.md).
@@ -19,13 +22,56 @@ not learned-agent skill, retention, or memory results.
 
 | Campaign | Completed milestones | Actions | Simulated duration | World extent (X × Z) |
 | --- | ---: | ---: | ---: | ---: |
-| A — The Fallen Observatory | 15 / 15 | 17,372 | 57 min 54.4 sec | 960 × 1,056 m |
-| B — The Three-Layer Lifeline | 24 / 24 | 37,321 | 124 min 24.2 sec | 1,280 × 1,408 m |
+| A — The Fallen Observatory | 15 / 15 | 14,532 | 48 min 26.4 sec | 960 × 1,056 m |
+| B — The Three-Layer Lifeline | 24 / 24 | 30,438 | 101 min 27.6 sec | 1,280 × 1,408 m |
 
-Both seed-7 runs finish with full health and no deaths. Task B exceeds its
-provisional 60–120 minute pilot target by 4.4 minutes; its measured duration is
-reported without trimming the campaign or adding idle time. The reference
+Both seed-7 runs finish with full health and no deaths. Riding and the open-air
+glide shorten the journeys (previously 57 min 54.4 sec and 124 min 24.2 sec);
+B now falls inside its provisional 60–120 minute pilot target. Durations are
+measured, without trimming the campaign or adding idle time. The reference
 itineraries are valid, not optimized shortest paths.
+
+## World, creatures and skills
+
+The campaign worlds share the organic world code with Wildlands
+([`owb/world/organic.py`](../owb/world/organic.py)):
+
+- **Trails and pads** follow rounded, gently meandering centre lines instead of
+  axis-aligned rectangles; banks are graded to the trail. Grading only cuts
+  natural blocks, so built ceilings, galleries and fixtures are preserved.
+- **Water is always held by ground.** Canals sit below their banks with sealed
+  walls, and every water block has solid or water beneath and beside it
+  (asserted after a settling pass). Presentation renders smoothed water
+  surfaces with a transmissive, absorbing Cycles shader.
+- **Creatures** ([`owb/world/fauna.py`](../owb/world/fauna.py)): monster camps
+  at least 40 m from every trail, wildlife herds, frogs on shores and fish in
+  deep water. Most monsters rest in their dens by day and all come out after
+  dusk; stalkers appear only at night.
+- **Riding** ([`owb/sim/riding.py`](../owb/sim/riding.py)): calm a horse with
+  fruit, mount it, and earn faster gaits with distance ridden (trot at 80 m,
+  canter at 250 m, gallop on the horse's stamina). A bonded horse answers a
+  `whistle` from up to 150 m on the same level by finding its own dry walking
+  route. The reference rides long surface legs and whistles the horse over when
+  it has been left behind (A: 4 rides, 4 whistles; B: 8 rides, 4 whistles).
+- **Gliding**: besides the descent shaft, the reference steps off a sky-island
+  edge and glides in open air to a surface landing connected to the next site,
+  free-falling over the landing and opening the glider so it runs out of height
+  there (B, after B19).
+- **Fan striking is a skill**: in the organic campaigns the first craft's cell
+  (A02, B02) is mounted with only 12 charge, and every grid step of sailing
+  spends charge; the reference charges it to at least 100 before boarding.
+  Each `attack` on the fan adds 45 charge when it
+  lands as the previous spin fades (0.5–1.5 s after the last strike), only 12
+  from rest, and jams (−10) if struck too soon.
+- **Apple trees** ([`owb/sim/orchard.py`](../owb/sim/orchard.py)) drop ripe
+  apples on a deterministic schedule; striking a trunk shakes up to two loose.
+  Apple trees also stand on the banks beside the trails. An apple restores half
+  a heart (2 health). The reference keeps three apples for healing and for
+  calming horses, shaking a nearby tree when it runs low.
+
+The original `skylands_tempest` and `skylands_restoration` environments keep the
+rectangular worlds and reference command set, so their published traces are
+unchanged.
 
 ## Ground-truth evidence
 
@@ -178,8 +224,8 @@ The script moves `.cache/skylands-campaign` and the previous walkthroughs aside
    record, encodes the walkthrough, repackages frame records, and rebuilds the
    player index.
 
-Copy the results to `videos/skylands-15-milestones.mp4` and
-`videos/skylands-24-milestones.mp4`; these files exceed GitHub's size limit
+Copy the results to `videos/skylands/skylands-15-milestones.mp4` and
+`videos/skylands/skylands-24-milestones.mp4`; these files exceed GitHub's size limit
 and are not tracked. Run the export on the original toolchain: on other
 platforms, such as Apple-silicon Macs with current NumPy, the milestone
 digests have been observed to differ while positions, events, and rewards

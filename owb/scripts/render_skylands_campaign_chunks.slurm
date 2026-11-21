@@ -16,13 +16,6 @@ stage_dir="${SLURM_TMPDIR:-/tmp}/owb-skylands-render-${SLURM_JOB_ID}"
 blender_path=$(/n/home13/chloe00/miniforge3/bin/python owb/scripts/stage_skylands_blender.py "$stage_dir")
 export CUDA_CACHE_PATH="$stage_dir/cuda"
 mkdir -p "$CUDA_CACHE_PATH"
-case "$SLURM_ARRAY_TASK_ID" in
-  0) task=a; first=0; last=279;;
-  1) task=a; first=279; last=557;;
-  2) task=b; first=0; last=293;;
-  3) task=b; first=585; last=878;;
-  4) task=b; first=878; last=1170;;
-  5) task=b; first=293; last=585;;
-  *) exit 2;;
-esac
+# Frame intervals tile the exported journey (see chunk_ranges in skylands_campaign_merge.py).
+read -r task first last < <(/n/home13/chloe00/miniforge3/bin/python -c 'import sys; from owb.scripts.skylands_campaign_merge import chunk_for; print(*chunk_for(int(sys.argv[1])))' "$SLURM_ARRAY_TASK_ID")
 "$blender_path" --background --factory-startup --python-exit-code 2 --python "$OWB_CAMPAIGN_RENDER_HELPERS/blender_campaign_baked.py" -- --directory ".cache/skylands-campaign/video-${task}" --output ".cache/skylands-campaign/final-frames-${task}-${SLURM_ARRAY_TASK_ID}" --first "$first" --last "$last" --samples 64 --threads 8 --device OPTIX

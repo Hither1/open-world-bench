@@ -8,11 +8,31 @@ from .skylands_reference import ROOT,sha,save
 from .skylands_campaign_video import assemble
 
 
+#: Render array task ids per campaign, in frame order (A: two chunks, B: four).
+CHUNK_IDS={'a':(0,1),'b':(2,5,3,4)}
+
+
+def chunk_ranges(task,count):
+    """``(array id, first, last)`` frame intervals that tile ``count`` frames."""
+    ids=CHUNK_IDS[task];bounds=[round(i*count/len(ids)) for i in range(len(ids)+1)]
+    return [(chunk,bounds[i],bounds[i+1]) for i,chunk in enumerate(ids)]
+
+
+def chunk_for(array_id):
+    """Task and frame interval for one render array task (used by the Slurm script)."""
+    task=next(t for t,ids in CHUNK_IDS.items() if array_id in ids)
+    count=len(json.loads((ROOT/f'.cache/skylands-campaign/video-{task}/frames.json').read_text())['entries'])
+    _,first,last=next(r for r in chunk_ranges(task,count) if r[0]==array_id)
+    return task,first,last
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--task',choices=('a','b'));args=parser.parse_args()
     cache=ROOT/'.cache/skylands-campaign'
-    for task,ranges in [('a',[(0,0,279),(1,279,557)]),('b',[(2,0,293),(5,293,585),(3,585,878),(4,878,1170)])]:
+    for task in ('a','b'):
         if args.task and task!=args.task:continue
+        count=len(json.loads((cache/f'video-{task}'/'frames.json').read_text())['entries'])
+        ranges=chunk_ranges(task,count)
         chunks=[item[0] for item in ranges]
         source=cache/f'video-camera-{task}';plan=json.loads((source/'frames.json').read_text())
         original=json.loads((cache/f'video-{task}'/'frames.json').read_text())

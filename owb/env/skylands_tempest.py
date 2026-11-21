@@ -42,6 +42,11 @@ TITLES = {
 
 class SkylandsTempestEnv(SkylandsCampaignEnv):
     """Full authored world. ``render_enabled=False`` is for headless logic only."""
+    # Published traces predate the organic campaign world and its new mechanics.
+    organic_world=False
+    world_features=frozenset()
+    commands=COMMANDS
+
     presentation_kind = "skylands_tempest"
 
     def __init__(self, objective="open", seed=7, *, render_enabled=False, max_steps=160000):
