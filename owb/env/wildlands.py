@@ -21,6 +21,8 @@ from ..render import make_renderer
 from ..sim.inventory import EQUIP_SLOTS
 from ..sim import world_map as WM
 from ..sim.survival import SurvivalInteractions
+from ..sim.riding import Riding, COMMANDS as RIDING_COMMANDS, MOUNTED_OK
+from ..sim.orchard import Orchard
 from ..world.worldgen import Landmark, generate
 
 BUTTONS = ("jump", "sprint", "climb", "glide", "crouch")
@@ -52,6 +54,9 @@ class WildlandsEnv(gym.Env):
     """
     metadata = {"render_modes": ["rgb_array"], "render_fps": 5}
     commands = COMMANDS
+    #: Opt-in mechanics: "riding" (owb.sim.riding) and "orchard" (owb.sim.orchard).
+    #: Off by default so existing environments and their traces are unchanged.
+    world_features = frozenset()
     discrete_actions = DISCRETE_ACTIONS
 
     def __init__(self, cfg: EnvConfig | None = None, render_mode="rgb_array", **overrides):
@@ -144,6 +149,8 @@ class WildlandsEnv(gym.Env):
             self.bodies.add(**spawn)
         self.gameplay = SurvivalInteractions(self.world, self.agent, self.elements,
                                              self.npcs, result.plants, result.chests)
+        self.riding = Riding(self) if "riding" in self.world_features else None
+        self.orchard = Orchard.from_world(self.world, self._seed) if "orchard" in self.world_features else None
         self.landmarks, self.discovered = result.landmarks, set()
         scale = self.cfg.minimap_scale
         self.map_memory = np.zeros(((self.world.size_x + scale - 1) // scale,
@@ -157,6 +164,21 @@ class WildlandsEnv(gym.Env):
 
     def _generate_world(self):
         return generate(replace(self.cfg.world_cfg, seed=self._seed))
+
+    def _command(self, command, ingredients, action):
+        """Route riding commands, keep mounted riders off fixtures, and let a
+        swing that hits no creature strike an apple tree."""
+        riding = getattr(self, "riding", None)
+        if riding is not None and command in RIDING_COMMANDS:
+            return riding.dispatch(command, self.selected_slot)
+        if riding is not None and riding.mounted and command not in MOUNTED_OK:
+            return [dict(type="action_failed", reason="dismount first")]
+        events = self._dispatch(command, ingredients, action)
+        if (getattr(self, "orchard", None) is not None and command == "attack"
+                and any(e["type"] == "swing" for e in events)
+                and not any(e["type"] in ("hit", "fan_struck") for e in events)):
+            events += self.orchard.strike(self.agent, self.gameplay.plants)
+        return events
 
     def _reset_mechanics(self):
         """Extension point for worlds with additional mechanics."""
@@ -249,7 +271,7 @@ class WildlandsEnv(gym.Env):
         ui_events = self._map_click()
         if self.map_open:
             return self._paused_step(ui_events)
-        events = ui_events + self._dispatch(command, ingredients, action)
+        events = ui_events + self._command(command, ingredients, action)
         for tick in range(c.frame_skip):
             dt = c.sim_cfg.dt
             a.tick_effects(dt)
@@ -260,7 +282,14 @@ class WildlandsEnv(gym.Env):
             cl = elements.climate
             context = dict(raining=cl.raining, wind=cl.wind, rng=self.np_random,
                            updraft=elements.updraft_at(a.pos))
+            previous = a.pos.copy()
+            if self.riding is not None:
+                self.riding.before_tick(intent)
             events.extend(self.controller.step(self.world, a, intent, dt, context))
+            if self.riding is not None:
+                events.extend(self.riding.after_tick(dt, previous))
+            if self.orchard is not None:
+                events.extend(self.orchard.step(dt, self.gameplay.plants))
             if tick == 0:
                 intent.jump = False  # press once; other movement buttons stay held
             events.extend(self.bodies.step(self.world, dt, context))
@@ -374,7 +403,8 @@ class WildlandsEnv(gym.Env):
                     effects=[dict(kind=e.kind, magnitude=e.magnitude, ttl=e.ttl) for e in self.agent.effects],
                     visited_cells=int(np.count_nonzero(self.map_memory)),
                     discovered_landmarks=[self.landmarks[i].name for i in sorted(self.discovered)],
-                    map_open=self.map_open, **self._map_info())
+                    map_open=self.map_open, **self._map_info(),
+                    **({"riding": self.riding.state()} if getattr(self, "riding", None) is not None else {}))
 
     def _render_buffers(self):
         if self._frame is None:

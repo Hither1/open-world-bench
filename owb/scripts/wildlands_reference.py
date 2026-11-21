@@ -18,7 +18,9 @@ SOURCES=('owb/env/wildlands_reference.py','owb/bench/baselines/wildlands_referen
          'owb/scripts/wildlands_reference.py','owb/env/wildlands.py','owb/physics/character.py',
          'owb/physics/bodies.py','owb/physics/elements.py','owb/render/scene_export.py',
          'owb/render/blender_scene.py','owb/render/dressing.py','owb/render/presentation.py','owb/render/video.py',
-         'owb/render/cycles_batch.py','owb/render/blender_batch.py')
+         'owb/render/cycles_batch.py','owb/render/blender_batch.py',
+         'owb/world/organic.py','owb/world/fauna.py','owb/entities/npc.py','owb/entities/agent.py',
+         'owb/sim/riding.py','owb/sim/orchard.py','owb/render/creatures.py','owb/sim/survival.py')
 LIMITATIONS=[
  'Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.',
  'Privileged reference controller; no claim that an agent learned skills or retained memories.',
@@ -135,7 +137,15 @@ class Overlay:
         m=env.by_id[row['milestone']]; s=m.state
         lines=[f'Completed {len(env.completed)} / {len(env.milestones)}',f'Simulation {env.elapsed:.1f} s',
                f'Action {env.steps}',f'Health {env.agent.health:.1f}',f'Stamina {env.agent.stamina:.0f}',
-               f'Weather: {env.elements.climate.weather}','', 'MECHANISM']
+               f'Weather: {env.elements.climate.weather}']
+        cl=env.elements.climate; hour=(cl.time*24)%24
+        out=sum(1 for n in env.npcs.npcs if n.alive and n.data.get('den') and not n.data.get('denned'))
+        dens=sum(1 for n in env.npcs.npcs if n.alive and n.data.get('den'))
+        ride=env.riding.state()
+        lines += [f'Time {int(hour):02}:{int(hour%1*60):02} ({"night" if cl.is_night else "day"})',
+                  f'Monsters out: {out} / {dens}',
+                  f'Riding: {ride["gait"]}, {ride["distance"]:.0f} m'+(' (mounted)' if ride['mounted'] else ''),
+                  '', 'MECHANISM']
         if m.kind=='balance': lines += [f'Load: {s["load"]:.0f} kg',f'Target: {s["count"]*320} kg',f'Brake held: {s["braked"]}',f'Released: {s["released"]}',f'Stable: {s["stable"]:.1f} s']
         elif m.kind=='thermal': lines += [f'Draft open: {s["vent"]}',f'Heat source: {s["heat"]}',f'Launch safe: {s["safe"]}',f'Updraft used: {s["updraft_seen"]}',f'Deck reached: {s["landed"]}']
         elif m.kind in ('flow','cool','prepare'): lines += [f'Inlet: {"OPEN" if s["inlet"] else "CLOSED"}',f'Outlets: '+''.join('O' if v else '-' for v in s['outlets']),f'Stable: {s["stable"]:.1f} s',f'Temperature: {s["temperature"]:.0f} C']
@@ -166,6 +176,9 @@ IMPORTANT={'brake_trip','magnetic_grip','magnetic_drop','counterweight_control',
  'milestone_complete','road_drained','station_engaged','cook','gather','light_campfire','bridge_closed','intake_engaged','calibration_selected'}
 
 
+HOLD,MOTION=30,12   # encoded frames per checkpoint still / per motion moment
+
+
 def checkpoint_steps(rows):
     """Select actual procedural transitions for a clearly labelled checkpoint film."""
     selected=set()
@@ -189,12 +202,33 @@ def checkpoint_steps(rows):
                 # One illustrated lift/drop is enough; the log retains every weight.
                 if key not in seen:
                     selected.add(row['step']); seen.add(key)
-        if kind=='thermal':
-            flight=[r for r in group if r['action']['buttons'][3]]
-            if flight: selected.add(flight[len(flight)//2]['step'])
         if kind=='report' and len(group)>2:
             selected.add(group[len(group)//2]['step'])
-    return selected
+    holds={step:HOLD for step in selected}
+    # Motion moments, held briefly: glides on the updraft, rides on the roads,
+    # learning to handle the horse, and dusk bringing the monsters out.
+    flight,ride=[],[]
+    for row in rows+[None]:
+        gliding=row is not None and bool(row['action']['buttons'][3])
+        riding=row is not None and row['explanation'].startswith('Ride the access road')
+        if flight and not gliding:
+            for f in (.25,.5,.75): holds.setdefault(flight[int(len(flight)*f)]['step'],MOTION)
+            flight=[]
+        if ride and not riding:
+            if len(ride)>=6:
+                for f in (.3,.7): holds.setdefault(ride[int(len(ride)*f)]['step'],MOTION)
+            ride=[]
+        if gliding: flight.append(row)
+        if riding: ride.append(row)
+    first_seen=set()
+    for row in rows:
+        for event in row['events']:
+            kind=event['type']
+            if kind in ('horse_calmed','mounted','riding_improved','equip') or (kind=='npc_emerged' and kind not in first_seen):
+                if kind=='mounted' and kind in first_seen: continue
+                holds.setdefault(row['step'],HOLD if kind!='mounted' else MOTION)
+                first_seen.add(kind)
+    return holds
 
 
 def render_chunk(directory,cache,first,last,*,stride=12,fps=10,samples=48,threads=8,checkpoints=False):
@@ -224,7 +258,7 @@ def render_chunk(directory,cache,first,last,*,stride=12,fps=10,samples=48,thread
         rgb=overlay.result(job); name=f'{step:06}.png'
         Image.fromarray(rgb).save(folder/name)
         entries.append(dict(file=name,sha256=sha(folder/name),step=step,id=row['milestone'],title=row['title'],
-            seconds=row['seconds'],new=new,repeats=30 if checkpoints else (8 if important or new else 1),digest=digest))
+            seconds=row['seconds'],new=new,repeats=selected[step] if checkpoints else (8 if important or new else 1),digest=digest))
         save(progress.with_suffix('.partial'),entries)
         progress.with_suffix('.partial').replace(progress)
         print(f'{row["milestone"]} action {step}: saved Cycles frame; {time.monotonic()-started:.0f} s',flush=True)

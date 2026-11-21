@@ -17,8 +17,17 @@ from ..core.config import EnvConfig, WorldConfig, RenderConfig, SimConfig
 from ..core import blocks as B
 from ..physics.collide import box_collides
 from ..world.worldgen import generate, Landmark
+from ..world.fauna import populate
+from ..sim.riding import COMMANDS as RIDING_COMMANDS
+from ..world.organic import (Road, blob, rounded_box, shape_course, top_solid, unit, carve_river,
+                             settle_water, assert_water_contained, water_top)
+from scipy import ndimage
 
-COMMANDS = BASE_COMMANDS + ('inspect', 'operate', 'grip', 'drag', 'drop', 'install')
+# Riding commands are appended last: traces store integer command indices.
+# Afternoon starts chosen so each course spends its first half in daylight
+# and crosses dusk (monsters leave their dens) before it ends.
+START_TIME = {'a': .66, 'b': .55}
+COMMANDS = BASE_COMMANDS + ('inspect', 'operate', 'grip', 'drag', 'drop', 'install') + RIDING_COMMANDS
 Y = 29.0
 
 
@@ -88,9 +97,80 @@ B_TASK = [
 ]
 
 
+GRID_X = (24, 52, 80, 108, 136)
+STABLE = (19.5, Y, 29.5)                   # horse tethered at the start court
+FLOOD = ((22, 28, 43), (26, 28, 47))       # water flush with the road surface
+FLOOD_BED = ((22, 27, 43), (26, 27, 47))
+GRID_Z = (24, 60, 96, 128)
+GULLY = (129.5, 96.5, 2.5, 2.6)
+# A river from the northern hills runs south between the western pad columns,
+# under three roads, then west under the return road (north of the flood) to
+# the sea. Water level only descends and stays below the banks.
+RIVER = Road.smooth([(43, 163), (43, 146), (43.5, 128.5), (42.5, 112), (43, 96.5),
+                     (43.5, 78), (43, 60.5), (42, 49), (36, 40.5), (24.5, 38.5),
+                     (14, 39), (4, 40.5), (-4, 41)], 1.8)   # centre and radii; spans the plank cells x127-131, z95-97
+
+
+def storm_gully(shape):
+    gx, gz = np.meshgrid(np.arange(shape[0]) + .5, np.arange(shape[1]) + .5, indexing='ij')
+    cx, cz, rx, rz = GULLY
+    return ((gx - cx) / rx) ** 2 + ((gz - cz) / rz) ** 2 <= 1
+
+
+def course_ground(shape, coords, seed):
+    """Walkable course cells, paved cells and road centrelines.
+
+    Roads link neighbouring grid intersections along meandering, varying-width
+    curves. Two stretches stay straight because mechanisms are authored on
+    exact cells: the flooded return road (x 22-26, z 43-47, walked along
+    x = 24.5) and the storm bridge (plank cells x 127-131, z 95-97).
+    """
+    centre = lambda x, z: (x + .5, z + .5)
+    roads = []
+    for z in GRID_Z:
+        for x0, x1 in zip(GRID_X, GRID_X[1:]):
+            identity = ('wildlands-road', seed, 'row', z, x0)
+            pins = ((13 / 28, 27 / 28, 1.5),) if (z, x0) == (96, 108) else ()
+            roads.append(Road.meander(centre(x0, z), centre(x1, z), identity,
+                                      amplitude=2.5 + 3.5 * unit(*identity), pins=pins))
+    for x in GRID_X:
+        for z0, z1 in zip(GRID_Z, GRID_Z[1:]):
+            identity = ('wildlands-road', seed, 'column', x, z0)
+            if (x, z0) == (24, 24):
+                roads.append(Road.meander(centre(x, z0), centre(x, z1), identity, amplitude=0,
+                                          pins=((17 / 36, 25 / 36, 2.5),)))
+            else:
+                roads.append(Road.meander(centre(x, z0), centre(x, z1), identity,
+                                          amplitude=2.5 + 4.0 * unit(*identity)))
+    # The stone detour bends north around the gully.
+    roads.append(Road.smooth([(120.5, 96.5), (122.5, 92.5), (126, 89.8), (130, 89.3),
+                              (134.5, 90), (138.5, 92.5), (141.5, 96.5)], 1.7))
+    corridor = ndimage.binary_dilation(RIVER.mask(shape), iterations=1)
+    surface = np.zeros(shape, bool)
+    for road in roads:
+        surface |= road.mask(shape)
+    paving = surface.copy()
+    gx, gz = np.meshgrid(np.arange(shape[0]) + .5, np.arange(shape[1]) + .5, indexing='ij')
+    for x in GRID_X:
+        for z in GRID_Z:
+            surface |= np.hypot(gx - x - .5, gz - z - .5) <= 3.2
+    for x, z in coords:
+        if (x, z) == (90, 96): continue  # elevated service console, not a new pad
+        identity = ('wildlands-pad', seed, x, z)
+        # Fixtures occupy x-5..x+14, z-5..z+9; the outline is irregular beyond them.
+        fixtures = rounded_box(shape, (x - 5, z - 5), (x + 15, z + 10), 2.5)
+        assert not (fixtures & corridor).any(), (x, z)
+        surface |= fixtures | (blob(shape, (x + 5, z + 2.5), (12.5, 10.5), identity) & ~corridor)
+        paving |= blob(shape, (x + 1, z + .5), (5.5, 4.2), identity + ('court',), amplitude=.16)
+    # Level rim around the gully, so its water is held by ground on every side.
+    surface |= ndimage.binary_dilation(storm_gully(shape), iterations=2)
+    return surface, paving & surface, roads
+
+
 class WildlandsReferenceEnv(WildlandsEnv):
     commands = COMMANDS
     presentation_kind = 'wildlands_reference'
+    world_features = frozenset({'riding', 'orchard'})
 
     def __init__(self, task='a', seed=7, *, render_enabled=False):
         if task not in ('a','b'): raise ValueError('task must be a or b')
@@ -99,7 +179,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
             obs_rgb=render_enabled, obs_text=True, reward_mode='sparse',
             world_cfg=WorldConfig(size_x=160,size_y=64,size_z=160,sea_level=12,
                 relief=12,mountain_relief=10,landmarks=False),
-            sim_cfg=SimConfig(weather_enabled=False,wind_enabled=False,start_time=.37),
+            sim_cfg=SimConfig(weather_enabled=False,wind_enabled=False,start_time=START_TIME[task]),
             render_cfg=RenderConfig(width=320,height=180,third_person=True,
                 cam_distance=7,cam_pitch_offset=-.16,max_dist=150))
         super().__init__(cfg)
@@ -110,34 +190,38 @@ class WildlandsReferenceEnv(WildlandsEnv):
         cfg = deepcopy(self.cfg.world_cfg); cfg.seed = self._seed
         result = generate(cfg)
         w = result.world
-        # Authored access lanes and individual courtyards within the intact
-        # procedural landscape. Rendering exports this exact collision world.
+        # Organic access roads and courtyards within the intact procedural
+        # landscape: curved roads, irregular pads and graded earth banks.
+        # Rendering exports this exact collision world.
         coords = {p for _,_,p in (A if self.task=='a' else B_TASK)}
-        for x,z in coords:
-            if (x,z)==(90,96): continue  # elevated service console, not a new pad
-            w.fill_box((x-10,0,z-9),(x+13,28,z+9),B.DIRT)
-            w.fill_box((x-10,29,z-9),(x+13,63,z+9),B.AIR)
-            w.fill_box((x-10,28,z-9),(x+13,28,z+9),B.GRASS)
-            w.fill_box((x-4,28,z-3),(x+5,28,z+3),B.BRICK)
-        # Routes form a connected network; no reset/teleport between milestones.
-        for z in (24,60,96,128):
-            w.fill_box((20,0,z-1),(149,28,z+1),B.DIRT)
-            w.fill_box((20,29,z-1),(149,63,z+1),B.AIR)
-            w.fill_box((20,28,z-1),(149,28,z+1),B.BRICK)
-        for x in (24,52,80,108,136):
-            w.fill_box((x-1,0,20),(x+1,28,132),B.DIRT)
-            w.fill_box((x-1,29,20),(x+1,63,132),B.AIR)
-            w.fill_box((x-1,28,20),(x+1,28,132),B.BRICK)
-        # The return road starts flooded and changes collision on drainage.
-        w.fill_box((22,29,43),(26,30,47),B.WATER)
-        # A bridge across a real cut, plus an always-passable side detour.
-        w.fill_box((127,23,94),(131,28,98),B.AIR)
-        w.fill_box((127,23,94),(131,25,98),B.WATER)
+        surface, paving, roads = course_ground(w.vox.shape[::2], coords, self._seed)
+        shape_course(w, surface, paving, 28, ('wildlands-reference', self._seed, self.task))
+        w.meta['course_roads'] = [dict(points=r.points.round(3).tolist(), halfwidth=r.halfwidth.round(3).tolist())
+                                  for r in roads]
+        levels, river = carve_river(w, RIVER, surface, ('wildlands-reference', self._seed),
+                                    sea_level=w.sea_level)
+        w.meta['river'] = dict(points=RIVER.points.round(3).tolist(), halfwidth=RIVER.halfwidth.round(3).tolist(),
+                               water_top=[int(v) for v in levels])
+        # The return road starts flooded: a shallow dip whose water lies flush
+        # with the road, held by low earth berms. Draining leaves silt (mud)
+        # at road level.
+        for x in (21, 27):
+            for z in range(42, 49):
+                h = int(top_solid(w)[x, z])
+                w.vox[x, h+1:29, z] = B.DIRT
+                w.vox[x, 28, z] = B.GRASS
+        w.fill_box(*FLOOD_BED, B.DIRT)
+        w.fill_box(*FLOOD, B.WATER)
+        # A plank bridge across a rounded gully, plus an always-passable detour.
+        for x, z in np.argwhere(storm_gully(w.vox.shape[::2])):
+            w.vox[x, 23:29, z] = B.AIR
+            w.vox[x, 23:26, z] = B.WATER
         w.fill_box((127,28,95),(131,28,97),B.PLANK)
-        for lo,hi in [((123,0,89),(140,28,91)),((123,0,89),(125,28,97)),((138,0,89),(140,28,97))]:
-            w.fill_box(lo,hi,B.DIRT)
-            w.fill_box((lo[0],29,lo[2]),(hi[0],63,hi[2]),B.AIR)
-            w.fill_box((lo[0],28,lo[2]),hi,B.BRICK)
+        settle_water(w)
+        tops = water_top(w)
+        w.meta['river']['water_top'] = [int(tops[int(np.clip(px, 0, 159)), int(np.clip(pz, 0, 159))])
+                                        for px, pz in RIVER.points]
+        assert (w.vox[22:27, 28, 43:48] == B.WATER).all(), 'flooded road drained during settling'
         # Dressed stone courtyards: columns, roofs, braziers and readable props.
         for x,z in coords:
             if (x,z)==(90,96): continue
@@ -148,20 +232,21 @@ class WildlandsReferenceEnv(WildlandsEnv):
             w.set_block(x+7,29,z-6,B.TALL_GRASS)
         # Preserve scenery outside authored footprints; clear random interactables
         # on the course so a gather command has an unambiguous nearby target.
-        result.npc_spawns=[]; result.chests=[]; result.bodies=[]; result.plants=[]
+        result.chests=[]; result.bodies=[]; result.plants=[]
+        # Native creatures in the lowlands beside the course, and a saddled
+        # horse tethered at the start court.
+        result.npc_spawns=populate(w, surface, ('wildlands-reference', self._seed, self.task),
+                                   sea_level=w.sea_level)
+        result.npc_spawns.insert(0, dict(kind='horse', pos=STABLE, home=(STABLE[0], STABLE[2]), roam=1.5, leash=3.0))
         result.landmarks=[Landmark('course','Reedbank reference course',(24.5,Y,24.5),4)]
         result.spawn=(22.5,Y+.01,24.5)
         w.temperature[:] = .15
         # The authored workshop/service routes are temperate training areas.
         # Preserve native exposure rules and procedural climate elsewhere.
-        course_mask=np.zeros(w.biome.shape,bool)
-        for x,z in coords:
-            course_mask[max(0,x-10):min(160,x+14),max(0,z-9):min(160,z+10)]=True
-        for z in (24,60,96,128): course_mask[20:150,z-2:z+3]=True
-        for x in (24,52,80,108,136): course_mask[x-2:x+3,20:133]=True
-        course_mask[122:141,88:99]=True
+        course_mask=ndimage.binary_dilation(surface,iterations=2)
         w.biome[course_mask]=0
         w.temperature[course_mask]=.7
+        assert_water_contained(w)
         w.recompute_heightmaps()
         return result
 
@@ -270,6 +355,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
         self.world.recompute_heightmaps()
         self.agent.pitch=-.08
         self.agent.inventory.add('rune_magnet',1)
+        # Nights are cold; a packed doublet must be put on (equip) after dusk.
+        self.agent.inventory.add('warm_doublet',1)
         base=self.elements.updraft_at
         def updraft(pos):
             best=base(pos)
@@ -494,7 +581,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 events.append(dict(type='milestone_complete',milestone=m.id,title=m.title))
                 if m.id in ('B15','B16','B18'): self.online.add(m.id)
                 if m.id in ('A11','B23'):
-                    self.world.fill_box((22,29,43),(26,30,47),B.AIR)
+                    self.world.fill_box(*FLOOD,B.MUD)
                     self.drained=True; events.append(dict(type='road_drained'))
         if self.task=='b' and self.online=={'B15','B16','B18'} and not self.storm:
             self.storm=True; self.world.fill_box((127,28,95),(131,28,97),B.AIR)
@@ -536,7 +623,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
             bodies={k:vars(b) for k,b in self.bodies.bodies.items()},held=self.held,
             terrain=hashlib.sha256(self.world.vox.tobytes()).hexdigest(),
             rng=self.np_random.bit_generator.state,weather=vars(self.elements.climate),
-            npcs=[vars(n) for n in self.npcs.alive],online=self.online,drained=self.drained,road=self.road_seen)
+            npcs=[vars(n) for n in self.npcs.npcs if n.alive],online=self.online,drained=self.drained,road=self.road_seen,
+            riding=self.riding.state(),orchard=self.orchard.state(),plants=self.gameplay.plants)
         data['agent']['inventory']=self.agent.inventory.to_dict()
         data['agent']['effects']=[vars(e) for e in self.agent.effects]
         return hashlib.sha256(json.dumps(plain(data),sort_keys=True,default=str).encode()).hexdigest()
@@ -568,6 +656,21 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 color=(.2,.67,.38) if on else (.65,.27,.16)
             batch.box(pos-(0,.35,0),(.38,.7,.38),(.39,.31,.21))
             batch.ellipsoid(pos,(.26,.26,.12),color)
+
+    def lantern_positions(self):
+        """Two lanterns hang under each courtyard lintel (presentation dressing)."""
+        coords=sorted({m.site for m in self.milestones if m.site!=(90,96)})
+        return [(x+dx,Y+4.1,z+5.75) for x,z in coords for dx in (-2.5,3.5)]
+
+    def presentation_lights(self):
+        t=self.elements.climate.time; dusk=min(1.,max(0.,(t-.72)/.06)) if t>.5 else min(1.,max(0.,(.28-t)/.06))
+        lights=[dict(pos=list(p),color=[1.,.7,.38],power=650.*dusk,radius=.25)
+                for p in self.lantern_positions()] if dusk>0 else []
+        for m in self.milestones:
+            if m.kind=='thermal' and m.state.get('heat'):
+                x,z=m.site
+                lights.append(dict(pos=[x+2.5,Y+1.2,z+4.5],color=[1.,.55,.22],power=500.,radius=.3))
+        return lights
 
     def presentation_camera(self):
         m=self.by_id.get(getattr(self,'reference_view_id','')) or self.current

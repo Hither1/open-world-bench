@@ -25,8 +25,8 @@ gameplay recordings. Every intervening primitive action is preserved in the logs
 
 | Course | Milestones | Primitive actions | Simulated time | Video |
 | --- | --- | --- | --- | --- |
-| A: The Frostbound Pass | 12/12 | 1,062 | 212.4 seconds | [MP4](../assets/demos/wildlands-reference/task-a-seed-7/walkthrough.mp4) |
-| B: The Valley Before the Storm | 24/24 | 2,614 | 522.8 seconds | [MP4](../assets/demos/wildlands-reference/task-b-seed-7/walkthrough.mp4) |
+| A: The Frostbound Pass | 12/12 | 1,018 | 203.6 seconds | [MP4](../assets/demos/wildlands-reference/task-a-seed-7/walkthrough.mp4) |
+| B: The Valley Before the Storm | 24/24 | 1,791 | 358.2 seconds | [MP4](../assets/demos/wildlands-reference/task-b-seed-7/walkthrough.mp4) |
 
 Both runs use seed 7 and complete without a death. These are valid reference
 solutions, not optimality certificates or estimates of benchmark difficulty.
@@ -45,6 +45,43 @@ For each course, the artifact directory contains:
 The recorder replays and checks the trace again before rendering each state.
 Scene capture is checked not to change the simulation. Assembly checks cached
 image hashes and decodes every MP4 frame before publishing the video.
+
+## World, creatures and skills
+
+The course is collision geometry, not presentation:
+
+- **Organic ground.** Roads meander between the same junctions with varying
+  width; pads are irregular; earth banks slope into the natural terrain instead
+  of vertical walls ([`owb/world/organic.py`](../owb/world/organic.py)). Two
+  stretches stay straight because mechanisms are authored on exact cells: the
+  flooded return road and the storm-bridge plank.
+- **Water is held by ground.** Every water block must have ground or water
+  below it and on all four sides; generation drains anything else and asserts
+  containment. The flooded road is a shallow dip flush with the road (draining
+  leaves mud), and a river runs from the northern hills to the sea, stepping
+  down over rock sills and passing under three roads on earthen bridges.
+- **Creatures.** Monsters camp around dens in lowland they cannot walk out of
+  onto the course; by day most rest in their dens (one per camp keeps watch),
+  and all come out after dusk, with stalkers only at night. Deer, boar, goats
+  and birds graze the lowlands; fish keep to deeper water
+  ([`owb/world/fauna.py`](../owb/world/fauna.py)). Courses start in the
+  afternoon (A 0.66, B 0.55) so each crosses dusk; nights are cold, and the
+  agent puts on a packed warm doublet.
+- **Riding is a learnable skill** ([`owb/sim/riding.py`](../owb/sim/riding.py)).
+  A horse must be calmed with fruit (`feed`) before it accepts a rider (`ride`);
+  sprinting near an unbonded horse spooks it. Distance ridden unlocks faster
+  gaits (walk, trot at 80 m, canter at 250 m, gallop on the horse's stamina).
+  Mounted riders cannot climb, glide, swim or operate fixtures (`dismount`).
+  Once bonded, a horse answers a `whistle` from up to 150 m away on the same
+  level: it plans a dry walking route (hopping single-block steps) and
+  canters to where the rider whistled, giving up if it is blocked.
+- **Apple trees** ([`owb/sim/orchard.py`](../owb/sim/orchard.py)) drop ripe
+  apples on a deterministic schedule; striking a trunk shakes up to two loose.
+  An apple restores half a heart.
+
+Riding and the orchard are opt-in environment features, so other environments
+and their published traces are unchanged. Walkthroughs hold glide, riding and
+dusk moments briefly in addition to the milestone checkpoints.
 
 ## What is physically executed
 

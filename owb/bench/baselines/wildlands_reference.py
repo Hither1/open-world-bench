@@ -5,6 +5,7 @@ import math
 import numpy as np
 from ...core import blocks as B
 from ...env.wildlands_reference import COMMANDS, Y
+from ...sim.riding import MOUNTED_OK, GAITS
 
 
 def neutral():
@@ -18,13 +19,14 @@ class WildlandsReferencePolicy:
         self.env=env; self.explanation='Begin reference course'
         self.path=[]; self.path_key=None; self.demonstrated=set(); self.carry_stage=0
         self.last_mid=None; self.chapter_steps=0
+        self.walking=False; self.ride_goal=None
 
     def command(self,name,target=0,**kw):
         a=neutral(); a['command']=COMMANDS.index(name); a['target']=target; a.update(kw)
         self.explanation=f'{name}: '+(self.env.targets[target]['role'] if target else 'native survival action')
         return a
 
-    def steer(self,pos,*,glide=False,jump=False):
+    def steer(self,pos,*,glide=False,jump=False,gallop=False,updraft=True):
         e=self.env; delta=np.asarray(pos)[[0,2]]-e.agent.pos[[0,2]]
         distance=float(np.linalg.norm(delta)); yaw=math.atan2(delta[1],delta[0]) if distance>.1 else e.agent.yaw
         error=(yaw-e.agent.yaw+math.pi)%(2*math.pi)-math.pi
@@ -33,7 +35,14 @@ class WildlandsReferencePolicy:
         a=neutral(); a['look'][0]=turn
         a['move'][:]=(np.dot(wish,(math.cos(heading),math.sin(heading))),np.dot(wish,(-math.sin(heading),math.cos(heading))))
         a['buttons'][0]=jump; a['buttons'][3]=glide
-        self.explanation='Glide on the established updraft' if glide else 'Walk the physical access route'
+        riding=e.riding.state()
+        if riding['mounted']:
+            a['buttons'][1]=int(gallop)
+            self.explanation=(f"Ride the access road ({'gallop' if gallop else riding['gait']}, "
+                              f"{riding['distance']:.0f} m ridden)")
+        else:
+            self.explanation=('Glide on the established updraft' if glide and updraft else
+                              'Glide down from the raised deck' if glide else 'Walk the physical access route')
         return a
 
     def walkable(self,x,z):
@@ -73,8 +82,21 @@ class WildlandsReferencePolicy:
             nodes=[goal]
             while nodes[-1]!=start: nodes.append(prev[nodes[-1]])
             self.path=list(reversed(nodes))[1:]
-        while self.path and np.linalg.norm(e.agent.pos[[0,2]]-(np.array(self.path[0])+.5))<.3:
+        self.walking=True
+        mounted=e.riding.mounted
+        reach=1.1 if mounted else .3
+        if mounted and self.path:
+            # A fast horse can pass nodes without touching them; resume from the nearest.
+            near=[float(np.linalg.norm(e.agent.pos[[0,2]]-(np.array(q)+.5))) for q in self.path[:10]]
+            del self.path[:int(np.argmin(near))]
+        while self.path and np.linalg.norm(e.agent.pos[[0,2]]-(np.array(self.path[0])+.5))<reach:
             self.path.pop(0)
+        if mounted and len(self.path)>2:
+            # Aim a few cells ahead; gallop only where the next stretch is straight.
+            ahead=self.path[:6]
+            straight=len(ahead)==6 and (len({q[0] for q in ahead})==1 or len({q[1] for q in ahead})==1)
+            target=ahead[min(2,len(ahead)-1)]
+            return self.steer((target[0]+.5,Y,target[1]+.5),gallop=straight and e.riding.stamina>30)
         target=(*self.path[0],) if self.path else goal
         return self.steer((target[0]+.5,Y,target[1]+.5))
 
@@ -86,6 +108,67 @@ class WildlandsReferencePolicy:
         return self.navigate(p-(1.5,1,0))
 
     def __call__(self,obs):
+        e=self.env
+        self.walking=False
+        action=self.decide(obs)
+        if COMMANDS[int(action['command'])]=='none' and (dress:=self.dress_for_night()) is not None:
+            return dress
+        return self.with_horse(action)
+
+    def horse(self):
+        return next((n for n in e.npcs.npcs if n.kind=='horse' and n.alive) if (e:=self.env) else None,None)
+
+    def dress_for_night(self):
+        """Put on the packed doublet once the evening turns cold."""
+        e=self.env; inv=e.agent.inventory
+        if e.agent.on_ground and (e.elements.climate.is_night or e.agent.body_temp<-.2):
+            worn={inv.equipped.get(k) for k in inv.equipped}
+            for i,st in enumerate(inv.stacks):
+                if st.item=='warm_doublet' and st.uid not in worn:
+                    a=self.command('equip',slot=i); self.explanation='Put on the warm doublet for the cold night'; return a
+        return None
+
+    def with_horse(self,action):
+        """Ride long ground legs; dismount for fixtures, jumps and glides."""
+        e=self.env; r=e.riding; command=COMMANDS[int(action['command'])]
+        if r.mounted:
+            if command not in MOUNTED_OK or action['buttons'][0] or action['buttons'][3]:
+                if not e.agent.on_ground: return action
+                self.path=[]; self.path_key=None
+                a=self.command('dismount'); self.explanation='Dismount to work the site on foot'; return a
+            if self.walking and self.path is not None and len(self.path)<4 and command=='none':
+                # Close to the stopping point: leave the horse at the site.
+                self.path=[]; self.path_key=None
+                a=self.command('dismount'); self.explanation='Dismount and leave the horse at the site'; return a
+            return action
+        horse=self.horse()
+        if not (self.walking and command=='none' and horse is not None and e.agent.on_ground):
+            return action
+        remaining=len(self.path) if self.path else 0
+        gap=float(np.linalg.norm((horse.pos-e.agent.pos)[[0,2]]))
+        if remaining<16 or gap>16 or abs(horse.pos[1]-e.agent.pos[1])>.6:
+            return action
+        # Fetch the horse: walk up, calm it with fruit the first time, mount.
+        if gap>1.8:
+            saved=(self.path,self.path_key)
+            self.path=[]; self.path_key=None
+            a=self.navigate(horse.pos)
+            self.ride_goal=saved
+            self.explanation='Walk to the horse'
+            return a
+        delta=(horse.pos-e.agent.pos)[[0,2]]
+        error=(math.atan2(delta[1],delta[0])-e.agent.yaw+math.pi)%(2*math.pi)-math.pi
+        if abs(error)>.5:
+            a=neutral(); a['look'][0]=float(np.clip(error/.36,-1,1)); self.explanation='Face the horse calmly'; return a
+        self.path=[]; self.path_key=None
+        if not (horse.data.get('calm') or horse.data.get('bonded')):
+            inv=e.agent.inventory
+            slot=next((i for i,st in enumerate(inv.stacks) if 'fruit' in st.spec.tags),None)
+            if slot is None: return action
+            a=self.command('feed',slot=slot); self.explanation='Offer the horse an apple to calm it'; return a
+        a=self.command('ride'); self.explanation='Mount the calmed horse'; return a
+
+    def decide(self,obs):
         e=self.env; m=e.current
         if m is None: return neutral()
         if m.id!=self.last_mid:
@@ -165,7 +248,8 @@ class WildlandsReferencePolicy:
             if not s.get('engaged'): return self.at_target(m.targets['interact'],'interact')
             self.explanation='Verify calibrated flow and drain the road'; return neutral()
         if m.kind=='cook':
-            stance=(x+.5,Y,z+.5)
+            # Pot, campfire and both ingredient plants are all within reach from here.
+            stance=(x-.5,Y,z+.5)
             if np.linalg.norm(e.agent.pos[[0,2]]-np.array(stance)[[0,2]])>.35: return self.navigate(stance)
             inv=e.agent.inventory
             for item,effect in (('spicy_pepper','cold_resist'),('chillshroom','heat_resist')):

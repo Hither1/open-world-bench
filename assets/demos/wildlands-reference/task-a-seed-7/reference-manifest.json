@@ -2,10 +2,10 @@
   "task": "a",
   "seed": 7,
   "controller": "privileged native-action reference policy",
-  "initial_digest": "1407b1741fe4f0f0d860ce0c826f5d1eda9cc86229b712276d445b357602c315",
-  "final_digest": "c9b74748eae458e8b656b79185294c1207c5e1ee67aff4c9d4814d0ea1d1a1fa",
-  "decisions": 1062,
-  "simulated_seconds": 212.39999999999222,
+  "initial_digest": "39b29d91ac4698356e3d7d8d25442d63780d1c798d6807bead6e0e3098876a08",
+  "final_digest": "63f685535f9c043cf5a05d11f89839241f2ccbb006a33984c39965cafcb3b654",
+  "decisions": 1018,
+  "simulated_seconds": 203.59999999999272,
   "milestones": [
     {
       "id": "A01",
@@ -14,58 +14,58 @@
     },
     {
       "id": "A02",
-      "step": 93,
-      "seconds": 18.6
+      "step": 100,
+      "seconds": 20.0
     },
     {
       "id": "A03",
-      "step": 166,
-      "seconds": 33.2
+      "step": 177,
+      "seconds": 35.4
     },
     {
       "id": "A04",
-      "step": 385,
-      "seconds": 77.0
+      "step": 303,
+      "seconds": 60.6
     },
     {
       "id": "A05",
-      "step": 449,
-      "seconds": 89.8
+      "step": 371,
+      "seconds": 74.2
     },
     {
       "id": "A06",
-      "step": 516,
-      "seconds": 103.2
+      "step": 462,
+      "seconds": 92.4
     },
     {
       "id": "A07",
-      "step": 556,
-      "seconds": 111.2
+      "step": 503,
+      "seconds": 100.6
     },
     {
       "id": "A08",
-      "step": 599,
-      "seconds": 119.8
+      "step": 546,
+      "seconds": 109.2
     },
     {
       "id": "A09",
-      "step": 764,
-      "seconds": 152.8
+      "step": 712,
+      "seconds": 142.4
     },
     {
       "id": "A10",
-      "step": 829,
-      "seconds": 165.8
+      "step": 776,
+      "seconds": 155.2
     },
     {
       "id": "A11",
-      "step": 856,
-      "seconds": 171.2
+      "step": 803,
+      "seconds": 160.6
     },
     {
       "id": "A12",
-      "step": 1062,
-      "seconds": 212.4
+      "step": 1018,
+      "seconds": 203.6
     }
   ],
   "required": 12,
@@ -73,26 +73,33 @@
   "events": {
     "clue_exposed": 4,
     "milestone_complete": 12,
+    "npc_denned": 8,
+    "horse_calmed": 1,
+    "mounted": 4,
+    "dismounted": 4,
     "brake_trip": 1,
     "counterweight_control": 6,
     "magnetic_grip": 5,
     "magnetic_move": 97,
     "magnetic_drop": 5,
     "counterweight_open": 3,
+    "land": 8,
     "thermal_control": 6,
     "jump": 3,
     "updraft": 6,
-    "land": 6,
     "thermal_landed": 3,
+    "riding_improved": 1,
+    "apple_fell": 19,
     "item_exchange": 2,
-    "freezing": 127,
+    "npc_emerged": 8,
+    "equip": 1,
     "parts_installed": 1,
     "calibration_selected": 1,
     "intake_engaged": 1,
     "road_drained": 1,
     "completion_signal": 1
   },
-  "health": 21.416718596852824,
+  "health": 24.0,
   "limitations": [
     "Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.",
     "Privileged reference controller; no claim that an agent learned skills or retained memories.",
@@ -105,17 +112,28 @@
     "The road and bridge really change voxel collision; no controller teleportation or direct completion edits."
   ],
   "sources": {
-    "owb/env/wildlands_reference.py": "8a922f80c60d3cae44b301e9ba3a78f07aaa625bccc54b9f6a8742c8df7ce9d0",
-    "owb/bench/baselines/wildlands_reference.py": "56233588131268b3a7cf9c39eb674da75ac7a8fd0b990c74dac3b38f787b49a0",
-    "owb/scripts/wildlands_reference.py": "ad82802688beadf456c65be82d755ee9886de24ad34645eae855af77d29efc8c",
-    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/env/wildlands_reference.py": "95d43f9b6aff2bfe7e1d43ad051d889ae215b556606ec2f0e5798f0a907e4f7e",
+    "owb/bench/baselines/wildlands_reference.py": "33d1c887600023610910a7f42b6fe0d3688bebc466e521dccfe7644b1781d392",
+    "owb/scripts/wildlands_reference.py": "2f642a76986e4514318522dfcd4f253542b05854e22af60dcd44824b3a109f70",
+    "owb/env/wildlands.py": "5929bbae0175e8899ff6aff0ec2ca67c567ff555832f2a97d329a46860c72acd",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
     "owb/physics/bodies.py": "96236eb54d2f78bd4b953f8f5b28bfb6bcf2762e6c9bcbea1385b8013e4a4276",
     "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
-    "owb/render/scene_export.py": "9a55c5828aa06b8b4c76061d829c80e6c1362e73d0a60de8dc895531f58811b1",
-    "owb/render/blender_scene.py": "6fe39a6dd60be83835282add386ceab964c4ed889f903cb2228ad85b6973ca85",
-    "owb/render/presentation.py": "35e99fc90b441c957bbf4a9e26da709820a0bd316ad6386bd1d323b416532aec",
-    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+    "owb/render/scene_export.py": "fde4b810af1245922fffb3e04ed983f7f42bd6df21e4b0327949015d3209f549",
+    "owb/render/blender_scene.py": "b20764917da72b0a5ab9797d80a1480c8c3d38279529631e928c1bfc9242423f",
+    "owb/render/dressing.py": "0108db6882a9a68f7bb5f47a1ff5ecd0336c56e9f3eeecba1ef8726226f4d3cb",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/render/cycles_batch.py": "cbad2360348f5b7092cf25398a8cb7936a6827c1b36a29f37264eaf135f02791",
+    "owb/render/blender_batch.py": "b8e59f0aefc98c0f9a0b2567a482cb3a727a2f232fc3fc3d7fdf18e1731a2f95",
+    "owb/world/organic.py": "01d7f2ea2d66a749716d4bfee23f4ebdd2d0890073ea5cbf6b3071b06f4e374f",
+    "owb/world/fauna.py": "01c0a73899cb0b57ed3e6ce0703f9ae08254f88fabe3e5e39643702ed341cfac",
+    "owb/entities/npc.py": "aedfc91639b797b2782f57df817c0dd1180fbfb4ca430a98f367a1778e6dc18a",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "d5057d87b7c4d4f3887d6504e94ad375eed596e1ded5da16bc6559c41bc4ae7e",
+    "owb/sim/orchard.py": "3449df643f28c49d1b8366c88b929dbb7d7a25ce471d84186d8f8f1f09888409",
+    "owb/render/creatures.py": "88ef22857bba85cb009ff22fbfdd50669e891802fc3b8a3433b115d75fef5c23",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454"
   },
-  "actions_sha256": "c2ba2e73507a9b77d62fdc4bcd86a5f84dbcdb0169300c555162f2fa470e2933"
+  "actions_sha256": "7b11cd824485d4fc285b04d60eae021afe4c45ad7fc04de03485560a56f4f4d6"
 }
