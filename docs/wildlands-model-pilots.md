@@ -39,6 +39,13 @@ This is action repetition, not an oracle navigation or puzzle-solving macro.
 Model decisions and primitive actions are reported separately. World time does
 not advance during inference.
 
+`--stop-after-milestones N` ends an episode with `milestone_target_reached`
+after N milestones; the scope recorded in `config.json` says so. Runs from
+2026-11-21 onward retry up to three consecutive transient Codex failures (each
+counts against the decision budget, with no state or memory reset), matching the
+Teyvat pilots. The same runner drives the Skylands campaign; see
+[Skylands model pilots](skylands-model-pilots.md).
+
 The episodes run concurrently, each bounded by 200 model decisions, 6,000
 primitive actions and one wall-clock hour by default. A request already underway
 can extend the wall-clock bound by at most its timeout (90 seconds). The Codex
