@@ -12,7 +12,7 @@
     "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
     "blender_version": "4.5.4 LTS",
     "accelerators": [
-      "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+      "NVIDIA H200"
     ],
     "render_sources": {
       "blender_campaign.py": "0b5f0bd6dbf8670e43ff6c9f7fb34006dea6a806764a07d0d6355de7e8e05c88",
@@ -21,22 +21,37 @@
     },
     "ground_cover": {
       "method": "fixed native meshes in one collection instance",
-      "source_instances": 6038608,
-      "triangles": 120772160,
-      "vertices": 241544320,
-      "stored_faces": 67428352,
+      "source_instances": 5697504,
+      "triangles": 113950080,
+      "vertices": 227900160,
+      "stored_faces": 63619674,
       "prototype_triangulation_verified": true,
       "full_geometry": true,
       "distance_culling": false
     }
   },
-  "playback": "PREVIEW CLIP of steps 1-950,24250-24340; production sampling (16x walking / 8x craft / 1x mechanisms).",
-  "duration_seconds": 166.5999999999997,
-  "frames": 1666,
-  "rendered_states": 187,
-  "source_seconds": 6087.600000004615,
-  "trace_sha256": "642253088681a1a8e6eb755c1e7ee698521da86033af1b366a2320e85edd8366",
-  "video_sha256": "51f394e02467f471e739fb6594d33a2ea13df86b8768eeb77e7638086f5987b1",
+  "playback": "PREVIEW CLIP of steps 1-800,22400-22600,22740-22830; production sampling (16x walking / 8x craft / 1x mechanisms).",
+  "clip_windows": [
+    [
+      1,
+      800
+    ],
+    [
+      22400,
+      22600
+    ],
+    [
+      22740,
+      22830
+    ]
+  ],
+  "duration_seconds": 122.9999999999999,
+  "frames": 1230,
+  "rendered_states": 136,
+  "source_seconds": 5702.800000003215,
+  "trace_sha256": "7f4e8bd8d43e96b4349598c29f2d01c69842baddac9d45f8e472223825e9e226",
+  "trace_note": "Skylands B definitive re-collection (Nov 21: relief, settlements, castle, camps, trailside wildlife); replay-verified 24/24; not yet copied into assets/demos.",
+  "video_sha256": "2745c169f423367186fac7e308f5fb0d19863825e91a06e75d7a007acf03147b",
   "encoded_size": [
     1600,
     900
@@ -46,9 +61,5 @@
     720
   ],
   "encoded_fps": 10,
-  "upscaling": false,
-  "assembly_sources": {
-    "owb/scripts/skylands_campaign_video.py": "922f96bcfb6e14e7bf96ee2a420cd21f7b1d6f67e959c848f1a6c9b6146190a5",
-    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
-  }
+  "replay": "Every action up to the last window replayed and checked against the trace during export."
 }

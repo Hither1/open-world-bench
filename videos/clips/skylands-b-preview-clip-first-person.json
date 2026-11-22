@@ -1,0 +1,74 @@
+{
+  "renderer": {
+    "engine": "Blender Cycles",
+    "device": "OPTIX GPU",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "denoising": true,
+    "max_bounces": 6,
+    "upscaling": false,
+    "geometry": "exact full-world surfaces",
+    "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+    "blender_version": "4.5.4 LTS",
+    "accelerators": [
+      "NVIDIA H200"
+    ],
+    "render_sources": {
+      "blender_campaign.py": "0b5f0bd6dbf8670e43ff6c9f7fb34006dea6a806764a07d0d6355de7e8e05c88",
+      "blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+      "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+    },
+    "ground_cover": {
+      "method": "fixed native meshes in one collection instance",
+      "source_instances": 5697504,
+      "triangles": 113950080,
+      "vertices": 227900160,
+      "stored_faces": 63619674,
+      "prototype_triangulation_verified": true,
+      "full_geometry": true,
+      "distance_culling": false
+    }
+  },
+  "playback": "PREVIEW CLIP (first person) of steps 1-800,22400-22600,22740-22830; sampled every 4 decisions (8x) plus every key event, with 1.2 s event pauses.",
+  "clip_windows": [
+    [
+      1,
+      800
+    ],
+    [
+      22400,
+      22600
+    ],
+    [
+      22740,
+      22830
+    ]
+  ],
+  "duration_seconds": 43.00000000000023,
+  "frames": 430,
+  "rendered_states": 276,
+  "source_seconds": 5702.800000003215,
+  "trace_sha256": "7f4e8bd8d43e96b4349598c29f2d01c69842baddac9d45f8e472223825e9e226",
+  "trace_note": "Skylands B definitive re-collection (Nov 21: relief, settlements, castle, camps, trailside wildlife); replay-verified 24/24; not yet copied into assets/demos.",
+  "video_sha256": "6853168ba82955bcce61f0ff43a192561fc4d4bcad0da8782a64709310653b15",
+  "encoded_size": [
+    1600,
+    900
+  ],
+  "source_render_size": [
+    1280,
+    720
+  ],
+  "encoded_fps": 10,
+  "replay": "Every action up to the last window replayed and checked against the trace during export.",
+  "view": {
+    "kind": "first_person",
+    "eye": "traveler position + sim eye height",
+    "direction": "traveler's own yaw and pitch",
+    "fov": "policy horizontal FOV converted to vertical at 16:9",
+    "traveler_body": "omitted",
+    "stride_decisions": 4
+  },
+  "third_person_clip": "videos/clips/skylands-b-preview-clip.mp4"
+}

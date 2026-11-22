@@ -1,0 +1,37 @@
+[
+  {
+    "id": "B01",
+    "title": "Accept the lifeline commission",
+    "video_seconds": 0,
+    "source_seconds": 0.2,
+    "step": 1
+  },
+  {
+    "id": "B02",
+    "title": "Commission the training barge",
+    "video_seconds": 4.5,
+    "source_seconds": 0.9999999999999999,
+    "step": 5
+  },
+  {
+    "id": "B03",
+    "title": "Deliver the independent practice load",
+    "video_seconds": 34.9,
+    "source_seconds": 152.9999999999956,
+    "step": 765
+  },
+  {
+    "id": "B19",
+    "title": "Restore the sky station",
+    "video_seconds": 35.8,
+    "source_seconds": 4480.199999998767,
+    "step": 22401
+  },
+  {
+    "id": "B20",
+    "title": "Survey the replacement lock approach",
+    "video_seconds": 40.8,
+    "source_seconds": 4548.599999999016,
+    "step": 22743
+  }
+]

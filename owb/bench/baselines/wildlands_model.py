@@ -114,6 +114,12 @@ def decode(payload,memory_chars=6000):
 
 
 class WildlandsModelPolicy:
+    guide=GUIDE; schema_name='wildlands_action'
+
+    def describe(self,observation): return describe(observation)
+    def schema(self): return schema(self.memory_chars)
+    def decode(self,payload): return decode(payload,self.memory_chars)
+
     def __init__(self,client,*,model='gpt-6.1-sol',effort='medium',memory_chars=6000,history_steps=6,max_calls=200):
         self.client=client; self.model=model; self.effort=effort
         self.memory_chars=memory_chars;self.max_calls=max_calls
@@ -123,23 +129,23 @@ class WildlandsModelPolicy:
     def decide(self,observation,mission):
         from PIL import Image
         if self.calls>=self.max_calls: raise RuntimeError('Model decision budget exhausted')
-        sensors=describe(observation)
+        sensors=self.describe(observation)
         payload=dict(mission=mission,decision=self.calls+1,decision_budget=self.max_calls,
                      observation=sensors,memory=self.memory,recent_history=list(self.history))
         buffer=io.BytesIO();Image.fromarray(observation['rgb']).save(buffer,format='PNG')
         self.last_request=payload;self.last_response=None;self.calls+=1
         start=time.monotonic()
-        response=self.client.responses.create(model=self.model,instructions=GUIDE,
+        response=self.client.responses.create(model=self.model,instructions=self.guide,
             input=[dict(role='user',content=[dict(type='input_text',text=json.dumps(payload,allow_nan=False)),
                    dict(type='input_image',image_url='data:image/png;base64,'+base64.b64encode(buffer.getvalue()).decode(),detail='high')])],
-            reasoning=dict(effort=self.effort),text=dict(format=dict(type='json_schema',name='wildlands_action',strict=True,schema=schema(self.memory_chars))),
+            reasoning=dict(effort=self.effort),text=dict(format=dict(type='json_schema',name=self.schema_name,strict=True,schema=self.schema())),
             max_output_tokens=4096,store=False)
         usage=response.usage.model_dump() if response.usage else {}
         self.input_tokens+=int(usage.get('input_tokens',0));self.output_tokens+=int(usage.get('output_tokens',0))
         self.last_response=dict(response_id=response.id,model=response.model,status=response.status,
                                 latency_seconds=time.monotonic()-start,usage=usage,output_text=response.output_text)
         if response.status!='completed': raise RuntimeError('Model response incomplete')
-        result=json.loads(response.output_text); action,repeat=decode(result,self.memory_chars)
+        result=json.loads(response.output_text); action,repeat=self.decode(result)
         self.memory=result['memory']
         self.history.append(dict(observation={k:sensors[k] for k in ('text','proprio')},
                                  action={k:v for k,v in result.items() if k!='memory'}))
