@@ -38,9 +38,10 @@ two campaigns with 15 and 24 milestones. The
 [full-scale reference campaigns](docs/skylands-campaign-demos.md) now execute
 57.9- and 124.4-minute journeys with independently verified action traces and a
 [chaptered GPU Cycles video player](assets/demos/skylands-campaign/index.html).
-Download the [15-milestone walkthrough](videos/skylands-15-milestones.mp4) or
-[24-milestone walkthrough](videos/skylands-24-milestones.mp4), both with labeled
-travel timelapse. A separate
+Watch the Task B [preview clip](videos/clips/skylands-b-preview-clip.mp4)
+([first person](videos/clips/skylands-b-preview-clip-first-person.mp4)); the
+full walkthroughs exceed GitHub's file limit and are listed in
+[videos/skylands](videos/skylands/README.md). A separate
 [compact mechanics testbed](docs/skylands-reference-demos.md) supports regression checks.
 
 [Silence the Tempest Engine](docs/skylands-tempest.md) adds an original
@@ -72,6 +73,23 @@ action/model-call budgets used for comparison. Environments without a defined
 task-success criterion will remain unscored.
 
 ## Latest demos
+
+### Videos
+
+Each GIF is an 8-second, 480-pixel preview cut from the linked MP4; click it for
+the full video. All runs are reference controllers or model lives, not
+benchmark scores. More files and render settings are in [videos/](videos/README.md).
+
+| Teyvat — full-scale Task B (draft) | Skylands — Task B preview |
+| --- | --- |
+| [![Teyvat full-scale Task B reference run](assets/demos/readme/teyvat.gif)](videos/teyvat/teyvat-fullscale-24-milestones.mp4) | [![Skylands Task B preview clip](assets/demos/readme/skylands.gif)](videos/clips/skylands-b-preview-clip.mp4) |
+| 24 milestones on the 1,760 m island, seed 7, 4 min 50 s at 4× timelapse. Privileged reference controller. Blender Cycles, OptiX, 64 spp. [MP4](videos/teyvat/teyvat-fullscale-24-milestones.mp4) · [notes](videos/teyvat/README.md) | Milestones B01–B03 and B19–B20 of 24, 2 min 3 s. Privileged reference policy. Blender Cycles, OptiX, 64 spp. [MP4](videos/clips/skylands-b-preview-clip.mp4) · [first person](videos/clips/skylands-b-preview-clip-first-person.mp4) |
+| **Wildlands — Task A preview** | **Lemon tart — mobile manipulation** |
+| [![Wildlands Task A preview clip](assets/demos/readme/wildlands.gif)](videos/clips/wildlands-a-preview-clip.mp4) | [![PandaOmron lemon-tart run](assets/demos/readme/lemon-tart.gif)](videos/lemon-tart/lemon-tart-full.mp4) |
+| Milestones A01–A05 and A09–A10 of 12, 52 s. Privileged reference controller. Blender Cycles, OptiX, 48 spp. [MP4](videos/clips/wildlands-a-preview-clip.mp4) · [notes](videos/wildlands/README.md) | RoboCasa PandaOmron, one continuous run at 6×, 7 min 41 s, 20/21 milestones. The run fails after 6:41. MuJoCo's native renderer (no Cycles exporter). [MP4](videos/lemon-tart/lemon-tart-full.mp4) · [notes](videos/lemon-tart/README.md) |
+| **Minecraft — Ender Dragon task** | |
+| [![Minecraft Ender Dragon task in The End](assets/demos/readme/minecraft-ender-dragon.gif)](videos/minecraft/ender-dragon-end-clip.mp4) | |
+| The End fight from one MFM life (Opus 5, diamond-kit diagnostic start). It destroys three end crystals using a recipe carried from the previous life, then the dragon strafes it; the dragon is not killed. Real Minecraft frames, 640×360 upscaled. [MP4](videos/minecraft/ender-dragon-end-clip.mp4) · [notes](videos/minecraft/README.md) | |
 
 ### Teyvat and Wildlands — Blender renders
 

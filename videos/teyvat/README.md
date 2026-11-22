@@ -6,8 +6,8 @@ samples per pixel at 864×486 inside a 1280×720 annotated video, without upscal
 
 Open the **MP4** files:
 
-- [12 milestones — 60.5 seconds](teyvat-12-milestones.mp4)
-- [24 milestones — 2 minutes 46 seconds](teyvat-24-milestones.mp4)
+- [12 milestones — 60.5 seconds](../../assets/demos/teyvat-reference-cycles/task-a-seed-7/walkthrough.mp4)
+- [24 milestones — 2 minutes 46 seconds](../../assets/demos/teyvat-reference-cycles/task-b-seed-7/walkthrough.mp4)
 
 These copies use H.264 Constrained Baseline, `yuv420p`, and fast-start metadata.
 Close and reopen any existing preview to load the regenerated file.

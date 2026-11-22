@@ -10,14 +10,28 @@
     "id": "B02",
     "title": "Commission the training barge",
     "video_seconds": 1.2,
-    "source_seconds": 2.400000000000001,
-    "step": 12
+    "source_seconds": 2.800000000000001,
+    "step": 14
+  },
+  {
+    "id": "B03",
+    "title": "Deliver the independent practice load",
+    "video_seconds": 97.4,
+    "source_seconds": 159.7999999999952,
+    "step": 799
+  },
+  {
+    "id": "B19",
+    "title": "Restore the sky station",
+    "video_seconds": 105.0,
+    "source_seconds": 4486.599999998791,
+    "step": 22433
   },
   {
     "id": "B20",
     "title": "Survey the replacement lock approach",
-    "video_seconds": 143.8,
-    "source_seconds": 4851.200000000117,
-    "step": 24256
+    "video_seconds": 107.5,
+    "source_seconds": 4550.199999999022,
+    "step": 22751
   }
 ]

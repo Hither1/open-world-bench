@@ -1,0 +1,30 @@
+{
+  "clip": "Ender Dragon task, The End fight: two MFM skill-execution clips from the same life, joined in step order",
+  "task": "ender_dragon (owb/tasks/minecraft.py, docs/minecraft-long-horizon-tasks.md)",
+  "harness": "MFM on MCU (real Minecraft via MineStudio); not an owb.make_env environment",
+  "run": "MFM/MCU/output/sr3q_dragon_diamond_carry3",
+  "life": "Opus 5, End-with-diamond-kit probe, life 3 (diagnostic start, not a from-scratch life)",
+  "renderer": "Minecraft client frames, 640x360 per step, nearest-neighbour upscale to 1280x720, 20 fps (real game speed), gamma-brightened (1.5 then 1.4) for visibility; not a Cycles render",
+  "segments": [
+    {
+      "source": "MFM/figures/skill_videos/dragon_7_three_crystals_from_the_east_post.mp4",
+      "sha256": "f84c6aaf648cc777d8f7e277979c2ae3d371031eeca7b7190ab2e311901872a5",
+      "video_seconds": [0.0, 11.2],
+      "steps": [1095, 1290],
+      "outcome": "Replays the east-post recipe and aim tool carried from life 2 (GUIDE.md, mine/tools/aim.py): three end crystals destroyed, 3 shots, 3 hits"
+    },
+    {
+      "source": "MFM/figures/skill_videos/dragon_6_perch_melee_dragon_strafes.mp4",
+      "sha256": "75d358701c102caec1670a3fe39807d0079ea1264e9c9428788c3863146a944e",
+      "video_seconds": [11.2, 26.05],
+      "steps": [5144, 5350],
+      "outcome": "Own closed-loop procedure perch_melee: the dragon is on screen throughout but never perches; it strafes the agent 4 times (hp 20->3); 0 sword hits"
+    }
+  ],
+  "dragon_killed": false,
+  "caveat": "No MFM run on disk has landed a hit on the dragon itself (see MFM/figures/skill_videos/README.md).",
+  "join": "ffmpeg concat demuxer, stream copy (no re-encode), +faststart",
+  "duration_seconds": 26.05,
+  "frames": 521,
+  "sha256": "0c022580c309cfc61a1c86f6ac09a6dfbb7402eecd0c0aec83617c626c8174cd"
+}
