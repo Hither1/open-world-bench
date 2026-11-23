@@ -13,7 +13,8 @@ from owb.scripts.skylands_reference import save,sha,plain,checked_step,action_fr
 
 SOURCES=BASE_SOURCES+('owb/env/skylands_campaign.py','owb/bench/baselines/skylands_campaign.py','owb/scripts/skylands_campaign.py',
          'owb/world/organic.py','owb/world/fauna.py','owb/entities/npc.py','owb/entities/agent.py','owb/sim/riding.py',
-         'owb/sim/orchard.py','owb/sim/survival.py','owb/env/wildlands.py')
+         'owb/sim/orchard.py','owb/sim/survival.py','owb/env/wildlands.py',
+         'owb/world/settlements.py','owb/world/tempest.py','owb/world/relief.py','owb/world/landmarks.py')
 LIMITATIONS=[
  'Privileged scripted action-only oracle; demonstrates executability, not learned skills or memory performance.',
  'Rated four-mount cargo craft and collision-backed grid-stepped actuators; no general rigid-body vehicle or fluid solver.',

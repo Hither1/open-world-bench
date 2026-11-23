@@ -1,7 +1,7 @@
 """Run bounded observation-only model pilots on the 12/24 milestone courses."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass,replace
 from datetime import datetime,timezone
 import hashlib
 import json
@@ -11,7 +11,8 @@ import time
 from typing import Callable
 
 from owb.env.wildlands_reference import WildlandsReferenceEnv,plain
-from owb.bench.baselines.wildlands_model import WildlandsModelPolicy
+from owb.bench.baselines.wildlands_model import WildlandsModelPolicy,WildlandsPrivilegedPolicy
+from owb.bench.baselines import privileged_view
 from owb.scripts.wildlands_reference import checked_step,sha,SOURCES,ROOT
 
 MISSIONS={
@@ -29,13 +30,18 @@ class Course:
     missions: dict
     checked_step: Callable      # independent replay of one recorded row
     sources: tuple
-    observe: Callable = lambda env,obs: obs   # allowlisted model-facing additions
+    observe: Callable = lambda env,obs,events: obs   # allowlisted additions; events = previous decision's
+    condition: str = 'observation_only'              # or 'privileged_state' (explicitly labelled upper bound)
 
 
 WILDLANDS=Course('wildlands',lambda task,seed: WildlandsReferenceEnv(task,seed,render_enabled=False),
                  WildlandsModelPolicy,MISSIONS,checked_step,
                  SOURCES+('owb/bench/baselines/wildlands_model.py','owb/scripts/wildlands_model.py',
-                          'owb/bench/baselines/codex_policy.py'))
+                          'owb/bench/baselines/codex_policy.py'),
+                 observe=lambda env,obs,events: dict(obs,holding_body=env.held is not None))
+WILDLANDS_PRIVILEGED=replace(WILDLANDS,policy=WildlandsPrivilegedPolicy,condition='privileged_state',
+    sources=WILDLANDS.sources+('owb/bench/baselines/privileged_view.py',),
+    observe=lambda env,obs,events: dict(WILDLANDS.observe(env,obs,events),privileged=privileged_view.wildlands(env,events)))
 
 
 def save(path,data):
@@ -79,7 +85,8 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                 max_consecutive_transport_errors=3,request_timeout_seconds=getattr(client,'timeout',None),
                 output_token_limit_enforced=transport=='openai',observation_renderer='native policy renderer; no presentation video',
                 observation_resolution=[env.cfg.render_cfg.width,env.cfg.render_cfg.height],
-                observation_only=True,oracle_supplied=False,
+                observation_only=course.condition=='observation_only',information_condition=course.condition,
+                oracle_supplied=False,
                 initial_digest=env.state_digest(),sources=sources,
                 started_utc=datetime.now(timezone.utc).isoformat(),mission=course.missions[task],
                 stop_after_milestones=stop_after,
@@ -95,7 +102,8 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
         for key in ('task','seed','model','transport','reasoning_effort','max_model_decisions',
                     'max_primitive_actions','max_wall_seconds','memory_chars','history_steps'):
             if config[key]!=old[key]: raise ValueError(f'Resume protocol changed: {key}')
-        if old.get('world','wildlands')!=course.world or old.get('stop_after_milestones')!=stop_after:
+        if (old.get('world','wildlands')!=course.world or old.get('stop_after_milestones')!=stop_after
+                or old.get('information_condition','observation_only')!=course.condition):
             raise ValueError('Resume protocol changed: world or milestone stop')
         verify_run(resume_source,course)
         previous_actions=(resume_source/'actions.jsonl').read_text()
@@ -116,7 +124,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
     save(directory/'config.json',config)
     (directory/'control-guide.txt').write_text(policy.guide)
     from owb.bench.baselines.codex_policy import CodexPolicyError
-    started=time.monotonic()-resume_elapsed;reason='running';failure=None;transport_errors=0
+    started=time.monotonic()-resume_elapsed;reason='running';failure=None;transport_errors=0;last_events=[]
     def status(state):
         return dict(status=state,task=task,model=model,model_decisions=policy.calls,
                     primitive_actions=env.steps,milestones_completed=len(env.completed),required=len(env.milestones),
@@ -132,7 +140,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                 if env.steps>=max_actions: reason='primitive_action_limit';break
                 if time.monotonic()-started>=wall_seconds: reason='wall_time_limit';break
                 if stop_after and len(env.completed)>=stop_after: reason='milestone_target_reached';break
-                obs=course.observe(env,dict(obs,rgb=env.render().copy()))
+                obs=course.observe(env,dict(obs,rgb=env.render().copy()),last_events)
                 call=policy.calls+1
                 Image.fromarray(obs['rgb']).save(directory/'observations'/f'{call:04}.png')
                 try:
@@ -151,12 +159,14 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                         save(directory/'requests'/f'{call:04}.json',policy.last_request)
                     if policy.last_response is not None:
                         save(directory/'responses'/f'{call:04}.json',policy.last_response)
+                last_events=[]
                 for _ in range(min(repeat,max_actions-env.steps)):
                     m=env.current;before=env.agent.pos.copy()
                     obs,reward,terminated,truncated,info=env.step(action)
                     row=dict(step=env.steps,decision=call,milestone=m.id if m else None,
                              action=plain(action),position_before=plain(before),position_after=plain(env.agent.pos),
                              seconds=env.elapsed,events=plain(info['events']),reward=reward)
+                    last_events.extend(info['events'])
                     completed=any(e['type']=='milestone_complete' for e in info['events'])
                     if completed: row['digest']=env.state_digest()
                     stream.write(json.dumps(row,allow_nan=False)+'\n');stream.flush()
@@ -184,7 +194,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
     return summary
 
 
-def main(course=WILDLANDS,description=__doc__):
+def main(course=WILDLANDS,description=__doc__,privileged=WILDLANDS_PRIVILEGED):
     p=argparse.ArgumentParser(description=description)
     p.add_argument('--task',nargs='+',choices=('a','b'),default=['a','b'])
     p.add_argument('--output',type=Path,required=True);p.add_argument('--seed',type=int,default=7)
@@ -196,7 +206,10 @@ def main(course=WILDLANDS,description=__doc__):
     p.add_argument('--memory-chars',type=int,default=6000)
     p.add_argument('--resume',type=Path,help='Prior task folder stopped by a Codex transport error; preserve state, memory and budgets')
     p.add_argument('--stop-after-milestones',type=int,help='End the episode once this many milestones are complete')
+    p.add_argument('--privileged',action='store_true',
+                   help='Labelled upper-bound condition: reveal current-objective state, rules and step feedback (no actions)')
     args=p.parse_args()
+    if args.privileged: course=privileged
     if min(args.max_calls,args.max_actions,args.wall_seconds,args.timeout,args.memory_chars,
            args.stop_after_milestones or 1)<=0:
         p.error('Limits must be positive')

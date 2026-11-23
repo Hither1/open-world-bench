@@ -70,7 +70,9 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
     def _generate_world(self):
         self._protect_boxes=[]; self._canal_paths=[]
         sx,sy,sz=self.cfg.world_cfg.size_x,self.cfg.world_cfg.size_y,self.cfg.world_cfg.size_z
-        w=VoxelWorld(sx,sy,sz,sea_level=0); self._road_mask=np.zeros((sx,sz),bool); self._surface_roads=np.zeros((sx,sz),bool)
+        w=VoxelWorld(sx,sy,sz,sea_level=0); self._road_mask=np.zeros((sx,sz),bool)
+        # Trails per layer (the shared _road_mask mixes cavern, surface and sky).
+        self._layer_roads={k:np.zeros((sx,sz),bool) for k in range(3)}; self._surface_roads=self._layer_roads[1]
         xx=np.arange(sx)[:,None]; zz=np.arange(sz)[None,:]
         h=(47+5*np.sin(xx/77)*np.cos(zz/61)+3*np.sin((xx+zz)/121)).astype(np.int16)
         w.fill_box((0,0,0),(sx-1,7,sz-1),B.BASALT)
@@ -188,7 +190,7 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
             self._fill_under(w,xs,zs,y)
             self._surface_grade(w,mask,y-1)
         self._road_mask|=mask
-        if layer==1: self._surface_roads|=mask
+        self._layer_roads[layer]|=mask
 
     def _organic_pad(self,w,pos,radius):
         x,y,z=map(int,pos)
@@ -504,6 +506,7 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
         # trails, authored before water settles and before groves and creatures.
         from ..world.settlements import plan
         self.architecture,self._settlement_mask=plan(self)
+        self._author_relief()
         water_band=(1,60)   # cavern and surface canals; no water on the sky layer
         O.settle_water(w,band=water_band)
         O.assert_water_contained(w,band=water_band)
@@ -524,7 +527,8 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
         crown=np.isin(w.vox[np.arange(w.size_x)[:,None],np.clip(heights,0,w.size_y-1),np.arange(w.size_z)[None,:]],(B.LEAVES,B.LOG))
         heights=np.where(crown|self._settlement_mask,-1,heights)
         spawns=populate(w,course,('skylands-campaign',self._seed,self.task),sea_level=40,heights=heights,
-                        monster_clearance=40.0,scale=4.0)
+                        monster_clearance=60.0,scale=4.0,
+                        wildlife_band=(8.0,40.0),wildlife_scale=8 if self.task=='a' else 10)   # beyond night sight plus roaming
         x,z=self.point(90,90)
         spawns.insert(0,dict(kind='horse',pos=(x+3.5,48.0,z+3.5),home=(x+3.5,z+3.5),roam=1.5,leash=3.0))
         for spawn in spawns: self.npcs.spawn(**spawn)
@@ -534,6 +538,44 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
         region=np.ones((w.size_x,w.size_z),bool)
         for x,z in scenery: region[x,z]=False
         self.orchard=Orchard.from_world(w,self._seed,band=band,include=planted,region=region)
+
+    def _author_relief(self):
+        """Ridges, massifs, mesas, lakes and caves on the surface, rising away
+        from every trail, site, waterway, settlement and shaft (see
+        owb/world/relief.py). Sky-island glide corridors stay below 57 m."""
+        from scipy.ndimage import distance_transform_edt
+        from ..world import relief as R
+        from ..world.settlements import reserved_mask
+        w=self.world; identity=('skylands-campaign',self._seed,self.task)
+        keep=reserved_mask(self,site_radius=16)|self._road_mask
+        keep|=binary_dilation(self._settlement_mask,iterations=6)
+        keep|=binary_dilation((w.vox[:,30:83,:]==B.WATER).any(axis=1),iterations=4)
+        keep|=binary_dilation(self._protected(1),iterations=6)
+        lakes,made=R.basin_lakes(w,keep,identity,count=2 if self.task=='a' else 3,level=self.levels[1]-2,ylo=30,yhi=82)
+        keep|=binary_dilation(lakes,iterations=2)
+        # Glide corridors: full reach around sky islands, a narrower margin
+        # along the sky layer's stone bridges.
+        from scipy.ndimage import binary_opening
+        sky=B.SOLID[w.vox[:,self.levels[2]-1,:]]
+        islands=binary_opening(sky,structure=np.ones((15,15),bool))
+        glide=(distance_transform_edt(~islands)<135)|(distance_transform_edt(~sky)<70)
+        T,G,mesa=R.raise_ground(w,keep,identity,ylo=30,yhi=82,cap=80,low_cap=glide,low_cap_value=57,
+                                wavelength=self.geography_scale)
+        mouths=R.caves(w,T,G,keep,identity,count=4 if self.task=='a' else 6,ylo=40)
+        from ..world import landmarks as Lm
+        castle=Lm.place_castle(self,T,G,keep,identity,level=self.levels[1],low_cap=glide)
+        camps=Lm.place_camps(self,T,G,keep,self._road_mask,identity,count=6 if self.task=='a' else 9,
+                             level=self.levels[1],avoid=binary_dilation(self._settlement_mask,iterations=4)|lakes)
+        for rec in ([castle] if castle else [])+camps:
+            self.architecture.append(rec)
+            x,_,z=rec['pos']; r=Lm.CASTLE_FOOT+2 if rec['kind']=='castle' else 8
+            self._settlement_mask[max(0,x-r):x+r+1,max(0,z-r):z+r+1]=True
+        raised=T>G
+        self.relief_summary=dict(raised_fraction=float(raised.mean()),max_height=int(T.max()),
+            relief_above_trails=int(T.max())-self.levels[1],lakes=[list(map(int,c)) for c in made],caves=mouths,
+            castle=castle['pos'] if castle else None,camps=len(camps),
+            mesa_fraction=float((mesa>.5).mean()))
+        w.meta['relief']=self.relief_summary
 
     def _dress_surface(self):
         """Surface scenery on natural ground, placed after every trail, canal
@@ -558,7 +600,7 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
         t=np.clip(top,0,w.size_y-1)
         ground=vox[xs_,t,zs_]
         headroom=~B.SOLID[vox[xs_,np.clip(t+1,0,w.size_y-1),zs_]]&(vox[xs_,np.clip(t+1,0,w.size_y-1),zs_]!=B.WATER)
-        ok=(top>=36)&(top<=70)&np.isin(ground,(B.GRASS,B.DIRT))&headroom
+        ok=(top>=36)&(top<=80)&np.isin(ground,(B.GRASS,B.DIRT))&headroom
         off_road=distance_transform_edt(~self._surface_roads)
         wet=(vox[:,30:82,:]==B.WATER).any(axis=1)
         off_water=distance_transform_edt(~wet)
@@ -600,7 +642,8 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
                 x=int(round(gx+rng.normal(0,spread))); z=int(round(gz+rng.normal(0,spread)))
                 if not free(x,z,3) or off_road[x,z]<6.5: continue
                 y=int(top[x,z])+1; height=int(rng.integers(5,10))
-                if B.SOLID[vox[x-3:x+4,y:y+height+4,z-3:z+4]].any(): continue
+                # Clear trunk column and crown space (slopes may rise around the trunk).
+                if B.SOLID[vox[x,y:y+height,z]].any() or B.SOLID[vox[x-3:x+4,y+height-3:y+height+3,z-3:z+4]].any(): continue
                 vox[x,y:y+height,z]=B.LOG
                 crown(x,y+height-1,z,2.2+1.2*float(rng.random()),'grove-crown')
                 ok[x-2:x+3,z-2:z+3]=False; trunks.append((x,z))
@@ -904,7 +947,8 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
                         nx,nz=n
                         if not (6<nx<self.world.size_x-6 and 6<nz<self.world.size_z-6) or blocked_here[n]: continue
                         # Existing trails receive preference, preserving regional branches.
-                        c=g+(1 if self._road_mask[n] else 3 if self.organic_world else 2)
+                        if self.organic_world: c=g+(1 if self._layer_roads[layer][n] else 3)
+                        else: c=g+(1 if self._road_mask[n] else 2)
                         if c<cost.get(n,1e12):
                             cost[n]=c; previous[n]=q
                             heapq.heappush(queue,(c+abs(nx-hx)+abs(nz-hz),c,n))
@@ -915,7 +959,7 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
                 if self.organic_world:
                     # Pave only the stretches not already on a trail, each as
                     # any-angle runs joined to the trail at both ends.
-                    on=[bool(self._road_mask[q]) for q in path]; i=0
+                    on=[bool(self._layer_roads[layer][q]) for q in path]; i=0
                     while i<len(path):
                         if on[i]: i+=1; continue
                         j=i

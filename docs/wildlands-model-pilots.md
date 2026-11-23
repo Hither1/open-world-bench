@@ -46,6 +46,14 @@ counts against the decision budget, with no state or memory reset), matching the
 Teyvat pilots. The same runner drives the Skylands campaign; see
 [Skylands model pilots](skylands-model-pilots.md).
 
+From `runs/sol-wildlands-20261121-first3-r2` onward, the observation also reports
+`holding_body`, the character's own magnetic-grip state. Earlier runs gave no
+indication of a held body, and `grip` fails while one is held.
+
+`--privileged` runs a labelled privileged-state upper bound (true roles,
+positions, mechanism state, rules and step feedback; no actions). See
+[Skylands model pilots](skylands-model-pilots.md#privileged-state-condition-upper-bound).
+
 The episodes run concurrently, each bounded by 200 model decisions, 6,000
 primitive actions and one wall-clock hour by default. A request already underway
 can extend the wall-clock bound by at most its timeout (90 seconds). The Codex

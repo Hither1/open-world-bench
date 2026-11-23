@@ -14,7 +14,7 @@ import numpy as np
 from ...env.wildlands import BUTTONS
 from ...env.skylands_campaign import SkylandsCampaignEnv
 from ...sim.construction import BUILD_STATE_NAMES, MAX_PARTS, PART_COLUMNS
-from .wildlands_model import WildlandsModelPolicy, describe as describe_wildlands
+from .wildlands_model import PRIVILEGED_NOTE, WildlandsModelPolicy, describe as describe_wildlands
 
 COMMANDS = SkylandsCampaignEnv.commands
 REPEATABLE = ('none',)
@@ -81,11 +81,15 @@ this interface. Return only JSON conforming to the supplied schema.'''
 def local_view(env):
     """Reachable, visible targets as id:role, plus what the character itself holds.
 
-    Reads only the target registry's position/role and the character's own state;
+    Reads only the target registry's position/role, whether a part is still loose,
+    and the character's own state;
     it is the Skylands analogue of the Wildlands 'Nearby controls' text.
     """
     near,far=[],[]
     for tid,obj in sorted(env.targets.items()):
+        # A mounted or held part keeps its stale yard entry in the registry; it is
+        # not a loose part there any more, so never advertise it as one.
+        if obj['role']=='part' and (env.parts[obj['part']]['mounted'] or env.held_part==obj['part']): continue
         if env._reachable(obj['pos'],NEAR): near.append(f"{tid}:{obj['role']}")
         elif env._reachable(obj['pos'],FAR): far.append(f"{tid}:{obj['role']}")
     return dict(within_4_5m=near,within_6m=far,holding_part=env.held_part is not None,
@@ -151,3 +155,7 @@ class SkylandsModelPolicy(WildlandsModelPolicy):
     def describe(self,observation): return describe(observation)
     def schema(self): return schema(self.memory_chars)
     def decode(self,payload): return decode(payload,self.memory_chars)
+
+
+class SkylandsPrivilegedPolicy(SkylandsModelPolicy):
+    guide=GUIDE+PRIVILEGED_NOTE

@@ -89,6 +89,11 @@ def rotate_cell(i, j, k):
 def local_parts(record):
     if record["kind"] == "cottage":
         parts = cottage_cells(record)
+    elif record["kind"] == "castle":
+        from .landmarks import castle_parts
+        parts = castle_parts(record)
+    elif record["kind"] == "camp":
+        parts = []
     else:
         parts = tempest_envelope(record["kind"])
     k = record.get("rotation", 0)
@@ -116,6 +121,51 @@ def door_normal(k):
     return np.array(n, float)
 
 
+def reserved_mask(env, *, site_radius=15):
+    """Columns no settlement or landform may occupy: sites, targets, raft lanes,
+    movers, docks, shafts, the landing hub and protected boxes."""
+    w = env.world
+    sx, sz = w.size_x, w.size_z
+    xx, zz = np.ogrid[:sx, :sz]
+    m = np.zeros((sx, sz), bool)
+
+    def disc(p, r):
+        x, z = float(p[0]), float(p[-1])
+        lo0, hi0 = max(0, int(x-r-1)), min(sx, int(x+r+2))
+        lo1, hi1 = max(0, int(z-r-1)), min(sz, int(z+r+2))
+        m[lo0:hi0, lo1:hi1] |= (xx[lo0:hi0]-x)**2+(zz[:, lo1:hi1]-z)**2 <= r*r
+
+    def segment(a, b, r):
+        a = np.asarray(a, float)[[0, 2]]; b = np.asarray(b, float)[[0, 2]]
+        for t in np.linspace(0, 1, max(2, int(np.linalg.norm(b-a)/2)+1)):
+            disc(a+(b-a)*t, r)
+
+    for site in env.milestones:
+        disc(site.pos[[0, 2]], site_radius)
+    for obj in env.targets.values():
+        disc(np.asarray(obj["pos"])[[0, 2]], 8)
+    for r in env.rafts.values():
+        points = [r["pos"], *r.get("route", []), r["destination"]]
+        for p, q in zip(points[:-1], points[1:]):
+            segment(p, q, 7)
+        if r.get("receiver") is not None:
+            disc(np.asarray(r["receiver"])[[0, 2]], 7)
+    for mv in env.movers.values():
+        disc(np.asarray(mv["pos"])[[0, 2]], 10)
+    for p in getattr(env, "refuge_docks", []):
+        disc(np.asarray(p)[[0, 2]], 10)
+    dx, dz = env.descent_xy
+    disc(env.vertical_xy, 22); disc((dx, dz), 15); disc((dx+19, dz), 15)
+    disc(env.point(60, 180), 10); disc(env.point(90, 90), 12)
+    if env.task == "a":
+        disc(env.point(460, 520), 14)
+    for lo, hi in getattr(env, "_protect_boxes", []):
+        m[max(0, lo[0]-6):hi[0]+7, max(0, lo[2]-6):hi[2]+7] = True
+    m |= binary_dilation(env._protected(2), iterations=6)
+    return m
+
+
+
 class Planner:
     """Finds plots in a reset campaign world and installs buildings there."""
 
@@ -130,51 +180,10 @@ class Planner:
         self.water_distance = {0: distance_transform_edt(~wet0), 1: distance_transform_edt(~wet1),
                                2: np.full((sx, sz), 1e9)}
         self.top = O.surface_top(w, 30, 82)
-        self.reserved = self._reserved()
+        self.reserved = reserved_mask(env)
         self.occupied = {layer: np.zeros((sx, sz), bool) for layer in range(3)}
         self.records = []
         self.mask = np.zeros((sx, sz), bool)          # surface plots, for scenery and creatures
-
-    def _reserved(self):
-        env, w = self.env, self.w
-        sx, sz = w.size_x, w.size_z
-        xx, zz = np.ogrid[:sx, :sz]
-        m = np.zeros((sx, sz), bool)
-
-        def disc(p, r):
-            x, z = float(p[0]), float(p[-1])
-            lo0, hi0 = max(0, int(x-r-1)), min(sx, int(x+r+2))
-            lo1, hi1 = max(0, int(z-r-1)), min(sz, int(z+r+2))
-            m[lo0:hi0, lo1:hi1] |= (xx[lo0:hi0]-x)**2+(zz[:, lo1:hi1]-z)**2 <= r*r
-
-        def segment(a, b, r):
-            a = np.asarray(a, float)[[0, 2]]; b = np.asarray(b, float)[[0, 2]]
-            for t in np.linspace(0, 1, max(2, int(np.linalg.norm(b-a)/2)+1)):
-                disc(a+(b-a)*t, r)
-
-        for site in env.milestones:
-            disc(site.pos[[0, 2]], 15)
-        for obj in env.targets.values():
-            disc(np.asarray(obj["pos"])[[0, 2]], 8)
-        for r in env.rafts.values():
-            points = [r["pos"], *r.get("route", []), r["destination"]]
-            for p, q in zip(points[:-1], points[1:]):
-                segment(p, q, 7)
-            if r.get("receiver") is not None:
-                disc(np.asarray(r["receiver"])[[0, 2]], 7)
-        for mv in env.movers.values():
-            disc(np.asarray(mv["pos"])[[0, 2]], 10)
-        for p in getattr(env, "refuge_docks", []):
-            disc(np.asarray(p)[[0, 2]], 10)
-        dx, dz = env.descent_xy
-        disc(env.vertical_xy, 22); disc((dx, dz), 15); disc((dx+19, dz), 15)
-        disc(env.point(60, 180), 10); disc(env.point(90, 90), 12)
-        if env.task == "a":
-            disc(env.point(460, 520), 14)
-        for lo, hi in getattr(env, "_protect_boxes", []):
-            m[max(0, lo[0]-6):hi[0]+7, max(0, lo[2]-6):hi[2]+7] = True
-        m |= binary_dilation(env._protected(2), iterations=6)
-        return m
 
     # -- plot tests ------------------------------------------------------
     def fits(self, kind, x, z, layer, record):
@@ -303,10 +312,28 @@ def plan(env):
     return P.records, P.mask
 
 
+def rotate_point(x, z, k):
+    u, w = x-.5, z-.5
+    for _ in range(k % 4):
+        u, w = -w, u
+    return u+.5, w+.5
+
+
 def lights(records):
     out = []
     for r in records:
         p = np.asarray(r["pos"], float)
+        if r["kind"] == "camp":
+            out.append(dict(pos=(p+(.5, 1.1, .5)).tolist(), color=[1., .58, .25], power=900., radius=.4))
+            continue
+        if r["kind"] == "castle":
+            from .landmarks import CASTLE_HALF as h
+            for x in (-3.0, 4.0):
+                i, j = rotate_point(x, -h-3.6, r["rotation"])
+                out.append(dict(pos=(p+(i, 4.4, j)).tolist(), color=[1., .70, .38], power=600., radius=.3))
+            i, j = rotate_point(.5, 7.5, r["rotation"])
+            out.append(dict(pos=(p+(i, 9., j)).tolist(), color=[1., .66, .36], power=1500., radius=1.))
+            continue
         if r["kind"] == "cottage":
             a, c, _ = cottage_dims(r)
             i, j = rotate_cell(-1, -c-1, r["rotation"])     # lantern beside the door

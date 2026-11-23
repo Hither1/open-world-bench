@@ -37,7 +37,8 @@ def _spread(rng, cells, count, spacing, taken=()):
     return out
 
 
-def populate(world, course, identity, *, sea_level, heights=None, monster_clearance=None, scale=1.0):
+def populate(world, course, identity, *, sea_level, heights=None, monster_clearance=None, scale=1.0,
+             wildlife_band=None, wildlife_scale=None):
     """Return ``npc_spawns`` dictionaries for the course world.
 
     By default creatures are kept to ground from which they cannot walk onto
@@ -45,6 +46,11 @@ def populate(world, course, identity, *, sea_level, heights=None, monster_cleara
     placed at least that many metres from any trail, beyond monster sight, and
     wildlife at least six metres away. ``heights`` overrides the standing
     height map (layered worlds); ``scale`` multiplies the number of camps and herds.
+
+    ``wildlife_band=(near, far)`` grazes the (non-hostile, fleeing) herds in
+    meadows that many metres from the course, where travellers see them, on
+    any standing ground; ``wildlife_scale`` then sets the number of herd sets
+    independently of the monster camps.
     """
     rng = np.random.default_rng(stable_seed("fauna", *identity))
     heights = walk_heights(world) if heights is None else heights
@@ -63,10 +69,11 @@ def populate(world, course, identity, *, sea_level, heights=None, monster_cleara
     headroom = np.ones_like(flat)
     for dy in (1, 2, 3):
         headroom &= ~B.SOLID[np.take_along_axis(vox, (ys + dy)[:, None, :], axis=1)[:, 0, :]]
-    land = (heights > sea_level) & ~course & flat & headroom & ~reach
-    border = np.zeros_like(land)
+    standing = (heights > sea_level) & ~course & flat & headroom
+    border = np.zeros_like(standing)
     border[4:-4, 4:-4] = True
-    land &= border
+    standing &= border
+    land = standing & ~reach
     spawns = []
 
     def at(cell, **data):
@@ -86,21 +93,32 @@ def populate(world, course, identity, *, sea_level, heights=None, monster_cleara
             spawns.append(dict(kind=kind, pos=at(cell), home=(den_pos[0], den_pos[2]), den=den_pos,
                                day_active=(j == 0 and kind != "stalker"), roam=6.0))
     taken = list(camps)
-    graze = np.argwhere(land & (distance >= 4))
-    for kind, count, _ in [h for h in HERDS for _ in range(copies)]:
-        if kind == "goat":
+    herd_copies = copies
+    if wildlife_band is None:
+        graze = np.argwhere(land & (distance >= 4))
+        herd_spacing = 14.0 if scale <= 1 else 35.0
+    else:
+        graze = np.argwhere(standing & (distance >= wildlife_band[0]) & (distance <= wildlife_band[1]))
+        herd_copies = max(1, int(round(wildlife_scale if wildlife_scale is not None else scale)))
+        herd_spacing = max(12.0, float(wildlife_band[1]))
+    order = ([h for h in HERDS for _ in range(herd_copies)] if wildlife_band is None
+             else [h for _ in range(herd_copies) for h in HERDS])
+    for kind, count, _ in order:
+        if kind == "goat" and wildlife_band is None:
             pool = graze[heights[graze[:, 0], graze[:, 1]] >= np.percentile(heights[land], 60)] if len(graze) else graze
+        elif kind == "goat" and len(graze):
+            pool = graze[heights[graze[:, 0], graze[:, 1]] >= np.percentile(heights[graze[:, 0], graze[:, 1]], 60)]
         else:
             pool = graze
         if not len(pool):
             continue
-        centre = _spread(rng, pool, 1, 14.0 if scale <= 1 else 35.0, taken)
+        centre = _spread(rng, pool, 1, herd_spacing, taken)
         if not centre:
             continue
         taken += centre
-        members = [c for c in pool if np.hypot(*(c - centre[0])) <= 6]
+        members = pool[np.hypot(*(pool - centre[0]).T) <= 6]
         for j in range(count):
-            cell = members[int(rng.integers(len(members)))] if members else centre[0]
+            cell = members[int(rng.integers(len(members)))] if len(members) else centre[0]
             spawns.append(dict(kind=kind, pos=at(cell), home=(cell[0] + .5, cell[1] + .5), roam=8.0))
     # Frogs on shores next to water; fish in water at least two blocks deep.
     wet = water_top(world)
