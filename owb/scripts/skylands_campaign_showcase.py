@@ -1,4 +1,4 @@
-"""Settlement stills from a Skylands campaign's exact reset state.
+"""Settlement and landscape stills from a Skylands campaign's exact reset state.
 
 The camera visits hamlets, farmsteads and working buildings; the character and
 simulation never move. This is a reset-state showcase, not an executed agent
@@ -17,6 +17,7 @@ from owb.scripts.skylands_reference import save, sha
 from owb.world.settlements import door_normal
 
 EXTRA_SOURCES = ("owb/world/settlements.py", "owb/render/settlements.py", "owb/render/tempest.py",
+                 "owb/world/relief.py", "owb/world/landmarks.py", "owb/world/fauna.py",
                  "owb/world/tempest.py", "owb/scripts/skylands_campaign_showcase.py")
 
 
@@ -58,6 +59,47 @@ def views(env):
     sky = next(r for r in arch if r["layer"] == 2)
     out.append((f"Sky island {sky['kind'].replace('_', ' ')}",
                 np.asarray(sky["pos"], float)+(0, 7, 0), np.array((-28., 13., -34.)), 48.))
+    # Landscape: the highest ground seen from a trail, then landmarks.
+    from scipy.ndimage import distance_transform_edt
+    from owb.world.relief import ground_top
+    G = ground_top(env.world.vox, 30, 100).astype(float)
+    d = distance_transform_edt(~env._road_mask)
+    homes = env._settlement_mask if env._settlement_mask is not None else np.zeros_like(env._road_mask)
+    clear_of_homes = distance_transform_edt(~homes) > 30
+    road = np.argwhere(env._road_mask & (np.abs(G-(env.levels[1]-1)) <= 1) & clear_of_homes)
+    band = (d > 120) & (d < 220)
+    peak = np.unravel_index(np.argmax(np.where(band, G, 0)), G.shape)
+    k = int(np.argmin(np.hypot(*(road-np.array(peak)).T)))
+    eye = np.array((road[k][0]+.5, env.levels[1]+3.5, road[k][1]+.5))
+    out.append(("Valley trail toward the ridges", np.array((peak[0]+.5, G[peak]-6, peak[1]+.5)), None, 55., eye))
+    castle = next((r for r in arch if r["kind"] == "castle"), None)
+    if castle:
+        c = np.asarray(castle["pos"], float)
+        out.append(("Hilltop castle", c+(0, 9, 0), np.array((-58., 6., -62.)), 50.))
+    camp = next((r for r in arch if r["kind"] == "camp"), None)
+    if camp:
+        out.append(("Travellers' camp", np.asarray(camp["pos"], float)+(.5, 1, .5), np.array((-9., 4., -11.)), 55.))
+    lakes = env.relief_summary.get("lakes") or []
+    if lakes:
+        x, z = lakes[0]
+        out.append(("Basin lake", np.array((x+.5, env.levels[1]-2., z+.5)), np.array((-34., 14., -38.)), 52.))
+    caves = env.relief_summary.get("caves") or []
+    if caves:
+        m = caves[0]; p = np.asarray(m["pos"], float); dv = np.array((m["direction"][0], 0, m["direction"][1]))
+        out.append(("Cave mouth", p+dv*3+(0, 2, 0), None, 60., p-dv*13+(0, 3.5, 0)))
+    # A herd seen from the nearest trail, in open daylight (not under a sky island).
+    sky = B.SOLID[env.world.vox[:, env.levels[2]-1, :]]
+    open_sky = distance_transform_edt(~sky) > 60
+    herd = [n for n in env.npcs.npcs if n.kind in ("deer", "goat", "boar") and open_sky[int(n.pos[0]), int(n.pos[2])]]
+    if herd:
+        dist = [float(d[int(n.pos[0]), int(n.pos[2])]) for n in herd]
+        n = herd[int(np.argmin(dist))]
+        p = np.asarray(n.pos, float)
+        rc = np.argwhere(env._road_mask)
+        r = rc[int(np.argmin(np.hypot(*(rc-p[[0, 2]]).T)))]
+        away = p[[0, 2]]-(r+.5); away /= max(np.linalg.norm(away), 1e-6)
+        eye = np.array((r[0]+.5-away[0]*4, env.levels[1]+2.2, r[1]+.5-away[1]*4))
+        out.append((f"Wildlife by the trail: {n.kind}", p+(0, .9, 0), None, 34., eye))
     return out
 
 
@@ -75,9 +117,10 @@ def export(task, seed, output):
         grass_prototypes().save(output/"grass-prototypes.npz")
         save(output/"geometry.json", scene.metadata["geometry_contract"])
         entries = []
-        for title, focus, offset, fov in views(env):
+        for view in views(env):
+            title, focus, offset, fov = view[:4]
             state = dynamic_scene(env)
-            eye = clear_view(env, focus, offset)
+            eye = view[4] if len(view) > 4 else clear_view(env, focus, offset)
             state.metadata["camera"] = dict(eye=eye.tolist(), target=focus.tolist(), fov_y=fov)
             state.metadata["presentation"] = "Reset-state settlement showcase; camera only"
             assert env.state_digest() == digest

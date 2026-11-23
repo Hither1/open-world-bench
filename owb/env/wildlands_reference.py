@@ -186,6 +186,34 @@ class WildlandsReferenceEnv(WildlandsEnv):
         self.action_space['target'] = spaces.Discrete(256)
         self.action_space['vector'] = spaces.Box(-1,1,(3,),np.float32)
 
+    def _author_relief(self, w, surface, coords):
+        """Ridges, mesas, a lake and caves between and around the course roads,
+        rising away from every road, court, the river and the mechanism cells
+        (see owb/world/relief.py). Routes keep their walking level."""
+        from ..world import relief as R
+        identity = ('wildlands-reference', self._seed, self.task)
+        shape = (w.size_x, w.size_z)
+        keep = ndimage.binary_dilation(surface, iterations=2)
+        keep |= ndimage.binary_dilation(RIVER.stamp(shape), iterations=3)
+        keep |= ndimage.binary_dilation((w.vox == B.WATER).any(axis=1), iterations=2)
+        xx, zz = np.ogrid[:shape[0], :shape[1]]
+        for x, z in coords:
+            keep |= (xx - x) ** 2 + (zz - z) ** 2 <= 10 ** 2
+        for (x0, _, z0), (x1, _, z1) in (FLOOD, ((125, 0, 92), (133, 0, 100))):
+            keep[x0 - 3:x1 + 4, z0 - 3:z1 + 4] = True
+        keep |= (xx - STABLE[0]) ** 2 + (zz - STABLE[2]) ** 2 <= 6 ** 2
+        lakes, made = R.basin_lakes(w, keep, identity, count=1, level=int(Y) - 3, ylo=13, yhi=60,
+                                    distance=8.0, radii=(6, 9))
+        keep |= ndimage.binary_dilation(lakes, iterations=2)
+        T, G, mesa = R.raise_ground(w, keep, identity, ylo=13, yhi=60, cap=60, wavelength=.4,
+                                    start=5.0, width=(6.0, 14.0))
+        mouths = R.caves(w, T, G, keep, identity, count=2, ylo=14, length=10)
+        raised = T > G
+        self.relief_summary = dict(raised_fraction=float(raised.mean()), max_height=int(T.max()),
+                                   relief_above_course=int(T.max()) - int(Y), lakes=[list(map(int, c)) for c in made],
+                                   caves=mouths, mesa_fraction=float((mesa > .5).mean()))
+        w.meta['relief'] = self.relief_summary
+
     def _generate_world(self):
         cfg = deepcopy(self.cfg.world_cfg); cfg.seed = self._seed
         result = generate(cfg)
@@ -217,6 +245,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
             w.vox[x, 23:29, z] = B.AIR
             w.vox[x, 23:26, z] = B.WATER
         w.fill_box((127,28,95),(131,28,97),B.PLANK)
+        self._author_relief(w, surface, coords)
         settle_water(w)
         tops = water_top(w)
         w.meta['river']['water_top'] = [int(tops[int(np.clip(px, 0, 159)), int(np.clip(pz, 0, 159))])
@@ -236,7 +265,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
         # Native creatures in the lowlands beside the course, and a saddled
         # horse tethered at the start court.
         result.npc_spawns=populate(w, surface, ('wildlands-reference', self._seed, self.task),
-                                   sea_level=w.sea_level)
+                                   sea_level=w.sea_level, wildlife_band=(5.0, 25.0), wildlife_scale=3)
         result.npc_spawns.insert(0, dict(kind='horse', pos=STABLE, home=(STABLE[0], STABLE[2]), roam=1.5, leash=3.0))
         result.landmarks=[Landmark('course','Reedbank reference course',(24.5,Y,24.5),4)]
         result.spawn=(22.5,Y+.01,24.5)

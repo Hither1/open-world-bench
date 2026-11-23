@@ -29,7 +29,10 @@ starts. Run it in a Slurm job; the login-node memory cgroup kills it.
   construction parts and the environment's text (objective, latest inspection
   text, satchel). It also includes `local_targets`: target IDs within 4.5 m and
   within 6 m that are in line of sight, as `id:role`, plus whether the character is
-  holding a part or towing cargo.
+  holding a part or towing cargo. Parts already mounted or held are left out of this list.
+  The first run (`runs/sol-skylands-20261121-first3`) still listed mounted
+  parts at their original yard positions, which led the model to retry picking
+  them. Runs from `-first3-r2` onward use the corrected list.
 - Roles are coarse physical categories (control, part, raft, cargo…). Target
   owners, part kinds, positions, cache bindings, milestone state and evaluator
   events are not supplied. Part kinds, ratings and craft charge come only from
@@ -47,3 +50,20 @@ event and reward, plus the milestone and final digests.
 
 These are single-seed pilots, not a memory ablation or a claim of held-out
 skill transfer.
+
+## Privileged-state condition (upper bound)
+
+`--privileged` (in both `owb.scripts.wildlands_model` and
+`owb.scripts.skylands_model`) adds `observation.privileged`, built by
+[`privileged_view.py`](../owb/bench/baselines/privileged_view.py). For the
+current objective it reveals the location, clue, true roles and world positions
+of controls, bodies, parts, craft and cargo, plus the mechanism state. That
+includes the Wildlands support zone and load, and the Skylands craft slots,
+charge, route and destination. It also reveals a short rule for the milestone
+kind, including hidden constants such as the fan-strike window, and the events
+and failure reasons from the previous decision. It never supplies reference
+actions or plans: the model still chooses every primitive action.
+
+Each run's `config.json` records `information_condition: privileged_state` and
+`observation_only: false`. Report these runs separately. They measure control
+and execution given full task knowledge, not discovery, perception or memory.

@@ -6,6 +6,7 @@ import numpy as np
 from ...core import blocks as B
 from ...env.wildlands_reference import COMMANDS, Y
 from ...sim.riding import MOUNTED_OK, GAITS
+from ...entities.npc import CHASE, ATTACK
 
 
 def neutral():
@@ -110,10 +111,29 @@ class WildlandsReferencePolicy:
     def __call__(self,obs):
         e=self.env
         self.walking=False
+        if (defend:=self.defend()) is not None:
+            return defend
         action=self.decide(obs)
         if COMMANDS[int(action['command'])]=='none' and (dress:=self.dress_for_night()) is not None:
             return dress
         return self.with_horse(action)
+
+    def defend(self):
+        """Face a monster that has closed in to strike range and fight it off
+        before resuming the route. The reference never seeks fights."""
+        e=self.env; a_=e.agent
+        threats=[n for n in e.npcs.near(a_.pos,2.9,hostile_only=True) if n.alive and n.state in (CHASE,ATTACK)]
+        if not threats:
+            return None
+        n=min(threats,key=lambda n: float(np.linalg.norm((n.pos-a_.pos)[[0,2]])))
+        delta=(n.pos-a_.pos)[[0,2]]
+        error=(math.atan2(delta[1],delta[0])-a_.yaw+math.pi)%(2*math.pi)-math.pi
+        if abs(error)>.5 or a_.cooldown>0:
+            a=neutral(); a['look'][0]=float(np.clip(error/.36,-1,1))
+            self.explanation=f'Face the attacking {n.kind}'
+            return a
+        a=self.command('attack'); self.explanation=f'Strike the attacking {n.kind}'
+        return a
 
     def horse(self):
         return next((n for n in e.npcs.npcs if n.kind=='horse' and n.alive) if (e:=self.env) else None,None)

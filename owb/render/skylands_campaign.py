@@ -67,16 +67,27 @@ def safe_camera(env):
     target=env.agent.pos.astype(float)+np.array((0.,1.,0.))
     rise=7. if target[1]<40 else 10.
     offset=np.array((-12.,rise,-15.));best=None
-    for angle in (0.,np.pi/2,-np.pi/2,np.pi,np.pi/4,-np.pi/4,3*np.pi/4):
+    def clearance(direction,distance):
+        hit=env.world.raycast(target,direction,distance)
+        return max(.6,hit.dist-.6) if hit.hit else distance
+    for angle in (0.,np.pi/2,-np.pi/2,np.pi,np.pi/4,-np.pi/4,3*np.pi/4,-3*np.pi/4):
         c,t=np.cos(angle),np.sin(angle)
         delta=np.array((offset[0]*c-offset[2]*t,rise,offset[0]*t+offset[2]*c))
         distance=np.linalg.norm(delta);direction=delta/distance
-        hit=env.world.raycast(target,direction,distance)
-        clear=max(.6,hit.dist-.6) if hit.hit else distance
-        candidate=(clear,target+direction*clear)
-        if best is None or clear>best[0]:best=candidate
-        if clear>=distance*.9:break
-    return dict(eye=best[1].tolist(),target=target.tolist(),fov_y=46.)
+        clear=clearance(direction,distance)
+        # The near view must be open too, not only the line to the traveler:
+        # rays toward points beside and below the eye catch roofs, walls or
+        # cliffs that would fill a corner of the frame.
+        right=np.cross(direction,(0.,1.,0.));right/=max(np.linalg.norm(right),1e-6)
+        up=np.cross(right,direction)
+        worst=clear/distance
+        for side in (right*3.5,-right*3.5,-up*2.5,up*2.):
+            corner=delta+side;length=np.linalg.norm(corner)
+            worst=min(worst,clearance(corner/length,length)/length)
+        candidate=(worst,clear,target+direction*clear)
+        if best is None or candidate[:2]>best[:2]:best=candidate
+        if worst>=.9:break
+    return dict(eye=best[2].tolist(),target=target.tolist(),fov_y=46.)
 
 
 def camera_obscures_traveler(env,camera):

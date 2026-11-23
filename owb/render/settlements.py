@@ -185,7 +185,12 @@ def _cottage(record):
     b.current_material = METAL
     for y in (.18, .78):
         b.tube((bx, y, bz), (bx, y+.06, bz), .36, IRON, sides=14)
-    # Rotate about the centre cell, then place the asset in the world.
+    return _place(b, record)
+
+
+def _place(b, record):
+    """Rotate about the centre cell (as the collision envelope is), then move
+    the asset to its world position."""
     k = record.get("rotation", 0) % 4
     p = np.asarray(record["pos"], np.float32)
     for i in range(len(b.verts)):
@@ -202,8 +207,110 @@ def _cottage(record):
     return b
 
 
+BANNERS = np.array(((.62, .12, .12), (.13, .25, .55), (.16, .42, .22), (.55, .42, .10)))
+CANVAS = np.array(((.78, .72, .58), (.62, .55, .42), (.55, .32, .22), (.35, .45, .38)))
+
+
+def _castle(record):
+    from ..world.landmarks import CASTLE_HALF as h
+    v = record["appearance"]
+    rng = np.random.default_rng(v)
+    b = MeshBatch()
+    roof = ROOFS[v % 4]*.9
+    banner = BANNERS[(v >> 3) % 4]
+    # Conical slate roofs and pennants over the four corner towers.
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            c = np.array((sx*h+.5, 15.6, sz*h+.5))
+            b.current_material = STONE
+            b.cone(c, 4.6, 7.5, roof*rng.uniform(.85, 1.1), sides=18)
+            b.current_material = METAL
+            b.tube(c+(0, 7.3, 0), c+(0, 10.2, 0), .06, IRON)
+            b.current_material = CLOTH
+            b.quad(c+(0, 10.1, 0), c+(1.6, 9.75, 0), c+(1.6, 9.35, 0), c+(0, 9.2, 0), banner)
+    # Great banners on the keep and gatehouse, and a raised iron portcullis.
+    b.current_material = CLOTH
+    for x in (-3.5, 4.5):
+        b.quad((x-.7, 18.5, 2.94), (x+.7, 18.5, 2.94), (x+.7, 13.0, 2.94), (x-.7, 13.0, 2.94), banner*rng.uniform(.9, 1.1))
+        b.quad((x-.7, 13.0, 2.94), (x+.7, 13.0, 2.94), (x, 12.3, 2.94), (x, 12.3, 2.94), banner*.9)
+    b.current_material = METAL
+    b.tube((.5, 21, 7.5), (.5, 26, 7.5), .08, IRON)
+    b.current_material = CLOTH
+    b.quad((.5, 25.9, 7.5), (3.6, 25.4, 7.5), (3.6, 24.4, 7.5), (.5, 24.2, 7.5), banner)
+    b.current_material = METAL
+    for x in np.arange(-1.8, 3.0, .45):
+        b.box((x, 6.5, -h-2.5), (.09, 1.4, .09), IRON)
+    for y in (5.9, 6.7, 7.4):
+        b.box((.5, y, -h-2.5), (4.9, .08, .09), IRON)
+    # Open timber gate leaves and gate lamps (matched by presentation lights).
+    b.current_material = BARK
+    for s in (-1, 1):
+        b.box((.5+s*2.75, 2.8, -h+1.2), (.18, 5.6, 2.3), WOOD*.8)
+    b.current_material = METAL
+    for x in (-3.0, 4.0):
+        b.tube((x, 4.6, -h-3), (x, 4.6, -h-3.6), .05, IRON)
+        b.box((x, 4.4, -h-3.6), (.3, .42, .3), (1., .72, .4), emissive=1.6)
+    # Warm keep windows.
+    for y in (6, 11, 16):
+        for x in (-3, 3):
+            for z in (3.5, 11.5):
+                b.box((x+.5, y+1, z), (.9, 1.9, .05), (.86, .63, .36), emissive=.4)
+        for z in (5, 9):
+            for x in (-4.5, 5.5):
+                b.box((x, y+1, z+.5), (.05, 1.9, .9), (.86, .63, .36), emissive=.4)
+    return _place(b, record)
+
+
+def _camp(record):
+    """Tents around the campfire block; presentation only."""
+    v = record["appearance"]
+    rng = np.random.default_rng(v)
+    b = MeshBatch()
+    centre = np.asarray(record["pos"], float)+(.5, 0, .5)
+    for t in record["tents"]:
+        p = np.asarray(t["pos"], float); yaw = t["yaw"]; s = t["size"]
+        canvas = CANVAS[int(rng.integers(0, 4))]*rng.uniform(.9, 1.1)
+        fwd = np.array((np.cos(yaw), 0, np.sin(yaw))); side = np.array((-fwd[2], 0, fwd[0]))
+        b.current_material = CLOTH
+        if t["style"] == 0:                                  # ridge tent
+            L, W, H = 2.6*s, 1.9*s, 1.6*s
+            a0, a1 = p-fwd*L/2+(0, H, 0), p+fwd*L/2+(0, H, 0)
+            for sgn in (-1, 1):
+                e0, e1 = p-fwd*L/2+side*sgn*W/2, p+fwd*L/2+side*sgn*W/2
+                b.quad(a0, a1, e1, e0, canvas*(1. if sgn > 0 else .86))
+            back = p-fwd*L/2
+            b.quad(a0, back+side*W/2, back-side*W/2, a0, canvas*.8)
+            front = p+fwd*L/2
+            b.quad(a1, front+side*W/2, front+side*W*.15+fwd*.35, a1, canvas*.95)
+            b.current_material = BARK
+            b.tube(a0, a1, .04, WOOD)
+        else:                                                # bell tent
+            r, H = 1.8*s, 2.7*s
+            b.tube(p, p+(0, .9*s, 0), r, canvas*.9, sides=16)
+            b.cone(p+(0, .9*s, 0), r*1.05, H-.9*s, canvas, sides=16)
+            b.current_material = BARK
+            b.tube(p, p+(0, H+.3, 0), .05, WOOD)
+        b.current_material = CLOTH
+        b.box(p+fwd*(L/2+.7 if t["style"] == 0 else r+.6)+(0, .08, 0), (1.6, .14, .6), np.array((.42, .30, .22)), yaw=-yaw)
+    # Logs to sit on and a cooking tripod over the fire.
+    b.current_material = BARK
+    for k in range(3):
+        a = 2*np.pi*k/3+float(rng.uniform(0, 1))
+        q = centre+(1.9*np.cos(a), .2, 1.9*np.sin(a)); t_ = np.array((-np.sin(a), 0, np.cos(a)))
+        b.tube(q-t_*.8, q+t_*.8, .2, WOOD*rng.uniform(.9, 1.3), sides=8)
+    b.current_material = METAL
+    for k in range(3):
+        a = 2*np.pi*k/3
+        b.tube(centre+(.8*np.cos(a), 0, .8*np.sin(a)), centre+(0, 1.6, 0), .03, IRON)
+    b.tube(centre+(0, 1.55, 0), centre+(0, 1.0, 0), .015, IRON)
+    b.tube(centre+(0, 1.0, 0), centre+(0, .7, 0), .22, IRON, sides=10)
+    return b
+
+
 def settlement_meshes(records, batch):
     for record in records:
-        b = _cottage(record) if record["kind"] == "cottage" else functional_building(record)
+        kind = record["kind"]
+        b = (_cottage(record) if kind == "cottage" else _castle(record) if kind == "castle"
+             else _camp(record) if kind == "camp" else functional_building(record))
         for name in ("verts", "colors", "emissive", "ids", "normals", "material_ids"):
             getattr(batch, name).extend(getattr(b, name))

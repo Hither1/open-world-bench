@@ -40,6 +40,11 @@ class SkylandsCampaignPolicy(SkylandsReferencePolicy):
         mounted=getattr(e,'riding',None) is not None and e.riding.mounted
         if not mounted and e.agent.on_ground and .5<float(pos[1])-float(e.agent.pos[1])<1.6:
             a['buttons'][0]=1; self.explanation='Hop up out of the dip onto the trail'
+        if mounted and e.agent.on_ground and .5<float(pos[1])-float(e.agent.pos[1])<1.6:
+            # A mounted rider cannot jump: if the horse slipped off a trail
+            # edge into a dip, get off (with_horse dismounts on a jump) and
+            # climb out on foot; the horse is whistled back later.
+            a['buttons'][0]=1; self.explanation='Dismount to climb out of the dip'; return a
         if mounted and len(self.path)>3:
             ahead=self.path[:6]; y=int(round(pos[1]))
             # Look ahead only to a node the rider's body can reach in a straight line.
@@ -361,6 +366,9 @@ class SkylandsCampaignPolicy(SkylandsReferencePolicy):
         if (plan is None and apples>=APPLE_RESERVE) or e.riding.mounted or e.hauling or e.held_part \
                 or abs(a_.pos[1]-level)>1.5 or self.descending or self.glide_plan is not None \
                 or any(e.on_deck(x) for x in e.rafts.values()):
+            # A plan interrupted mid-way (e.g. its walk crosses a craft deck)
+            # gives that tree up, so foraging cannot oscillate with the route.
+            if plan is not None: self.__dict__.setdefault('forage_skip',set()).add(plan['tree'])
             self.forage_plan=None; return None
         skip=self.__dict__.setdefault('forage_skip',set())
         if plan is None:

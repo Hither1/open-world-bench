@@ -20,7 +20,7 @@ SOURCES=('owb/env/wildlands_reference.py','owb/bench/baselines/wildlands_referen
          'owb/render/blender_scene.py','owb/render/dressing.py','owb/render/presentation.py','owb/render/video.py',
          'owb/render/cycles_batch.py','owb/render/blender_batch.py',
          'owb/world/organic.py','owb/world/fauna.py','owb/entities/npc.py','owb/entities/agent.py',
-         'owb/sim/riding.py','owb/sim/orchard.py','owb/render/creatures.py','owb/sim/survival.py')
+         'owb/sim/riding.py','owb/sim/orchard.py','owb/render/creatures.py','owb/sim/survival.py','owb/world/relief.py')
 LIMITATIONS=[
  'Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.',
  'Privileged reference controller; no claim that an agent learned skills or retained memories.',
