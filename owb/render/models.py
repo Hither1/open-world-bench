@@ -282,7 +282,7 @@ def entity(batch, e, time):
             if i % 3 == 0:
                 batch.box(a, (0.16, 0.16, 0.16), col, obj_id=sid, emissive=0.8)
         batch.cone(p - (0, 0.65, 0), 0.26, 1.1, col, 5, sid, emissive=0.7)
-    elif e.get("kind") == "build_preview":
+    elif e.get("kind") == "build_preview" or e.get("shape") == "box":
         batch.box(p, (radius * 2, height, radius * 2), col, obj_id=sid)
     elif e.get("kind") == "chest":
         batch.box(p, (0.9, 0.5, 0.65), (0.40, 0.27, 0.13), obj_id=sid)

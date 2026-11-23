@@ -20,7 +20,8 @@ SKYLANDS=Course('skylands_campaign',lambda task,seed: SkylandsCampaignEnv(task,s
                 SkylandsModelPolicy,MISSIONS,checked_step,
                 SOURCES+('owb/bench/baselines/skylands_model.py','owb/scripts/skylands_model.py',
                          'owb/bench/baselines/wildlands_model.py','owb/scripts/wildlands_model.py',
-                         'owb/bench/baselines/codex_policy.py','owb/sim/construction.py'),
+                         'owb/bench/baselines/codex_policy.py','owb/sim/construction.py',
+                         'owb/render/landscape.py','owb/render/models.py','owb/render/raycast.py'),
                 observe=lambda env,obs,events: dict(obs,local_targets=local_view(env)))
 SKYLANDS_PRIVILEGED=replace(SKYLANDS,policy=SkylandsPrivilegedPolicy,condition='privileged_state',
     sources=SKYLANDS.sources+('owb/bench/baselines/privileged_view.py',),

@@ -39,8 +39,9 @@ per primitive action on unobstructed ground. Collision, gravity, stamina, health
 weather, day/night, wildlife and native movement physics apply. Do not assume a
 movement succeeded. Falling from a layer edge can kill you; gliding slows descent.
 
-The text observation gives the current objective, the latest inspection text and your
-satchel. local_targets lists opaque target IDs within interaction reach and line of
+The text observation gives the current objective, the result of your latest
+interaction ("Last interaction: ..."; it persists until the next one), the latest
+inspection text and your satchel. local_targets lists opaque target IDs within interaction reach and line of
 sight, each with a coarse physical role (control, part, raft, cargo, lower, freight,
 platform, cache, ...). within_4_5m targets support every targeted command; within_6m
 targets support only pick, mount, load, unload, drive, reverse, cancel and inspecting

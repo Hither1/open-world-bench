@@ -33,6 +33,13 @@ starts. Run it in a Slurm job; the login-node memory cgroup kills it.
   The first run (`runs/sol-skylands-20261121-first3`) still listed mounted
   parts at their original yard positions, which led the model to retry picking
   them. Runs from `-first3-r2` onward use the corrected list.
+- From 2026-11-22 the text also carries a feedback line for the latest
+  interaction, for example `Last interaction: mount 12 -> part mounted` or
+  `-> the fan jams`. Refusals are grouped into perceivable categories: out of
+  reach, missing item, does not fit, nothing happens, or "it won't work yet".
+  This is because many evaluator reasons name the missing procedure step. Fan
+  strikes report how the fan sounds, not the charge. Earlier runs had no
+  interaction feedback at all.
 - Roles are coarse physical categories (control, part, raft, cargo…). Target
   owners, part kinds, positions, cache bindings, milestone state and evaluator
   events are not supplied. Part kinds, ratings and craft charge come only from

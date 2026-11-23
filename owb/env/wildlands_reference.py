@@ -40,6 +40,43 @@ def plain(x):
     return x
 
 
+# Player-facing interaction feedback: what a player would see or hear when a
+# lever moves, a socket refuses or a magnet slips. It replaces evaluator reason
+# codes with diegetic text and reveals no hidden constants; observation text
+# never enters the state digest, so replay and digests are unaffected.
+INTERACTIONS = ('inspect', 'operate', 'grip', 'drag', 'drop', 'install')
+REFUSALS = {
+    'target out of reach or occluded': 'out of reach or blocked from here',
+    'unknown interaction target': 'there is no such object here',
+    'mechanism prerequisites incomplete': "it won't move yet",
+    'cannot grip target': "the magnet can't hold that",
+    'not an installation socket': 'there is nothing to install into',
+    'parts already installed': 'already installed',
+    'support lock before installation': 'the socket is locked',
+    'reach service deck first': "it can't be installed from here",
+    'required repair parts missing': "you don't have the parts it needs",
+    'required coupling missing': "you don't have the coupling it needs",
+    'exchange input missing': "you don't have what the locker asks for",
+    'plume above safe launch temperature': 'too hot to light safely',
+    'isolate inlet before rerouting': "the valve won't turn while the inlet is open",
+    'install both repair parts first': 'it needs its repair parts installed first',
+    'locker empty': 'the locker is empty',
+    'commission required': 'locked: it needs a commission',
+    'verify the drained road first': 'not yet',
+    'inspect this source instead': 'nothing to operate; it can be read',
+    'no held magnetic body': 'the magnet holds nothing',
+    'magnetic tether range': "the magnet's tether won't reach further",
+    'body collision': 'the slab is blocked',
+    'another body blocks movement': 'the slab is blocked',
+    'dismount first': 'dismount first',
+}
+NO_EFFECT = ('not a counterweight control', 'not a shaft control', 'not a flow control')
+# Control posts carry their symbol as a painted colour (policy view only).
+SYMBOL_COLOURS = {'sun': (226, 182, 58), 'wave': (62, 120, 206), 'leaf': (78, 166, 74),
+                  'star': (232, 230, 222), 'ring': (190, 104, 58)}
+STAKE_COLOUR = (236, 128, 36)
+
+
 @dataclass
 class Milestone:
     id: str
@@ -288,7 +325,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
     def _reset_mechanics(self):
         self.targets={}; self.completed=[]; self.satchel=Counter(); self.exposed={}
         self.success=False; self.storm=False; self.drained=False; self.road_seen=set()
-        self.last_text=''; self.held=None; self.online=set(); self._pending=[]
+        self.last_text=''; self.last_feedback=''; self.held=None; self.online=set(); self._pending=[]
         rng=np.random.default_rng(self._seed+8191)
         self.calibration=int(rng.integers(3)); self.authorized=int(rng.integers(3))
         self.basin_map=rng.permutation(3).tolist()
@@ -516,6 +553,66 @@ class WildlandsReferenceEnv(WildlandsEnv):
             return self._fail('inspect this source instead')
         return super()._dispatch(command,ingredients,action)
 
+    def _command(self,command,ingredients,action):
+        events=super()._command(command,ingredients,action)
+        tid=int(action['target'])
+        if command in INTERACTIONS or (command=='interact' and tid):
+            self.last_feedback=self._feedback(command,tid,events)
+        return events
+
+    def _feedback(self,command,tid,events):
+        """One player-facing line for the latest interaction (see REFUSALS)."""
+        obj=self.targets.get(tid); said=[]
+        for e in events:
+            t=e['type']; m=self.by_id.get(e.get('milestone'))
+            if t=='action_failed':
+                r=e.get('reason','')
+                said.append('nothing happens' if r in NO_EFFECT else REFUSALS.get(r,'nothing happens'))
+            elif t=='counterweight_control':
+                said.append('the brake locks' if e['control']=='brake' else 'the brake releases; the lift takes the load')
+            elif t=='brake_trip':
+                said.append(f"the brake trips; the support plate reads {e.get('load',m.state['load'] if m else 0):g} kg")
+            elif t=='magnetic_grip': said.append('the magnet grips the slab')
+            elif t=='magnetic_drop': said.append('the slab is released')
+            elif t=='magnetic_move': said.append('the slab moves')
+            elif t=='parts_installed': said.append('installed '+', '.join(e['parts']))
+            elif t=='thermal_control':
+                said.append(('the vent opens' if m.state['vent'] else 'the vent closes') if e['control']=='vent'
+                            else 'the hearth lights')
+            elif t=='draft_blocked': said.append('the heat has no draft to rise through')
+            elif t=='draft_failed': said.append('the exposed hearth flares but cannot hold a draft')
+            elif t=='flow_control': said.append('the valve opens' if e['value'] else 'the valve closes')
+            elif t=='pressure_trip': said.append('pressure trips the inlet shut')
+            elif t=='calibration_selected': said.append(f"mark {e['value']+1} selected")
+            elif t=='calibration_trip': said.append('the calibration trips')
+            elif t=='intake_engaged': said.append('the intake engages')
+            elif t=='station_engaged': said.append('the station engages')
+            elif t=='item_exchange': said.append(f"exchanged {list(e['inputs']) or 'nothing'} for {list(e['outputs'])}")
+            elif t=='completion_signal': said.append('report delivered')
+            elif t=='clue_exposed': said.append('you read it')
+        name=(f"{command} {tid}"+(f":{obj['symbol']}" if obj else '')) if tid else command
+        return f"Last interaction: {name} -> {'; '.join(said) or 'nothing happens'}."
+
+    def _extra_entities(self):
+        """Policy-view impostors for fixtures that have no voxels: symbol-painted
+        control posts (plaques are short and broad) and stakes at the corners of
+        each counterweight support plate. Presentation only; no collision."""
+        out=super()._extra_entities()
+        for obj in self.targets.values():
+            if obj['role'].startswith('weight'): continue
+            x,y,z=(float(v) for v in obj['pos']); plaque=obj['role']=='inspect'
+            h,r=(.8,.2) if plaque else (1.05,.13)
+            out.append(dict(pos=(x,y-1+h/2,z),radius=r,height=h,shape='box',
+                            color=SYMBOL_COLOURS.get(obj['symbol'],(150,150,150)),semantic=B.SEM_INTERACTIVE))
+        for m in self.milestones:
+            if m.kind!='balance': continue
+            x,z=m.site
+            for cx in (x+2.4,x+4.7):
+                for cz in (z+.5,z+4.7):
+                    out.append(dict(pos=(cx,Y+.3,cz),radius=.08,height=.6,shape='box',
+                                    color=STAKE_COLOUR,semantic=B.SEM_INTERACTIVE))
+        return out
+
     def clue(self,m):
         if m.id=='A01': return 'Ranger cache: forked tree at the central court. Complete the workshop before collecting repair parts.'
         if m.id=='A06': return f'Intake safe calibration mark: {self.calibration+1}. Coastal regulator locker is at the western coastal court.'
@@ -552,6 +649,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 if s['released'] and not valid:
                     s['released']=False; s['stable']=0
                     events.append(dict(type='brake_trip',milestone=m.id,reason='support lost'))
+                    self.last_feedback+=f" Lift {m.id}: the brake tripped; the support plate now reads {s['load']:g} kg."
                 if s['released']:
                     s['stable']+=dt
                     if s['stable']>=2 and not s['done']:
@@ -562,6 +660,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                             self.world.fill_box((x+7,32,z-2),(x+10,32,z+2),B.BRICK)
                             s['lift_level']=3
                         events.append(dict(type='counterweight_open',milestone=m.id))
+                        self.last_feedback+=f' Lift {m.id}: the counterweight holds and the gate opens.'
             if m.kind=='thermal':
                 if m.id=='B18': s['safe']=self.by_id['B17'].state['temperature']<=45
                 if 'updraft' in kinds and x-2<self.agent.pos[0]<x+10 and abs(self.agent.pos[2]-(z+.5))<4:
@@ -636,14 +735,22 @@ class WildlandsReferenceEnv(WildlandsEnv):
         obs=super()._observation()
         if self.current:
             visible=[f'{tid}:{obj["symbol"]}' for tid,obj in self.targets.items() if self._reachable(obj['pos'])]
-            obs['text']=(self.current.title+'. Nearby controls '+', '.join(visible)+'. '+self.last_text+
-                         '. Repair satchel: '+str(dict(self.satchel)))[:1024]
+            parts=(self.current.title,'Nearby controls '+', '.join(visible),self.last_feedback.strip(),
+                   self.last_text,'Repair satchel: '+str(dict(self.satchel)))
+            obs['text']=' '.join(p.strip().rstrip('.')+'.' for p in parts if p.strip())[:1024]
         return obs
 
     def _info(self,events):
         out=super()._info(events)
         out.update(success=self.success,milestones=deepcopy(self.completed),task_progress=len(self.completed)/len(self.milestones))
         return out
+
+    def _release_for_recovery(self):
+        events=super()._release_for_recovery()
+        if self.held is not None:
+            bid=self.held; self.bodies.get(bid).held=False; self.held=None
+            events.append(dict(type='magnetic_drop',body=bid,reason='recovery'))
+        return events
 
     def state_digest(self):
         data=dict(task=self.task,seed=self._seed,steps=self.steps,elapsed=self.elapsed,
@@ -656,6 +763,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
             riding=self.riding.state(),orchard=self.orchard.state(),plants=self.gameplay.plants)
         data['agent']['inventory']=self.agent.inventory.to_dict()
         data['agent']['effects']=[vars(e) for e in self.agent.effects]
+        recovery=self.recovery_state()
+        if recovery is not None: data['recovery']=recovery   # absent unless used: old digests unchanged
         return hashlib.sha256(json.dumps(plain(data),sort_keys=True,default=str).encode()).hexdigest()
 
     def presentation_meshes(self,batch):

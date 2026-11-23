@@ -73,8 +73,10 @@ class WildlandsEnv(gym.Env):
             raise ValueError("action_space must be 'multi' or 'discrete'")
         if c.reward_mode not in ("milestone", "sparse", "dense"):
             raise ValueError("unknown reward_mode")
-        if s.hunger_enabled or s.respawn_on_death:
-            raise ValueError("hunger and automatic respawning are not implemented")
+        if s.hunger_enabled:
+            raise ValueError("hunger is not implemented")
+        if s.max_continues < 0 or s.void_out_damage < 0:
+            raise ValueError("continue count and void-out damage must be non-negative")
         if min(c.frame_skip, c.max_steps, c.minimap_size, c.minimap_scale,
                r.width, r.height, r.max_dist, s.dt, s.max_health, s.max_stamina) <= 0:
             raise ValueError("step, map, render and vital limits must be positive")
@@ -158,6 +160,7 @@ class WildlandsEnv(gym.Env):
         self.steps, self.ticks, self.elapsed, self.selected_slot = 0, 0, 0.0, 0
         self._ended, self._frame = False, None
         self._reset_mechanics()
+        self._init_recovery()
         self._explore()
         self._init_world_map()
         return self._observation(), self._info([])
@@ -182,6 +185,70 @@ class WildlandsEnv(gym.Env):
 
     def _reset_mechanics(self):
         """Extension point for worlds with additional mechanics."""
+
+    # ---------------- Zelda-style recovery (opt-in) ----------------------
+    def _init_recovery(self):
+        self.safe_ground = self.agent.pos.astype(float).copy()
+        self.checkpoint = self.safe_ground.copy()
+        self.void_outs = self.continues_used = 0
+        self._milestones_seen = len(getattr(self, "completed", ()))
+
+    def _safe_ground_ok(self):
+        """Standing still on solid, non-hazard ground; worlds exclude moving decks."""
+        a, w = self.agent, self.world
+        if not a.on_ground or a.in_water or a.submerged or a.gliding or a.climbing:
+            return False
+        if self.riding is not None and self.riding.mounted:
+            return False
+        x, y, z = np.floor(a.pos - (0, 0.05, 0)).astype(int)
+        if not w.in_bounds(x, y, z) or not w.is_solid(x, y, z):
+            return False
+        return w.get(x, y, z) not in (B.LAVA, B.FIRE, B.CAMPFIRE_LIT, B.WATER)
+
+    def _track_recovery_points(self):
+        if self.agent.alive and self._safe_ground_ok():
+            self.safe_ground = self.agent.pos.astype(float).copy()
+        count = len(getattr(self, "completed", ()))
+        if count > self._milestones_seen:
+            self._milestones_seen, self.checkpoint = count, self.safe_ground.copy()
+
+    def _release_for_recovery(self):
+        """Drop what the character holds before it is moved; worlds extend this."""
+        if self.riding is not None and self.riding.mounted:
+            return self.riding.dismount("recovered")
+        return []
+
+    def _place_for_recovery(self, pos):
+        a = self.agent
+        a.pos = np.asarray(pos, np.float32).copy(); a.vel[:] = 0
+        a.on_ground, a.gliding, a.climbing, a.in_water, a.submerged = True, False, False, False, False
+        a.air_time = 0
+
+    def _void_out(self):
+        events = self._release_for_recovery()
+        self._place_for_recovery(self.safe_ground)
+        self.void_outs += 1
+        damage = self.agent.hurt(self.cfg.sim_cfg.void_out_damage, "void_out")
+        return events + [dict(type="voided_out", position=self.safe_ground.tolist(), damage=float(damage))]
+
+    def _continue_from_checkpoint(self):
+        a = self.agent
+        events = self._release_for_recovery()
+        self.continues_used += 1
+        a.health, a.alive = a.max_health, True
+        a.stamina, a.exhausted = a.stamina_cap, False
+        a.effects.clear(); a.wetness = a.body_temp = 0.0
+        self._place_for_recovery(self.checkpoint)
+        self.safe_ground = self.checkpoint.copy()
+        return events + [dict(type="continued", position=self.checkpoint.tolist(),
+                              continues_left=self.cfg.sim_cfg.max_continues - self.continues_used)]
+
+    def recovery_state(self):
+        """Digest material, present only once recovery has changed the episode."""
+        if not (self.void_outs or self.continues_used):
+            return None
+        return dict(void_outs=self.void_outs, continues_used=self.continues_used,
+                    safe_ground=self.safe_ground.tolist(), checkpoint=self.checkpoint.tolist())
 
     def _dispatch(self, command, ingredients, action):
         return self.gameplay.dispatch(command, self.selected_slot, ingredients,
@@ -310,23 +377,31 @@ class WildlandsEnv(gym.Env):
                     self.gameplay.plants.append(dict(pos=event["pos"], item=item, count=count))
             elif event["type"] == "ignite_agent":
                 a.hurt(c.sim_cfg.fire_damage * c.sim_cfg.dt, "fire")
+        if c.sim_cfg.void_out and a.alive and any(e["type"] == "drowning" for e in events):
+            events.extend(self._void_out())
         self.steps += 1
         new_cells, discoveries = self._explore()
         events.extend(discoveries)
         self._reveal_map()
         success, task_reward = self._task_outcome(events)
-        terminated = not a.alive or success
-        truncated = self.steps >= c.max_steps and not terminated
-        if not a.alive:
+        died = not a.alive
+        if died:
             a.deaths += 1
             if not any(e["type"] == "death" for e in events):
                 events.append(dict(type="death"))
+        continued = (died and not success and c.sim_cfg.respawn_on_death
+                     and self.continues_used < c.sim_cfg.max_continues)
+        if continued:
+            events.extend(self._continue_from_checkpoint())
+        self._track_recovery_points()
+        terminated = (died and not continued) or success
+        truncated = self.steps >= c.max_steps and not terminated
         reward = -c.time_penalty + task_reward
         if c.reward_mode != "sparse":
             reward += len(discoveries)
         if c.reward_mode == "dense":
             reward += new_cells * c.exploration_bonus
-        if not a.alive:
+        if died:
             reward -= c.death_penalty
         self._ended, self._frame = terminated or truncated, None
         return self._observation(), float(reward), bool(terminated), bool(truncated), self._info(events)

@@ -37,11 +37,40 @@ class Course:
 WILDLANDS=Course('wildlands',lambda task,seed: WildlandsReferenceEnv(task,seed,render_enabled=False),
                  WildlandsModelPolicy,MISSIONS,checked_step,
                  SOURCES+('owb/bench/baselines/wildlands_model.py','owb/scripts/wildlands_model.py',
-                          'owb/bench/baselines/codex_policy.py'),
+                          'owb/bench/baselines/codex_policy.py',
+                          # policy-view renderer: the frames the model actually sees
+                          'owb/render/landscape.py','owb/render/models.py','owb/render/raycast.py'),
                  observe=lambda env,obs,events: dict(obs,holding_body=env.held is not None))
 WILDLANDS_PRIVILEGED=replace(WILDLANDS,policy=WildlandsPrivilegedPolicy,condition='privileged_state',
     sources=WILDLANDS.sources+('owb/bench/baselines/privileged_view.py',),
     observe=lambda env,obs,events: dict(WILDLANDS.observe(env,obs,events),privileged=privileged_view.wildlands(env,events)))
+
+# Death/recovery rules applied to the env's SimConfig before reset. Runs without a
+# recorded 'recovery' predate the option and used permadeath.
+RECOVERY={
+ 'zelda':dict(respawn_on_death=True,max_continues=3,void_out=True,void_out_damage=4.0),
+ 'permadeath':dict(respawn_on_death=False,void_out=False),
+}
+RECOVERY_NOTES={
+ 'zelda':('\nDeath and recovery: if your stamina runs out while swimming you void out: you reappear on the '
+          'last safe solid ground you stood on (never a moving deck), lose 1 heart (4 health) and drop what '
+          'you hold. At 0 health you die and continue from your checkpoint, the safe ground where you last '
+          'completed a milestone, with full health; milestones, items and world changes persist. You have 3 '
+          'continues; the 4th death ends the episode. observation.recovery reports continues left.'),
+ 'permadeath':'\nDeath ends the episode; there is no respawn or continue.',
+}
+
+
+def build_env(course,task,seed,recovery):
+    env=course.make_env(task,seed)
+    for key,value in RECOVERY[recovery].items(): setattr(env.cfg.sim_cfg,key,value)
+    return env
+
+
+def recovery_view(env):
+    s=env.cfg.sim_cfg
+    return dict(deaths=env.agent.deaths,void_outs=env.void_outs,continues_used=env.continues_used,
+                continues_left=max(0,s.max_continues-env.continues_used) if s.respawn_on_death else 0)
 
 
 def save(path,data):
@@ -55,7 +84,7 @@ def verify_run(directory,course=WILDLANDS):
     summary=json.loads((directory/'summary.json').read_text())
     if sha(directory/'actions.jsonl')!=summary['actions_sha256']:
         raise RuntimeError('Action log hash differs')
-    with course.make_env(manifest['task'],manifest['seed']) as env:
+    with build_env(course,manifest['task'],manifest['seed'],manifest.get('recovery','permadeath')) as env:
         env.reset(seed=manifest['seed'])
         assert env.state_digest()==manifest['initial_digest']
         count=0
@@ -71,13 +100,14 @@ def verify_run(directory,course=WILDLANDS):
 
 def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_calls=200,
         max_actions=6000,wall_seconds=3600,memory_chars=6000,transport='codex',resume_source=None,
-        course=WILDLANDS,stop_after=None):
+        course=WILDLANDS,stop_after=None,recovery='zelda'):
     from PIL import Image
     directory.mkdir(parents=True,exist_ok=False)
     for name in ('observations','requests','responses'): (directory/name).mkdir()
-    env=course.make_env(task,seed)
+    env=build_env(course,task,seed,recovery)
     obs,_=env.reset(seed=seed)
     policy=course.policy(client,model=model,effort=effort,memory_chars=memory_chars,max_calls=max_calls)
+    policy.guide=policy.guide+RECOVERY_NOTES[recovery]
     sources={p:sha(ROOT/p) for p in course.sources}
     config=dict(world=course.world,task=task,seed=seed,model=model,transport=transport,reasoning_effort=effort,
                 max_model_decisions=max_calls,max_primitive_actions=max_actions,max_wall_seconds=wall_seconds,
@@ -89,7 +119,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                 oracle_supplied=False,
                 initial_digest=env.state_digest(),sources=sources,
                 started_utc=datetime.now(timezone.utc).isoformat(),mission=course.missions[task],
-                stop_after_milestones=stop_after,
+                stop_after_milestones=stop_after,recovery=recovery,recovery_rule=RECOVERY[recovery],
                 scope=('Single-seed pilot; not a full long-horizon memory benchmark or an ablation.'
                        +(f' Scored on the first {stop_after} milestones only.' if stop_after else '')))
     previous_actions='';resume_elapsed=0.
@@ -103,6 +133,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                     'max_primitive_actions','max_wall_seconds','memory_chars','history_steps'):
             if config[key]!=old[key]: raise ValueError(f'Resume protocol changed: {key}')
         if (old.get('world','wildlands')!=course.world or old.get('stop_after_milestones')!=stop_after
+                or old.get('recovery','permadeath')!=recovery
                 or old.get('information_condition','observation_only')!=course.condition):
             raise ValueError('Resume protocol changed: world or milestone stop')
         verify_run(resume_source,course)
@@ -130,7 +161,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                     primitive_actions=env.steps,milestones_completed=len(env.completed),required=len(env.milestones),
                     completed=env.completed,current_objective=env.current.title if env.current else None,
                     elapsed_wall_seconds=time.monotonic()-started,simulated_seconds=env.elapsed,
-                    input_tokens=policy.input_tokens,output_tokens=policy.output_tokens)
+                    input_tokens=policy.input_tokens,output_tokens=policy.output_tokens,**recovery_view(env))
     save(directory/'status.json',status('running'))
     try:
         with (directory/'actions.jsonl').open('w') as stream:
@@ -141,6 +172,7 @@ def run(task,directory,client,*,seed=7,model='gpt-6.1-sol',effort='medium',max_c
                 if time.monotonic()-started>=wall_seconds: reason='wall_time_limit';break
                 if stop_after and len(env.completed)>=stop_after: reason='milestone_target_reached';break
                 obs=course.observe(env,dict(obs,rgb=env.render().copy()),last_events)
+                if recovery!='permadeath': obs['recovery']=recovery_view(env)
                 call=policy.calls+1
                 Image.fromarray(obs['rgb']).save(directory/'observations'/f'{call:04}.png')
                 try:
@@ -206,6 +238,8 @@ def main(course=WILDLANDS,description=__doc__,privileged=WILDLANDS_PRIVILEGED):
     p.add_argument('--memory-chars',type=int,default=6000)
     p.add_argument('--resume',type=Path,help='Prior task folder stopped by a Codex transport error; preserve state, memory and budgets')
     p.add_argument('--stop-after-milestones',type=int,help='End the episode once this many milestones are complete')
+    p.add_argument('--recovery',choices=tuple(RECOVERY),default='zelda',
+                   help='zelda: void-out to safe ground (-1 heart) and 3 continues from the last milestone checkpoint')
     p.add_argument('--privileged',action='store_true',
                    help='Labelled upper-bound condition: reveal current-objective state, rules and step feedback (no actions)')
     args=p.parse_args()
@@ -228,7 +262,7 @@ def main(course=WILDLANDS,description=__doc__,privileged=WILDLANDS_PRIVILEGED):
         return run(task,args.output/f'task-{task}-seed-{args.seed}',client,seed=args.seed,
                    model=args.model,effort=args.effort,max_calls=args.max_calls,max_actions=args.max_actions,
                    wall_seconds=args.wall_seconds,memory_chars=args.memory_chars,transport=args.transport,resume_source=args.resume,
-                   course=course,stop_after=args.stop_after_milestones)
+                   course=course,stop_after=args.stop_after_milestones,recovery=args.recovery)
     with ThreadPoolExecutor(max_workers=len(args.task)) as pool:
         results=list(pool.map(worker,args.task))
     save(args.output/'results.json',results)

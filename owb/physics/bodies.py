@@ -36,6 +36,9 @@ class BodyKind:
     semantic: int = B.SEM_STRUCTURE
 
 
+# Cubic bodies render as box impostors in the policy view, not discs.
+BOX_KINDS = frozenset(("crate", "metal_slab"))
+
 KINDS: dict[str, BodyKind] = {
     "boulder": BodyKind("boulder", (0.55, 0.55, 0.55), 420.0, (124, 122, 118),
                         restitution=0.05, friction=0.80,
@@ -370,7 +373,8 @@ class BodySystem:
                                  float(b.pos[2])),
                             radius=r, height=float(sp.half[1] * 2.0),
                             color=col, semantic=sp.semantic,
-                            emissive=b.burning > 0))
+                            emissive=b.burning > 0,
+                            **({"shape": "box"} if sp.name in BOX_KINDS else {})))
         return out
 
     def snapshot(self) -> list[dict]:

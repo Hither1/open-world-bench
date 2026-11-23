@@ -24,6 +24,35 @@ COMMANDS = BASE_COMMANDS + ('inspect', 'pick', 'mount', 'turn_part', 'load', 'un
     'drive', 'use', 'take', 'cache', 'retrieve', 'reverse', 'cancel', 'haul', 'release')
 LEVELS = (4, 38, 103)
 
+# Player-facing interaction feedback (see wildlands_reference.REFUSALS). Many
+# evaluator reasons here name the missing procedure step, so refusals collapse
+# to coarse, perceivable categories; success events become plain phrases.
+SKY_INTERACTIONS = COMMANDS[len(BASE_COMMANDS):]
+OUT_OF_REACH = {'target not visible and within reach', 'cache not reachable', 'loaded craft not in reach',
+                'moor within reach', 'requested loose cargo is not within tow reach',
+                'no loose cargo within tow reach', 'cargo missing, secured elsewhere, or too far',
+                'inspect within local visible reach'}
+LACKING = {'survey instrument required', 'reserve item not carried', 'reserve kit missing', 'spindle missing',
+           'service token and lamp required', 'sky shuttle requires service cell', 'retrieve reserved coupling',
+           'retrieve lamp kit from chosen cache'}
+SKY_REFUSALS = {'no held part': "you aren't holding a part", 'part unavailable': "that part can't be taken",
+                'incompatible or occupied mount': "it doesn't fit there", 'cache empty': 'the cache is empty',
+                'requested reserve is not in this cache': "that isn't in this cache",
+                'one steering axis per decision': 'steer along one axis at a time',
+                'release load before ascent': "you can't ascend while carrying something",
+                'unsupported local operation': 'nothing happens',
+                'inspect source or operate physical mechanism': 'nothing happens'}
+FAN_SOUNDS = {'clean': 'the fan spins up cleanly', 'from rest': 'the fan turns over from rest',
+              'jammed': 'the fan jams'}
+SILENT = {'land', 'jump', 'swing', 'milestone_complete', 'npc_denned', 'npc_emerged', 'apple_fell',
+          'horse_spooked'}
+
+
+def sky_refusal(reason):
+    if reason in OUT_OF_REACH: return 'out of reach or blocked from here'
+    if reason in LACKING: return "you don't have what it needs"
+    return SKY_REFUSALS.get(reason, "it won't work yet")
+
 @dataclass
 class Site:
     id: str
@@ -161,7 +190,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
         self.by_id={m.id:m for m in self.milestones}; self.completed=[]; self.targets={}
         self.satchel=Counter(); self.exposed={}; self.held_part=None; self.hauling=None
         self.cargo={}; self.rafts={}; self.movers={}; self.parts={}; self.online=set()
-        self.last_text=''; self.closed=False; self.selected_calibration=None; self.stable=0.; self._pending=[]
+        self.last_text=''; self.last_feedback=''; self.closed=False; self.selected_calibration=None; self.stable=0.; self._pending=[]
         self.cache_contents={0:[],1:[],2:[]}; self.cache_choice=None; self.light_on=False
         rng=np.random.default_rng(self._seed+21811)
         self.calibration=int(rng.integers(3)); self.destination=int(rng.integers(2))
@@ -290,6 +319,29 @@ class SkylandsReferenceEnv(SkylandsEnv):
         return np.linalg.norm(np.asarray(p)-self.agent.eye)<=reach and self.world.line_of_sight(self.agent.eye,np.asarray(p))
 
     def _fail(self,why): return [dict(type='action_failed',reason=why)]
+
+    def _command(self,command,ingredients,action):
+        events=super()._command(command,ingredients,action)
+        if command in SKY_INTERACTIONS or any(e['type']=='fan_struck' for e in events):
+            self.last_feedback=self._feedback(command,int(action['target']),events)
+        return events
+
+    def _feedback(self,command,tid,events):
+        """One player-facing line for the latest interaction; observation text
+        only, never part of the digest."""
+        said=[]
+        for e in events:
+            t=e['type']
+            if t in SILENT: continue
+            if t=='action_failed': line=sky_refusal(e.get('reason',''))
+            elif t=='fan_struck': line=FAN_SOUNDS.get(e.get('quality'),'the fan spins')
+            elif t=='clue_exposed': line='you read it'
+            elif t=='craft_moved': line='the craft moves'
+            elif t=='motion_blocked': line='movement is blocked'
+            else: line=t.replace('_',' ')
+            if line not in said: said.append(line)
+        name=f'{command} {tid}' if tid else command
+        return f"Last interaction: {name} -> {'; '.join(said[:4]) or 'nothing happens'}."
 
     def craft_valid(self,r):
         if any(p is None for p in r['parts']): return False
@@ -614,13 +666,27 @@ class SkylandsReferenceEnv(SkylandsEnv):
 
     def _observation(self):
         obs=super()._observation()
-        obs['text']=((self.current.title if self.current else 'Course complete')+'. '+self.last_text+f'. Satchel {dict(self.satchel)}')[:1024]
+        parts=((self.current.title if self.current else 'Course complete'),self.last_feedback,self.last_text,
+               f'Satchel {dict(self.satchel)}')
+        obs['text']=' '.join(p.strip().rstrip('.')+'.' for p in parts if p.strip())[:1024]
         return obs
 
     def _info(self,events):
         out=WildlandsEnv._info(self,events)
         out.update(success=self.success,milestones=deepcopy(self.completed),task_progress=len(self.completed)/len(self.milestones))
         return out
+
+    def _safe_ground_ok(self):
+        # A raft or lift deck moves: never a place to return to.
+        return super()._safe_ground_ok() and not any(self.on_deck(o) for o in (*self.rafts.values(),*self.movers.values()))
+
+    def _release_for_recovery(self):
+        events=super()._release_for_recovery()
+        if self.held_part is not None:
+            events.append(dict(type='part_dropped',part=self.held_part,reason='recovery')); self.held_part=None
+        if self.hauling is not None:
+            events.append(dict(type='tow_released',reason='recovery')); self.hauling=None
+        return events
 
     def state_digest(self):
         def deck(d): return {k:(list(v) if isinstance(v,deque) else v) for k,v in d.items() }
@@ -632,6 +698,8 @@ class SkylandsReferenceEnv(SkylandsEnv):
             terrain=hashlib.sha256(self.world.vox.tobytes()).hexdigest(),rng=self.np_random.bit_generator.state,
             climate=vars(self.elements.climate),maps=self.layer_maps)
         data['agent']['inventory']=self.agent.inventory.to_dict(); data['agent']['effects']=[vars(e) for e in self.agent.effects]
+        recovery=self.recovery_state()
+        if recovery is not None: data['recovery']=recovery   # absent unless used: old digests unchanged
         return hashlib.sha256(json.dumps(plain(data),sort_keys=True,default=str).encode()).hexdigest()
 
     def presentation_camera(self):

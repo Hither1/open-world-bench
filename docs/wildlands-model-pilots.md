@@ -50,9 +50,42 @@ From `runs/sol-wildlands-20261121-first3-r2` onward, the observation also report
 `holding_body`, the character's own magnetic-grip state. Earlier runs gave no
 indication of a held body, and `grip` fails while one is held.
 
+Runs collected after 2026-11-22 also get interaction feedback and visible fixtures.
+Earlier observation-only runs had neither:
+
+- **Feedback line.** After `inspect`, `operate`, `grip`, `drag`, `drop`,
+  `install` or a targeted `interact`, the text reports what visibly happened, in
+  player terms. Examples: `Last interaction: operate 3:leaf -> the brake trips;
+  the support plate reads 0 kg`, `-> the brake locks`, `-> nothing happens`, and
+  `-> out of reach or blocked from here`. The line stays until the next
+  interaction. Lift trips and gate openings during later steps are appended to
+  it. Evaluator reason codes are paraphrased; hidden constants are not revealed.
+  The plate reading is the same figure the lift plaque shows.
+
+  Earlier runs got no outcome at all. In `-first3-r2` Wildlands A, the brake
+  worked 19 times, release tripped 12 times on a 0 kg load, and `operate` on the
+  install socket or the plaque did nothing 17 times. To the model all of these looked identical, so it
+  concluded it was out of range.
+- **Visible fixtures in the policy frame.** Controls are posts painted with their
+  symbol colour; plaques are shorter, broader posts. Orange stakes mark the
+  corners of each counterweight support plate. The slab (and crates) render as
+  boxes instead of spheres. Before this, controls had no visual form, the plate
+  was indistinguishable from the grass, and the slab looked like a boulder.
+
+These are policy-observation changes only. Dynamics, events and digests are
+unchanged: the `-first3-r2` traces still replay-verify on the new code. Runs
+from now on also hash the policy-view renderer sources.
+
 `--privileged` runs a labelled privileged-state upper bound (true roles,
 positions, mechanism state, rules and step feedback; no actions). See
 [Skylands model pilots](skylands-model-pilots.md#privileged-state-condition-upper-bound).
+
+`--recovery zelda` (the default since 2026-11-22) enables void-out and three
+continues ([rules](wildlands.md)). It adds the rule to the control guide and
+`observation.recovery` (deaths, void-outs, continues left), and reports the same
+counts in `status.json` and `summary.json`. `--recovery permadeath` keeps the
+earlier rule and states it in the guide. Runs without a recorded `recovery`
+used permadeath, and replay verification applies each run's recorded rule.
 
 The episodes run concurrently, each bounded by 200 model decisions, 6,000
 primitive actions and one wall-clock hour by default. A request already underway

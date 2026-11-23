@@ -31,7 +31,12 @@ per primitive action on unobstructed ground. Collision, gravity, stamina, health
 weather and native movement physics apply. Do not assume a movement succeeded.
 
 The text observation lists nearby control IDs and symbols. An ID is an opaque
-local interaction handle, not a role or a position. inspect(target) reads local
+local interaction handle, not a role or a position. In the image, controls are
+upright posts painted with their symbol colour (sun gold, wave blue, leaf green,
+star white, ring copper); readable plaques are shorter and broader posts. Orange
+corner stakes outline load plates set into the ground. After an interaction the
+text reports what visibly happened ("Last interaction: ..."); that line persists
+until your next interaction. inspect(target) reads local
 information; operate(target) uses a control; interact(target) uses a locker or
 report source; install(target) uses an installation socket. Interactions require
 proximity and visibility. With target=0, interact uses the native nearby
@@ -76,6 +81,7 @@ def describe(observation):
     out['inventory']=inventory
     if 'holding_body' in observation: out['holding_body']=bool(observation['holding_body'])
     if 'privileged' in observation: out['privileged']=observation['privileged']
+    if 'recovery' in observation: out['recovery']=observation['recovery']
     if 'minimap' in observation:
         out['visited_map']={'shape':list(observation['minimap'].shape),
                             'visited_cells':np.argwhere(observation['minimap']>0).tolist()}

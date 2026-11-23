@@ -611,15 +611,27 @@ class Renderer:
             nx = (xs[None, :] - cx) / max(pw, 1e-3)
             ny = (ys[:, None] - cy) / max(ph, 1e-3)
             rr = nx * nx + ny * ny
-            mask = (rr <= 1.0) & (depth[y0:y1 + 1, x0:x1 + 1] > along)
+            box = e.get("shape") == "box"
+            inside = ((np.abs(nx) <= 1.0) & (np.abs(ny) <= 1.0)) if box else (rr <= 1.0)
+            mask = inside & (depth[y0:y1 + 1, x0:x1 + 1] > along)
             if not mask.any():
                 continue
             col = np.asarray(e.get("color", (200, 90, 90)), dtype=np.float32) / 255.0
-            # fake sphere normal for a bit of shape
-            nz = np.sqrt(np.maximum(1.0 - rr, 0.0))
-            nvec = (nx[None, ...] * r[:, None, None]
-                    + (-ny)[None, ...] * u[:, None, None]
-                    + nz[None, ...] * (-f)[:, None, None])
+            if box:
+                # flat faces: a lit top rim over a camera-facing side, split
+                # left/right so blocks and posts read as prisms, not discs
+                top = np.broadcast_to(ny < -0.72, rr.shape)
+                side = np.where(nx < 0, -0.45, 0.45) * np.ones_like(ny)
+                face = side[None, ...] * r[:, None, None] + (-f)[:, None, None]
+                up = np.array((0.0, 1.0, 0.0), np.float32)[:, None, None] * np.ones_like(rr)[None]
+                nvec = np.where(top[None], up, face)
+                nvec = nvec / np.linalg.norm(nvec, axis=0, keepdims=True)
+            else:
+                # fake sphere normal for a bit of shape
+                nz = np.sqrt(np.maximum(1.0 - rr, 0.0))
+                nvec = (nx[None, ...] * r[:, None, None]
+                        + (-ny)[None, ...] * u[:, None, None]
+                        + nz[None, ...] * (-f)[:, None, None])
             ndl = np.clip((nvec * sun["dir"][:, None, None]).sum(axis=0), 0.0, 1.0)
             shade = sun["ambient"] * 0.9 + sun["intensity"] * 0.85 * ndl
             if e.get("emissive"):

@@ -108,7 +108,11 @@ class SimConfig:
     durability_enabled: bool = True
     hunger_enabled: bool = False   # off by default; survival tasks turn it on
 
-    respawn_on_death: bool = False
+    # Zelda-style recovery (opt-in; reference traces use permadeath).
+    respawn_on_death: bool = False  # at 0 health, continue at the last milestone checkpoint
+    max_continues: int = 3          # deaths that continue; the next death ends the episode
+    void_out: bool = False          # out of stamina while swimming: back to last safe ground
+    void_out_damage: float = 4.0    # one heart
     max_bodies: int = 256
     max_npcs: int = 96
 

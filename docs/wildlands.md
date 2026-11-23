@@ -119,8 +119,23 @@ the untouched procedural spawn. Dishes grant temporary protection; ordinary armo
 defense reduces physical hits, while thermal resistance handles cold and heat.
 
 This iteration does not implement quest/puzzle completion, crafting actions, rune
-controls, ranged combat, NPC trading/dialogue, hunger, automatic respawn, or saved
-cross-session checkpoints. Enabling hunger/respawn raises an explicit error.
+controls, ranged combat, NPC trading/dialogue, hunger, or saved cross-session
+checkpoints. Enabling hunger raises an explicit error.
+
+Death ends the episode by default (permadeath). Zelda-style recovery is opt-in
+through `SimConfig`, and the model runners enable it by default:
+
+- `void_out`: when stamina runs out while swimming, the character returns to the
+  last safe solid ground it stood on, loses `void_out_damage` (default 4, one
+  heart) and drops what it holds. Skylands never counts a moving raft or lift
+  deck as safe ground.
+- `respawn_on_death` with `max_continues` (default 3): at 0 health the character
+  continues from its checkpoint with full health. The checkpoint is the safe
+  ground where it last completed a milestone. Milestones, items and world
+  changes persist, and the death after the last continue ends the episode.
+
+Recovery state enters `state_digest()` only once a void-out or continue has
+happened, so traces recorded with permadeath keep their digests.
 ## Visual style
 
 `RenderConfig(style="landscape")` is the default. It renders a continuous natural
