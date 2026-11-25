@@ -15,8 +15,7 @@ Milestones are confirmed from `info["lemon_tart"]`, not from a parallel check.
 Seed 1 takes 22402 control steps, more than the environment's 20000-step
 limit, so the recorded run passes `--horizon 24000`. With the default limit
 the episode is cut off after seven of the nine milestones.
-Results and the things that differ from the original plan are in
-`docs/lemon_tart_reference.md`.
+The current task is specified in `docs/mobile-manipulation-tasks.md`.
 """
 from __future__ import annotations
 

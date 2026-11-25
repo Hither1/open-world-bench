@@ -19,7 +19,7 @@ rendering of the existing original assets. Detailed anime characters, authored
 textures, animations, and larger environmental art sets remain separate art work;
 changing the renderer alone cannot supply them.
 
-Teyvat's [procedural asset refresh](teyvat-visual-assets.md) adds seeded shape
+Teyvat's procedural asset set adds seeded shape
 variation, individual foliage, distinct task fixtures, and material groups for
 stone, bark, foliage, metal, cloth, skin, and terrain. These groups survive scene
 export; Blender assigns their different surface responses during rendering.

@@ -2,8 +2,6 @@
 
 Two tasks. Difficulty lines up with Minecraft: the lemon tart with Mine Diamond (one kitchen procedure), the guest dessert with the Ender Dragon (the same skill later, in another room, after a rule change). This is not the old 12-milestone and 24-milestone binding list.
 
-The old Closing Shift and Catering Week designs are not the tasks to implement. The text is kept in [mobile-robot-long-horizon-tasks.md](mobile-robot-long-horizon-tasks.md).
-
 The simulator is a RoboCasa365 kitchen and a PandaOmron, not RoboCasa's own 365 tasks. Layout 001, style 001. Layout 001 has no wall oven. Baking uses the countertop toaster oven, and the stove is for the curd. Style 001's `ToasterOven003` has temperature and time only, so the environment uses `ToasterOven055`, which also has a function knob.
 
 ## Rules shared by both tasks
@@ -131,13 +129,13 @@ Pour the saucepan into the tart pan. Bake it again the same way: unlock, open, p
 
 ### What is implemented
 
-The 21 milestones, the recipe card, overhead cabinets, and a reverse-order requirement for turning knobs down are not in `lemon_tart.py` yet. The code still scores the old nine milestones: an empty container in the oven or on the stove, the lemon touching the tart pan as assembly, and a baking sheet among the tools. `videos/lemon-tart/lemon-tart-reference.mp4` is that older task. `videos/lemon-tart/lemon-tart-full.mp4` is one run of the procedure in this document: 20 of 21 milestones, then a failed attempt to take the whisk off the dishwasher rack. The stretch after 6:41 is not a result. See [lemon_tart_reference.md](lemon_tart_reference.md).
+The 21 milestones, the recipe card, overhead cabinets, and a reverse-order requirement for turning knobs down are not in `lemon_tart.py` yet. The code still scores the old nine milestones: an empty container in the oven or on the stove, the lemon touching the tart pan as assembly, and a baking sheet among the tools. `videos/lemon-tart/lemon-tart-reference.mp4` is that older task. `videos/lemon-tart/lemon-tart-full.mp4` is one run of the procedure in this document: 20 of 21 milestones, then a failed attempt to take the whisk off the dishwasher rack. The stretch after 6:41 is not a result. The old-video controller is `owb/scripts/lemon_tart_reference.py`.
 
 The flour bag and the old plate are marked non-graspable in the asset table. That filter only affects sampling. The gripper is still contact-based. A preview of the metal tart pan is `videos/lemon-tart/lemon-tart-tart-pan.png`. The whisk has no dishwasher tag, so it is sampled on the counter and moved into the dishwasher after reset.
 
 Kitchen assets are already on the machine used for this work. Textures, fixtures, Lightwheel objects, and the full Objaverse set are present. The Aigen pack is about 13 GB unpacked and did not fit, so only the categories this task uses were kept. Generative textures were not downloaded.
 
-The PandaOmron gripper bottoms out near 0.29 m, so a drawer whose handle is below 0.30 m is not used as a home. Dishwasher objects sit on the upper rack. See [lemon_tart_reference.md](lemon_tart_reference.md). Whether this arm can open layout 001's overhead cabinets has not been measured.
+The PandaOmron gripper bottoms out near 0.29 m, so a drawer whose handle is below 0.30 m is not used as a home. Dishwasher objects sit on the upper rack. Whether this arm can open layout 001's overhead cabinets has not been measured.
 
 Not done: finishing `tools_restored`, other seeds, a one-hour horizon, the transparent-cabinet and spoken-inventory controls, and a `owb.make_env` adapter. The PandaOmron's 12-dimensional action does not fit schema 2. `videos/lemon-tart/lemon-tart-state-walkthrough.mp4` poses objects directly. It is not robot actions, and it shows the old milestones.
 

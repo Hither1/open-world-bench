@@ -11,8 +11,8 @@ milestone specification and the scorer are in [`owb/tasks/minecraft.py`](../owb/
 | B: Ender Dragon | 24 | 36,000 steps | The whole game: Task A's chain, then obsidian, the Nether, blazes and endermen, eyes of ender, a stronghold and The End. |
 
 The milestone counts differ from the 12 and 24 of the
-[Wildlands](wildlands-long-horizon-tasks.md), [Teyvat](teyvat-long-horizon-tasks.md)
-and [mobile robot](mobile-robot-long-horizon-tasks.md) designs. They are kept as
+[Wildlands](wildlands-long-horizon-tasks.md) and [Teyvat](teyvat-long-horizon-tasks.md)
+designs. They are kept as
 published so that scores stay directly comparable with MCU-AgentBeats and the MFM paper.
 Do not renumber them, merge them or add to them.
 

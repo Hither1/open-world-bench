@@ -115,8 +115,7 @@ for an explicitly requested diagnostic render.
 | ![Teyvat scene rendered in Blender](assets/screenshots/teyvat-diverse-cycles.png) | ![Wildlands scene rendered in Blender](assets/screenshots/wildlands-blender.png) |
 
 Teyvat now uses varied botanical meshes, irregular rocks, distinct relay
-structures, and separate natural materials. See the
-[asset refresh and matched before/after views](docs/teyvat-visual-assets.md).
+structures, and separate natural materials.
 
 ```bash
 python -B -m owb.scripts.render_blender \

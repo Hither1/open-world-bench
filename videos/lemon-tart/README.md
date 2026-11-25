@@ -28,4 +28,3 @@ The current task is [mobile-manipulation-tasks.md](../../docs/mobile-manipulatio
 - [lemon-tart-tart-pan.png](lemon-tart-tart-pan.png): the metal tart pan used when
   `usable_ingredients=True`. The default task and the old reference video still use a plate.
 
-Details: [../../docs/lemon_tart_reference.md](../../docs/lemon_tart_reference.md).
