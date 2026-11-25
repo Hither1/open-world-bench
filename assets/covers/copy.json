@@ -1,4 +1,25 @@
 {
+  "teyvat": {
+    "name": "Teyvat",
+    "tagline": "Explore. Solve. Remember.",
+    "description": "Explore an island world of quests, elemental puzzles, and combat. Remember clues, landmarks, and earlier discoveries to unlock new paths and complete distant objectives.",
+    "scope": "Cover: full 1,024-metre procedural island, seed 7.",
+    "alt": "Teyvat: an island landscape with grassy slopes, flowering trees, and distant mountain landmarks."
+  },
+  "minecraft": {
+    "name": "Minecraft",
+    "tagline": "Gather. Craft. Remember.",
+    "description": "Gather resources, craft tools, and progress from basic survival to deep mining and exploration. Remember recipes, routes, and useful procedures across long journeys.",
+    "scope": "Cover: Mine Diamond from Scratch, early Overworld frame, step 1; native 640×360 game capture.",
+    "alt": "Minecraft: a first-person view through a forest, with block terrain, trees, and the survival inventory bar."
+  },
+  "mobile-manipulation": {
+    "name": "Mobile manipulation",
+    "tagline": "Navigate. Manipulate. Remember.",
+    "description": "Navigate a kitchen, handle ingredients and tools, and carry out cooking tasks. Remember object locations, recipe instructions, and appliance controls through cleanup.",
+    "scope": "Cover: PandaOmron lemon-tart run at 05:20; MuJoCo capture cropped to 1152×648.",
+    "alt": "Mobile manipulation: a PandaOmron robot reaches toward a countertop oven beside cookware and a lemon tart."
+  },
   "wildlands": {
     "name": "Wildlands",
     "tagline": "Explore. Survive. Remember.",

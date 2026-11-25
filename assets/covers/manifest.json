@@ -1,7 +1,6 @@
 {
   "created": "2026-11-24",
   "purpose": "Website and GitHub environment covers",
-  "source_directory": ".cache/covers-20261124-v2",
   "images": {
     "wildlands": {
       "scene": {
@@ -85,7 +84,8 @@
         "quality": 92,
         "method": 6,
         "resized": false
-      }
+      },
+      "source_directory": ".cache/covers-20261124-v2"
     },
     "skylands": {
       "scene": {
@@ -169,14 +169,193 @@
         "quality": 92,
         "method": 6,
         "resized": false
+      },
+      "source_directory": ".cache/covers-20261124-v2"
+    },
+    "teyvat": {
+      "scene": {
+        "scope": "Full 1024-metre procedural Teyvat island, seed-7 reset state",
+        "seed": 7,
+        "island_extent_metres": 1024.0,
+        "camera": {
+          "eye": [
+            299.1870422363281,
+            41.91756057739258,
+            -293.3184509277344
+          ],
+          "target": [
+            238.18704223632812,
+            34.91756057739258,
+            -213.31845092773438
+          ],
+          "fov_y": 58.0
+        },
+        "time_of_day": 0.32,
+        "state_sha256_before": "a9bcc17c9f6ce6e7832b2667f4a0053c4c5fb834500ece68cbc9515ac9681f4a",
+        "state_sha256_after": "a9bcc17c9f6ce6e7832b2667f4a0053c4c5fb834500ece68cbc9515ac9681f4a",
+        "simulation_rng_unchanged": true,
+        "agent_position": [
+          272.1870422363281,
+          17.917560577392578,
+          -263.3184509277344
+        ],
+        "actions_executed": 0,
+        "scene_sha256": "eeac909dc697115528a3d444529ceeebca3cb7cc3a363d5a22018523f6936596",
+        "source_sha256": {
+          "assets/covers/export_teyvat.py": "0ee59f416b171deae64deda0946813893752829a0f8e1beca334f667fcb6de9b",
+          "assets/covers/export.py": "5278c07c23e28cd706c9d93ab3ed44ba36b72f008e63cae15e70e4405ac11faa",
+          "assets/covers/render.py": "ef0b4db4810ce4b3d636c0748caee57292025a110f99619d59f5c62611c74bb2",
+          "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+          "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+          "open_world_bench/render/assets.py": "69dead226ba774c9e7fcc5e8908d6bf2796c848b393a085a7623e1153fd1534a",
+          "open_world_bench/render/soft_renderer.py": "b672361b6c76c19456754eb044e8cfa67326427bf894396c6de49dee2ba06668",
+          "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425"
+        }
+      },
+      "renderer": {
+        "engine": "CYCLES",
+        "blender_version": "4.5.4 LTS",
+        "device": "GPU",
+        "compute_device": "OPTIX",
+        "accelerators": [
+          "NVIDIA A40"
+        ],
+        "samples": 128,
+        "denoising": true,
+        "max_bounces": 6,
+        "width": 1920,
+        "height": 1080,
+        "resolution_percentage": 100,
+        "view_transform": "AgX",
+        "look": "AgX - Medium High Contrast",
+        "exposure": 0.6499999761581421,
+        "transparent": false,
+        "output_format": "PNG",
+        "output_color_mode": "RGBA"
+      },
+      "source_directory": ".cache/teyvat-cover-20261124-v1",
+      "files": {
+        "teyvat-cover.png": {
+          "bytes": 2948939,
+          "sha256": "673ea784486dc5a07c8634154966744ee0dc43bcfc9d452273eb049925014166"
+        },
+        "teyvat-cover.webp": {
+          "bytes": 191014,
+          "sha256": "a8c6d3cf0b267c6a20d565325d2c4a3695694042a30050fba873de5cfb7c2777"
+        }
+      },
+      "webp": {
+        "quality": 92,
+        "method": 6,
+        "resized": false
+      }
+    },
+    "minecraft": {
+      "source": {
+        "scope": "Mine Diamond from Scratch, early Overworld frame, step 1",
+        "renderer": "Minecraft client via MineStudio / MCU",
+        "cycles_exporter": false,
+        "source": "assets/covers/sources/minecraft-step-0000001.jpg",
+        "source_sha256": "8072768967baf33a750f167067a8a75cba91c5b47f0b543e5c060c9d672ca384",
+        "original_source": "MFM-abl/MCU/output/abl_opus_diamond_flat/episode_001/hires/0000001.jpg",
+        "source_dimensions": [
+          640,
+          360
+        ],
+        "output_dimensions": [
+          640,
+          360
+        ],
+        "decoding": "Restore RGB order from the channel-reversed MCU wire JPEG",
+        "decoding_reference": "MFM-abl/MCU/worldmodel_purple_agent.py::_decode_image",
+        "cropped": false,
+        "upscaled": false,
+        "hud_retained": true,
+        "brightness_adjusted": false,
+        "task_performance_claim": false,
+        "extractor": "ffmpeg version 7.0.2-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2024 the FFmpeg developers",
+        "extraction_script_sha256": "e99dcba77861e2fb8a197b797abf6d8a5790fbc47599f986f8cc23218d55a555",
+        "image_sha256": "b9876e7b8571b7d7b9366ca3b94ea9001b95126d2cb8abf4e460f8156bf869c6"
+      },
+      "source_directory": ".cache/native-covers-20261124-v2",
+      "files": {
+        "minecraft-cover.png": {
+          "bytes": 421298,
+          "sha256": "b9876e7b8571b7d7b9366ca3b94ea9001b95126d2cb8abf4e460f8156bf869c6"
+        },
+        "minecraft-cover.webp": {
+          "bytes": 74824,
+          "sha256": "9099ef8171d31b1f040770ce5a56c9b21e7af06d57e61eb3a97b5f452157ab60"
+        }
+      },
+      "webp": {
+        "quality": 92,
+        "method": 6,
+        "resized": false
+      }
+    },
+    "mobile-manipulation": {
+      "source": {
+        "scope": "PandaOmron lemon-tart reference run, video timestamp 05:20",
+        "renderer": "MuJoCo native offscreen renderer",
+        "cycles_exporter": false,
+        "source": "videos/lemon-tart/lemon-tart-full.mp4",
+        "source_sha256": "879e24024d63621c2cb6c02467e26a41419dbe2e341b7e94b06edfd3be138138",
+        "source_record": "videos/lemon-tart/lemon-tart-full.json",
+        "seed": 1,
+        "source_dimensions": [
+          1280,
+          720
+        ],
+        "output_dimensions": [
+          1152,
+          648
+        ],
+        "timestamp_seconds": 320,
+        "crop": {
+          "x": 64,
+          "y": 72,
+          "width": 1152,
+          "height": 648
+        },
+        "crop_purpose": "Remove the video caption while preserving the scene pixels",
+        "upscaled": false,
+        "brightness_adjusted": false,
+        "scene_content_replaced": false,
+        "source_run_success": false,
+        "source_run_milestones": "20/21",
+        "task_performance_claim": false,
+        "extractor": "ffmpeg version 7.0.2-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2024 the FFmpeg developers",
+        "extraction_script_sha256": "e99dcba77861e2fb8a197b797abf6d8a5790fbc47599f986f8cc23218d55a555",
+        "image_sha256": "f88147adb0898c5aae9a66f393be3feb028501a8fe7b79d73c2909a8261dbbb7"
+      },
+      "source_directory": ".cache/native-covers-20261124-v2",
+      "files": {
+        "mobile-manipulation-cover.png": {
+          "bytes": 850034,
+          "sha256": "f88147adb0898c5aae9a66f393be3feb028501a8fe7b79d73c2909a8261dbbb7"
+        },
+        "mobile-manipulation-cover.webp": {
+          "bytes": 99790,
+          "sha256": "290b2441083bc5c260cb88435f753233d3ff978234d5c8ce520f883d41e6169e"
+        }
+      },
+      "webp": {
+        "quality": 92,
+        "method": 6,
+        "resized": false
       }
     }
   },
   "presentation_only": true,
-  "post_render_edits": false,
   "sources": {
     "assets/covers/export.py": "5278c07c23e28cd706c9d93ab3ed44ba36b72f008e63cae15e70e4405ac11faa",
     "assets/covers/render.py": "ef0b4db4810ce4b3d636c0748caee57292025a110f99619d59f5c62611c74bb2",
-    "assets/covers/render.slurm": "94fc762046097067414fb55a0a10d43de6883232e32feaf04f444edb52c8a439"
-  }
+    "assets/covers/render.slurm": "94fc762046097067414fb55a0a10d43de6883232e32feaf04f444edb52c8a439",
+    "assets/covers/export_teyvat.py": "0ee59f416b171deae64deda0946813893752829a0f8e1beca334f667fcb6de9b",
+    "assets/covers/render_teyvat.slurm": "40cfe1c1eb5ce08ffe3c1dcfa8c6324660e15eada9771caad927184659ea0bae",
+    "assets/covers/extract_native.py": "e99dcba77861e2fb8a197b797abf6d8a5790fbc47599f986f8cc23218d55a555"
+  },
+  "updated": "2026-11-24",
+  "post_render_processing": "Cycles renders unchanged; native RGB decoding/crop recorded per image; WebP format conversion only."
 }

@@ -15,7 +15,8 @@ OUT="${1:-$ROOT/_site}"
 rm -rf "$OUT"
 mkdir -p "$OUT/media/gif" "$OUT/media/img" "$OUT/media/video"
 
-cp "$ROOT/website/index.html" "$ROOT/website/style.css" "$ROOT/website/main.js" "$OUT/"
+cp "$ROOT/website/"{index.html,style.css,main.js,leaderboard-data.js,leaderboard.js,task-explorer.css,task-explorer.js} "$OUT/"
+python3 "$ROOT/website/build_task_data.py" "$OUT/task-data.js"
 touch "$OUT/.nojekyll"
 
 # Animated previews (8 s, 480 px) cut from the MP4s below.
@@ -24,8 +25,8 @@ cp "$ROOT"/assets/demos/readme/{teyvat,skylands,wildlands,minecraft-ender-dragon
 # Blender Cycles stills (seed 7).
 cp "$ROOT"/assets/screenshots/{teyvat-diverse-cycles,wildlands-blender}.png "$OUT/media/img/"
 
-# Native-resolution Cycles covers, with WebP delivery and PNG fallback.
-cp "$ROOT"/assets/covers/{wildlands,skylands}-cover.{png,webp} "$OUT/media/img/"
+# Environment covers: Cycles and native captures, WebP with PNG fallback.
+cp "$ROOT"/assets/covers/*-cover.{png,webp} "$OUT/media/img/"
 
 # Full clips. All are H.264 with fast-start metadata, so they stream in browsers.
 cp "$ROOT/videos/teyvat/teyvat-fullscale-24-milestones.mp4" \
