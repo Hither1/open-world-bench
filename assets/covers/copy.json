@@ -1,0 +1,16 @@
+{
+  "wildlands": {
+    "name": "Wildlands",
+    "tagline": "Explore. Survive. Remember.",
+    "description": "Explore a changing wilderness, manage supplies, and overcome environmental challenges. Remember landmarks, resources, and past discoveries to plan your next move.",
+    "scope": "Cover: full-size procedural sandbox, seed 7.",
+    "alt": "Wildlands: forested cliffs, mountain landmarks, and turquoise water viewed from above the valley."
+  },
+  "skylands": {
+    "name": "Skylands",
+    "tagline": "Build. Traverse. Remember.",
+    "description": "Traverse floating islands, surface landscapes, and underground depths. Build crossings, transport cargo, and reuse earlier discoveries to complete journeys across all three layers.",
+    "scope": "Cover: Aster Reach introductory construction course, full-size variant, seed 7.",
+    "alt": "Skylands: a traveler faces a construction gap between floating islands, framed by golden trees and a ruined arch."
+  }
+}

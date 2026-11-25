@@ -1,0 +1,182 @@
+{
+  "created": "2026-11-24",
+  "purpose": "Website and GitHub environment covers",
+  "source_directory": ".cache/covers-20261124-v2",
+  "images": {
+    "wildlands": {
+      "scene": {
+        "scope": "Full-size procedural Wildlands sandbox, reset state",
+        "seed": 7,
+        "world_shape": [
+          256,
+          80,
+          256
+        ],
+        "camera": {
+          "eye": [
+            163.5,
+            73.0,
+            236.5
+          ],
+          "target": [
+            163.1930389404297,
+            72.7927017211914,
+            235.57113647460938
+          ],
+          "fov_y": 41.554596568496
+        },
+        "time_of_day": 0.3,
+        "state_sha256_before": "afee815b1edb5078ffe6c8350d0aa04e57a5c4cdf6ac1dd4de0297ee14655013",
+        "state_sha256_after": "afee815b1edb5078ffe6c8350d0aa04e57a5c4cdf6ac1dd4de0297ee14655013",
+        "simulation_rng_unchanged": true,
+        "agent_position": [
+          143.5,
+          46.0099983215332,
+          123.5
+        ],
+        "actions_executed": 0,
+        "scene_sha256": "bc751b9d0290558a6fa1a17f2f918f2038979e6dd2356fc00ade292db4f30d5f",
+        "presentation_landscape": {
+          "horizon_layers": 2
+        },
+        "source_sha256": {
+          "assets/covers/export.py": "5278c07c23e28cd706c9d93ab3ed44ba36b72f008e63cae15e70e4405ac11faa",
+          "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+          "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+          "owb/render/landscape.py": "962cc0032d566099efc22a7f2f6c5eaee1565bd9418f9ef99cb5021054f8cbd0",
+          "owb/render/models.py": "6d5e435356885ac7051e77a64609717171f866f00be74f2cf061ba00c49a66a3",
+          "owb/render/dressing.py": "0108db6882a9a68f7bb5f47a1ff5ecd0336c56e9f3eeecba1ef8726226f4d3cb",
+          "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+          "owb/world/worldgen.py": "192e3036bcbe9f82575a718b149aa08e028d6965eca808ee380dd60c21286951"
+        }
+      },
+      "renderer": {
+        "engine": "CYCLES",
+        "blender_version": "4.5.4 LTS",
+        "device": "GPU",
+        "compute_device": "OPTIX",
+        "accelerators": [
+          "NVIDIA A100-SXM4-40GB"
+        ],
+        "samples": 128,
+        "denoising": true,
+        "max_bounces": 6,
+        "width": 1920,
+        "height": 1080,
+        "resolution_percentage": 100,
+        "view_transform": "AgX",
+        "look": "AgX - Medium High Contrast",
+        "exposure": 0.6499999761581421,
+        "transparent": false,
+        "output_format": "PNG",
+        "output_color_mode": "RGBA"
+      },
+      "files": {
+        "wildlands-cover.png": {
+          "bytes": 2886381,
+          "sha256": "89d39b44dc1673771bca1dc51f3e6b03689f2a228c64394bbc093038dd8feec7"
+        },
+        "wildlands-cover.webp": {
+          "bytes": 184862,
+          "sha256": "26571a7ec045407a1e149802a9c571744000a7d101e20badceeeca372112561a"
+        }
+      },
+      "webp": {
+        "quality": 92,
+        "method": 6,
+        "resized": false
+      }
+    },
+    "skylands": {
+      "scene": {
+        "scope": "Aster Reach introductory construction course, full-size variant, reset state",
+        "seed": 7,
+        "world_shape": [
+          96,
+          96,
+          96
+        ],
+        "camera": {
+          "eye": [
+            25.0,
+            96.0,
+            50.5
+          ],
+          "target": [
+            25.957826614379883,
+            95.71265411376953,
+            50.5
+          ],
+          "fov_y": 41.554596568496
+        },
+        "time_of_day": 0.3,
+        "state_sha256_before": "40214fa35b206bf8c041ceaa84774b8e02140fbd0fbc928b13ac371a0f4c528b",
+        "state_sha256_after": "40214fa35b206bf8c041ceaa84774b8e02140fbd0fbc928b13ac371a0f4c528b",
+        "simulation_rng_unchanged": true,
+        "agent_position": [
+          41.5,
+          87.01000213623047,
+          50.5
+        ],
+        "actions_executed": 0,
+        "scene_sha256": "9c0fc7982c0c1f66515c3015ac6981c8474cb93b9d7e440b0d8680b9b366a536",
+        "presentation_landscape": {
+          "horizon_layers": 2
+        },
+        "source_sha256": {
+          "assets/covers/export.py": "5278c07c23e28cd706c9d93ab3ed44ba36b72f008e63cae15e70e4405ac11faa",
+          "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+          "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+          "owb/render/landscape.py": "962cc0032d566099efc22a7f2f6c5eaee1565bd9418f9ef99cb5021054f8cbd0",
+          "owb/render/models.py": "6d5e435356885ac7051e77a64609717171f866f00be74f2cf061ba00c49a66a3",
+          "owb/render/dressing.py": "0108db6882a9a68f7bb5f47a1ff5ecd0336c56e9f3eeecba1ef8726226f4d3cb",
+          "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+          "owb/world/worldgen.py": "192e3036bcbe9f82575a718b149aa08e028d6965eca808ee380dd60c21286951"
+        }
+      },
+      "renderer": {
+        "engine": "CYCLES",
+        "blender_version": "4.5.4 LTS",
+        "device": "GPU",
+        "compute_device": "OPTIX",
+        "accelerators": [
+          "NVIDIA A100-SXM4-40GB"
+        ],
+        "samples": 128,
+        "denoising": true,
+        "max_bounces": 6,
+        "width": 1920,
+        "height": 1080,
+        "resolution_percentage": 100,
+        "view_transform": "AgX",
+        "look": "AgX - Medium High Contrast",
+        "exposure": 0.6499999761581421,
+        "transparent": false,
+        "output_format": "PNG",
+        "output_color_mode": "RGBA"
+      },
+      "files": {
+        "skylands-cover.png": {
+          "bytes": 2906781,
+          "sha256": "4d6ac3b8708714d60256692dd6f4fda6af7d318353d47f995f2ecfc4ac320889"
+        },
+        "skylands-cover.webp": {
+          "bytes": 193584,
+          "sha256": "2434817cb78c7a6f4189e18c5d0bf4f2137633a9dbc52b24f9da83d7fe69e13a"
+        }
+      },
+      "webp": {
+        "quality": 92,
+        "method": 6,
+        "resized": false
+      }
+    }
+  },
+  "presentation_only": true,
+  "post_render_edits": false,
+  "sources": {
+    "assets/covers/export.py": "5278c07c23e28cd706c9d93ab3ed44ba36b72f008e63cae15e70e4405ac11faa",
+    "assets/covers/render.py": "ef0b4db4810ce4b3d636c0748caee57292025a110f99619d59f5c62611c74bb2",
+    "assets/covers/render.slurm": "94fc762046097067414fb55a0a10d43de6883232e32feaf04f444edb52c8a439"
+  }
+}

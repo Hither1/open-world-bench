@@ -1,4 +1,4 @@
-// Click a GIF preview to replace it with the full MP4 in place.
+// Click a cover or animated preview to replace it with the full MP4 in place.
 // Without JavaScript the preview is a plain link to the MP4.
 document.querySelectorAll(".player").forEach((player) => {
   const link = player.querySelector("a");
@@ -11,7 +11,7 @@ document.querySelectorAll(".player").forEach((player) => {
     video.playsInline = true;
     video.preload = "auto";
     const img = player.querySelector("img");
-    if (img) video.setAttribute("aria-label", img.alt);
+    video.setAttribute("aria-label", link.getAttribute("aria-label") || (img ? img.alt : "Environment video"));
     player.replaceChildren(video);
     video.focus();
   });

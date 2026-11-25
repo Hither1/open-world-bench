@@ -16,6 +16,15 @@ anime-styled 3D exploration, physics-driven puzzle traversal, and real-world rob
 navigation. Each is a clean-room research environment inspired by the games below; no
 game assets or code are redistributed.
 
+| Wildlands | Skylands |
+| --- | --- |
+| [![Wildlands: forested cliffs, mountain landmarks, and turquoise water](assets/covers/wildlands-cover.png)](docs/wildlands.md) | [![Skylands: golden trees, floating islands, and a ruined arch across a construction gap](assets/covers/skylands-cover.png)](docs/skylands.md) |
+| **Explore. Survive. Remember.** Explore a changing wilderness, manage supplies, and overcome environmental challenges. Remember landmarks, resources, and past discoveries to plan your next move. | **Build. Traverse. Remember.** Traverse floating islands, surface landscapes, and underground depths. Build crossings, transport cargo, and reuse earlier discoveries to complete journeys across all three layers. |
+
+Cover views: Wildlands' procedural sandbox and Skylands' introductory Aster Reach
+course, seed 7. Blender Cycles / OptiX, native 1920 × 1080, 128 samples.
+[Assets, scope, and render settings](assets/covers/README.md).
+
 | Environment | Inspired by | What it stresses |
 | --- | --- | --- |
 | `minecraft` | Minecraft | Open-ended crafting and building: deep tech trees, resource bookkeeping, base/landmark recall over very long horizons. |

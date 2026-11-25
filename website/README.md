@@ -18,3 +18,9 @@ python -m http.server -d _site 8000   # open http://localhost:8000
 To feature a different clip, update the `data-src`, link and `<img>` in
 `index.html` and the matching `cp` line in `build.sh`. Keep the renderer and
 settings in the caption (see AGENTS.md).
+
+Wildlands and Skylands use the native-resolution Cycles covers in
+[`assets/covers`](../assets/covers/README.md), with WebP sources and PNG fallbacks.
+Their concise descriptions and alt text are also collected in
+[`copy.json`](../assets/covers/copy.json). Keep the cover caption separate from
+the video caption: the cover and clip can show different courses.
