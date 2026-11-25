@@ -268,7 +268,70 @@ def _cradle(batch,center,radius,height,metal,prongs=4):
         batch.tube(center+d*radius*1.05+(0,height*.55,0),center+d*radius*.55+(0,height,0),.025,metal,sides=5)
 
 
+# Working-memory fixtures (open_world_bench/working_memory_probes.py). Colours name the
+# item an entry stands for; they are keyed to the entity's visual_version, never to RNG.
+WM_LEVER_RGB=((.78,.16,.12),(.16,.32,.78),(.18,.58,.25),(.90,.74,.15),(.92,.91,.86))
+WM_PAWL_RGB=((1.00,.45,.22),(.26,.62,.95),(.62,.90,.98),(.78,.52,1.00),(.52,.93,.74),(.93,.78,.36))
+
+
+def _wm_fixture(batch,rng,used,role,version):
+    wood=_color((.42,.30,.19),rng,.08);iron=(.27,.27,.29);bronze=(.45,.34,.17);stone=_color((.50,.48,.42),rng,.05)
+    if role=="wm_lever":
+        # A start lever: stone plinth, bronze quadrant, and an enamelled knob in the lever's colour.
+        colour=WM_LEVER_RGB[(version-1)%len(WM_LEVER_RGB)]
+        _tag(batch,STONE);batch.box((0,.28,0),(.62,.56,.46),stone)
+        batch.box((0,.60,0),(.5,.08,.38),_color((.36,.35,.31),rng,.05))
+        _tag(batch,METAL);ring(batch,(0,.70,0),.24,bronze,vertical=True,tube=.03,segments=12)
+        tip=np.array((0,1.55,-.42 if used else .42))
+        batch.tube((0,.66,0),tip,.045,iron,sides=6)
+        _tag(batch,CLOTH);batch.ellipsoid(tip,(.11,.11,.11),colour,sides=8,rings=4)
+        batch.box((0,.36,.235),(.34,.22,.02),colour)
+    elif role=="wm_pawl":
+        # A winch pawl: timber post, iron ratchet tooth, and an element-coloured boss.
+        colour=WM_PAWL_RGB[(version-1)%len(WM_PAWL_RGB)]
+        _tag(batch,BARK);batch.box((0,.55,0),(.34,1.1,.34),wood)
+        batch.box((0,.06,0),(.6,.12,.6),_color((.33,.24,.15),rng,.05))
+        _tag(batch,METAL)
+        angle=-.9 if used else .5
+        batch.tube((0,1.02,.18),(0,1.02+.5*np.cos(angle),.18+.5*np.sin(angle)),.05,iron,sides=5)
+        batch.box((0,1.12,0),(.4,.06,.4),iron)
+        _tag(batch,CLOTH);batch.cone((0,.78,.17),.17,.04,colour,sides=10,taper=1)
+        batch.box((0,.42,0),(.36,.14,.36),colour)
+        batch.ellipsoid((0,1.24,0),(.16,.16,.16),colour,sides=8,rings=4)
+    elif role=="wm_station":
+        # The lift's test station: plinth, timber gantry, a large gear and a steam pipe.
+        _tag(batch,STONE);batch.box((0,.25,0),(2.4,.5,1.4),stone)
+        _tag(batch,BARK)
+        for x in (-1.0,1.0):
+            batch.box((x,1.45,0),(.18,1.9,.18),wood)
+        batch.box((0,2.45,0),(2.3,.16,.22),wood)
+        _tag(batch,METAL)
+        ring(batch,(0,1.45,0),.62,bronze,vertical=True,tube=.06,segments=18)
+        for a in np.arange(8)*np.pi/4:
+            batch.box((np.cos(a)*.7,1.45+np.sin(a)*.7,0),(.12,.12,.12),bronze)
+        batch.tube((0,1.45,-.05),(0,1.45,-.45),.08,iron,sides=8)
+        batch.tube((.9,.5,-.4),(.9,2.9,-.4),.09,iron,sides=8)
+        batch.ellipsoid((.9,3.0,-.4),(.14,.1,.14),iron,sides=8,rings=3)
+    elif role=="wm_winch":
+        # The causeway winch: a chain drum on two trestles with a crank.
+        _tag(batch,BARK)
+        for x in (-1.3,1.3):
+            batch.tube((x,0,-.6),(x,1.5,0),.09,wood,sides=6);batch.tube((x,0,.6),(x,1.5,0),.09,wood,sides=6)
+            batch.box((x,.05,0),(.3,.1,1.5),_color((.33,.24,.15),rng,.05))
+        batch.tube((-1.1,1.5,0),(1.1,1.5,0),.48,wood,sides=12)
+        _tag(batch,METAL)
+        for x in (-1.0,-.35,.35,1.0):
+            ring(batch,(x,1.5,0),.5,iron,vertical=True,tube=.035,segments=14)
+        batch.tube((-1.5,1.5,0),(1.5,1.5,0),.07,iron,sides=6)
+        batch.tube((1.5,1.5,0),(1.5,1.1,.4),.05,iron,sides=5)
+        for k in range(6):
+            ring(batch,(0,1.0-k*.17,.5),.07,iron,tube=.022,segments=8)
+
+
 def _fixture(batch,rng,kind,used,role,version):
+    if role.startswith("wm_"):
+        _wm_fixture(batch,rng,used,role,version)
+        return
     stone=(.50,.48,.42);dark=(.36,.35,.31);metal=(.43,.32,.16);glow=(.34,.70,.72)
     lit=lambda on,off: on if used else off
     if role in ("drain","vane","core","source") or kind=="pillar":
@@ -364,6 +427,49 @@ def add_fixture(batch,kind,pos,yaw,used,obj_id,identity,role="",version=1):
     batch.emissive[-1]=emission.copy()
 
 
+def _glyph(batch,local,yaw,obj_id,glyph,x,y,z):
+    """One carved glyph inlaid on a chest face; each glyph has its own silhouette."""
+    gold=(.80,.66,.30);dark=(.20,.19,.17)
+    if glyph=="anchor":
+        batch.box(local(x,y,z),(.03,.16,.02),gold,yaw,obj_id);batch.box(local(x,y+.06,z),(.10,.025,.02),gold,yaw,obj_id)
+        batch.box(local(x,y-.07,z),(.12,.03,.02),gold,yaw,obj_id)
+    elif glyph=="bell":
+        batch.cone(local(x,y-.07,z),.07,.14,gold,sides=8,obj_id=obj_id,taper=.25)
+    elif glyph=="crown":
+        batch.box(local(x,y-.04,z),(.14,.05,.02),gold,yaw,obj_id)
+        for dx in (-.05,0,.05):
+            batch.cone(local(x+dx,y-.015,z),.025,.08,gold,sides=4,obj_id=obj_id)
+    elif glyph=="fish":
+        batch.ellipsoid(local(x,y,z),(.08,.04,.015),gold,yaw,obj_id,sides=7,rings=3)
+        batch.cone(local(x+.08,y,z),.035,.05,gold,sides=3,obj_id=obj_id)
+    elif glyph=="key":
+        ring(batch,local(x-.04,y,z),.03,gold,vertical=True,tube=.012,segments=8,obj_id=obj_id)
+        batch.box(local(x+.03,y,z),(.1,.02,.02),gold,yaw,obj_id);batch.box(local(x+.07,y-.025,z),(.02,.04,.02),gold,yaw,obj_id)
+    elif glyph=="lantern":
+        batch.box(local(x,y,z),(.07,.11,.02),gold,yaw,obj_id);batch.box(local(x,y,z-.005),(.04,.07,.02),dark,yaw,obj_id)
+    elif glyph=="shell":
+        for k in range(5):
+            a=np.pi*(.15+.7*k/4)
+            batch.tube(local(x,y-.05,z),local(x+np.cos(a)*.08,y-.05+np.sin(a)*.1,z),.012,gold,obj_id,sides=4)
+    else:   # star
+        batch.box(local(x,y,z),(.13,.03,.02),gold,yaw,obj_id);batch.box(local(x,y,z),(.03,.13,.02),gold,yaw,obj_id)
+        batch.box(local(x,y,z),(.09,.09,.02),gold,yaw+np.pi/4,obj_id)
+
+
+def _marked_chest(batch,local,yaw,obj_id,code,used):
+    """A sunken chest: weed-dark bands, a mooring ring, and its three-glyph mark on the front."""
+    from open_world_bench.working_memory_probes import mark_from_code
+    _tag(batch,STONE)
+    batch.box(local(0,.36,-.42),(.78,.30,.03),(.17,.21,.19),yaw,obj_id)
+    _tag(batch,METAL)
+    for k,glyph in enumerate(mark_from_code(code)):
+        _glyph(batch,local,yaw,obj_id,glyph,(k-1)*.24,.36,-.44)
+    ring(batch,local(0,.12,-.5),.09,(.30,.28,.23),vertical=True,tube=.02,segments=10,obj_id=obj_id)
+    _tag(batch,FOLIAGE)
+    for x in (-.32,.05,.3):
+        batch.tube(local(x,.0,.4),local(x+.05,.55,.45),.03,(.20,.33,.20),obj_id,end_radius=.01,sides=4)
+
+
 def add_detailed_entity(batch,kind,pos,yaw,used,obj_id,bob=0,*,identity=None,visual_role="",visual_version=1):
     from .meshes import _humanoid
     from .style import ENTITY_ALBEDO
@@ -375,7 +481,7 @@ def add_detailed_entity(batch,kind,pos,yaw,used,obj_id,bob=0,*,identity=None,vis
     p=np.asarray(pos,dtype=np.float32)
     identity=identity if identity is not None else (kind,tuple(np.round(p,3)))
     rng=np.random.default_rng(appearance_seed(identity))
-    if kind in ("pillar","waypoint","beacon"):
+    if kind in ("pillar","waypoint","beacon") or visual_role in ("wm_lever","wm_pawl","wm_station","wm_winch"):
         add_fixture(batch,kind,p,yaw,used,obj_id,identity,visual_role,visual_version)
         return
     c,s=np.cos(yaw),np.sin(yaw)
@@ -390,6 +496,13 @@ def add_detailed_entity(batch,kind,pos,yaw,used,obj_id,bob=0,*,identity=None,vis
         _humanoid(batch,p,yaw,obj_id,tunic=cloth,hair=hairs[int(rng.integers(4))],phase=0,
                   scale=size,skin=skins[int(rng.integers(4))],hair_style=style)
         _tag(batch,BARK)
+        if visual_role=="wm_boatman":
+            # The boatman leans on a long oar and wears a wide straw hat.
+            batch.tube(local(.42,0,-.05),local(.42,2.2,-.05),.035,(.42,.30,.18),obj_id,sides=6)
+            batch.box(local(.42,.25,-.05),(.04,.45,.17),(.42,.30,.18),yaw,obj_id)
+            _tag(batch,CLOTH)
+            batch.cone(local(0,1.78*size,0),.42*size,.18*size,(.76,.66,.40),sides=12,obj_id=obj_id,taper=.2)
+            _tag(batch,BARK)
         if style%2:
             batch.ellipsoid(local(.24,.87,.04),(.13,.17,.08),(.32,.23,.14),yaw,obj_id)
             batch.tube(local(-.17,1.42,.15),local(.24,.84,.12),.025,(.25,.18,.11),obj_id,sides=5)
@@ -412,6 +525,8 @@ def add_detailed_entity(batch,kind,pos,yaw,used,obj_id,bob=0,*,identity=None,vis
         for x in (-.38,.38):
             for y in (.18,.60):
                 batch.ellipsoid(local(x,y,-.415),(.026,.026,.018),(.54,.49,.34),yaw,obj_id,sides=5,rings=3)
+        if visual_role=="wm_marked":
+            _marked_chest(batch,local,yaw,obj_id,visual_version,used)
     elif kind in ("enemy","boss"):
         size=(1.0 if kind=="enemy" else 1.7)*rng.uniform(.96,1.04)
         cloth=np.asarray(ENTITY_ALBEDO[kind])*rng.uniform(.79,1.07)

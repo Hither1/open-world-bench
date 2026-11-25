@@ -242,3 +242,42 @@ def test_env_class_imports_when_robocasa_is_installed():
     from owb.tasks.lemon_tart_env import LemonTart
 
     assert LemonTart.__name__ == "LemonTart"
+
+
+def test_knob_hint_states_the_reverse_rule_without_spelling_it_out():
+    from owb.tasks.lemon_tart_lock import knob_hint
+
+    text = knob_hint(("time", "function", "temperature"))
+    assert "time, then function, then temperature" in text
+    assert "reverse of that order" in text
+    assert "temperature, then function, then time" not in text
+
+
+def test_reverse_knob_probe_scores_blocked_turns_after_the_recipe_is_withdrawn():
+    from owb.tasks.lemon_tart_lock import ReverseKnobProbe
+
+    probe = ReverseKnobProbe(("time", "function", "temperature"))
+    assert probe.probe.expected == ("temperature", "function", "time")
+    # blocked turns while baking (recipe still in view) are not WM attempts
+    assert probe.update(["ingredients_out"], 2, 100, 5.0) == []
+    events = probe.update(["ingredients_out", "crust_baked"], 2, 200, 10.0)
+    assert [e["type"] for e in events] == ["wm_cue_read"]
+    events = probe.update(["ingredients_out", "crust_baked"], 3, 260, 13.0)
+    assert events[-1]["type"] == "wm_attempt" and events[-1]["correct"] is False
+    events = probe.update(["ingredients_out", "crust_baked", "knobs_zeroed"], 3, 400, 20.0)
+    assert events[-1]["correct"] is True
+    s = probe.probe.summary()
+    assert s["solved"] and s["attempts"] == 2 and s["first_attempt_correct"] is False
+    assert s["first_attempt_delay"] == {"decisions": 60, "seconds": 3.0}
+    assert s["solve_delay"] == {"decisions": 200, "seconds": 10.0}
+    assert probe.update(["crust_baked", "knobs_zeroed"], 9, 500, 25.0) == []
+
+
+def test_reverse_knob_probe_first_attempt_correct_without_blocked_turns():
+    from owb.tasks.lemon_tart_lock import ReverseKnobProbe
+
+    probe = ReverseKnobProbe(("function", "temperature", "time"), control=True)
+    probe.update(["crust_baked"], 0, 10, 1.0)
+    probe.update(["crust_baked", "knobs_zeroed"], 0, 50, 3.0)
+    s = probe.probe.summary()
+    assert s["first_attempt_correct"] is True and s["attempts"] == 1 and s["control"] is True

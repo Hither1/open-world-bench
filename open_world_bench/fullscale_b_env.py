@@ -33,8 +33,10 @@ from .party import Party
 from .quests import ObjKind, Objective, Quest, QuestEngine, QuestGraph, Stage
 from .render import RenderSettings
 from .world import HOSTILE, EntityKind, World, WorldConfig
+from . import working_memory_probes as wmp
 
-COURSE_VERSION = "teyvat-fullscale-b-course-v2"
+COURSE_VERSION = "teyvat-fullscale-b-course-v2"            # legacy course (working_memory=False)
+WM_COURSE_VERSION = "teyvat-fullscale-b-course-v3-wm"     # with WM-TB09 and WM-TB10 (default)
 GOAL = ("Reopen the valley's expedition route, recover the beacon heart, and bring the distant outpost online. "
         "Train with the relay keeper, sentinel warden, and wind guide before setting out.")
 INTERACT_REACH = 3.0
@@ -46,6 +48,13 @@ CUE_RANGE = 8.0
 STATUE_DISCOVER = 10.0
 REACH_RADIUS = 6.0
 CONTEXT_BOUNDARIES = ("B11", "B21", "B24")
+# Working-memory fixtures, as offsets from existing anchors (no new terrain or collision).
+WM_BOATMAN = ("lake", (66.0, 0.0))           # east shore of Mirror Lake
+WM_CHEST_RING = ("lake", (4.0, 3.0), 9.0)    # centre (the old chest spot) and radius on the lake bed
+WM_WINCH = ("cut_top", (-16.0, -12.0))       # far (upper) end of the Scarp Cut causeway
+WM_MARK_RANGE = 4.0                          # chest marks are readable only this close
+WM_PAWL_SPACING = 3.0
+WM_CONTROL_RANGE = 12.0
 SENTINEL_GLYPH, VENT_GLYPH = "crescent", "spiral"
 ITEM_NAMES = dict(kit="causeway repair kit", coupling="ferry coupling", field_seal="warden's field seal",
                   tools="expedition service tools", shrine_seal="shrine access seal", heart="beacon heart")
@@ -105,6 +114,17 @@ class ExpeditionCourse:
         self._was_grounded = True
         self.min_hp = float("inf")
         self.exposures: list[dict] = []
+        # Working-memory probes (docs/working-memory-probes.md); their own generators, not `rng` above.
+        self.working_memory = bool(getattr(env, "working_memory", True))
+        self.version = WM_COURSE_VERSION if self.working_memory else COURSE_VERSION
+        self.wm = wmp.make_probes("b", seed, control=getattr(env, "wm_control", False)) if self.working_memory else {}
+        self.wm_control = bool(getattr(env, "wm_control", False)) and self.working_memory
+        self.wm_cue = wmp.CueChannel()
+        self.wm_armed: set = set()
+        self.wm_sources = {wmp.TB09: "boatman", wmp.TB10: "mechanic"} if self.working_memory else {}
+        self.wm_marks: dict = {}                   # chest entity -> mark
+        self.wm_pawls: dict = {}                   # pawl entity -> element name
+        self.seed = int(seed)
 
     # ------------------------------------------------------------------ setup
     def anchor(self, name):
@@ -255,8 +275,11 @@ class ExpeditionCourse:
                 best = (d, eid, role, owner)
         return best
 
+    INTERACT_ROLES = ("npc", "plaque", "chest", "receiver", "exchange", "signal", "statue",
+                      "wm_source", "wm_pawl", "wm_winch")
+
     def interact(self, char):
-        hit = self._nearest(char, roles=("npc", "plaque", "chest", "receiver", "exchange", "signal", "statue"))
+        hit = self._nearest(char, roles=self.INTERACT_ROLES)
         if hit is None:
             return
         _, eid, role, owner = hit
@@ -290,6 +313,17 @@ class ExpeditionCourse:
             self._touch_receiver(eid, owner)
         elif role == "exchange":
             self._exchange(eid, owner)
+        elif role == "wm_source":
+            self.say(f"{self.world.get(eid).label} speaks.")
+            self._wm_read(wmp.TB09, eid)
+            if current and op.kind == "talk":
+                self.finish_op()
+        elif role == "wm_pawl":
+            self._wm_enter(eid)
+        elif role == "wm_winch":
+            probe = self.wm[wmp.TB10]
+            self.say("Causeway winch: " + ("already set; the causeway is locked open." if probe.solved else
+                                           "six element pawls stand before the chain drum."))
         elif role == "signal":
             if not current:
                 self.say("The signal mast is cold.")
@@ -308,6 +342,17 @@ class ExpeditionCourse:
             return
         if spec.get("dive") and not (char.state == MoveState.SWIMMING and char.pos[1] < -2.5):
             self.say(f"{e.label}: it lies on the lake bed; dive to reach it.")
+            return
+        if spec.get("wm"):
+            # WM-TB09: every chest opens; only the marked one holds the coupling. Wrong ones are empty.
+            e.used = True
+            self.emit("open_chest", entity=eid)
+            self._wm_emit(self.wm[wmp.TB09].choose(0, eid, self.env.steps, self.world.elapsed))
+            if spec.get("item"):
+                self.give(spec["item"], eid)
+                self._check_collect()
+            else:
+                self.say(f"{e.label}: empty.")
             return
         need = spec.get("fact")
         if need and need not in self.facts:
@@ -359,6 +404,10 @@ class ExpeditionCourse:
     def _exchange(self, eid, owner):
         op = self.op
         e = self.world.get(eid)
+        if owner == "mechanic" and wmp.TB10 in self.wm_armed and not self.wm[wmp.TB10].solved:
+            self.say(f"{e.label} speaks again.")         # the source can always be revisited
+            self._wm_read(wmp.TB10, eid)
+            return
         if op is None or op.kind != "exchange" or op.target != owner:
             self.say(self.exchanges[owner]["idle"])
             return
@@ -372,6 +421,97 @@ class ExpeditionCourse:
         e.used = True
         self.say(self.exchanges[owner]["done"])
         self.finish_op()
+        if self.working_memory and owner == "mechanic":
+            self._wm_read(wmp.TB10, eid)
+
+    # --------------------------------------------------------- working memory
+    def _wm_emit(self, payloads):
+        for payload in payloads:
+            self.events.append(wmp.wm_event(payload))
+
+    def _wm_read(self, probe_id, eid):
+        probe = self.wm[probe_id]
+        self.wm_armed.add(probe_id)
+        self._wm_emit([probe.read_cue(self.env.steps, self.world.elapsed)])
+        self.wm_cue.post(probe_id, eid, wmp.cue_text(probe), self.world.elapsed)
+
+    def _wm_pawl_reset(self, probe):
+        for pid, element in self.wm_pawls.items():
+            self.world.get(pid).used = probe.solved and element in probe.expected
+
+    def _wm_enter(self, eid):
+        probe = self.wm[wmp.TB10]
+        e = self.world.get(eid)
+        if probe.solved:
+            self.say("Causeway winch: already set; the causeway is locked open.")
+            return
+        if wmp.TB10 not in self.wm_armed:
+            self.say("Causeway winch: the drum is chained; there is nothing to set yet.")
+            return
+        events = probe.enter(self.wm_pawls[eid], self.env.steps, self.world.elapsed)
+        self._wm_emit(events)
+        e.used = True
+        if not any(ev["type"] == "wm_attempt" for ev in events):
+            self.say(wmp.neutral_entry(e.label, len(probe.buffer)))
+            return
+        self._wm_pawl_reset(probe)
+        if probe.solved:
+            self.say("Causeway winch: the drum turns and locks the causeway open.")
+        else:
+            self.say("Causeway winch: the pawls drop back; the drum does not turn.")
+
+    def _wm_tick(self, char):
+        self.wm_cue.update(self.world, char, self.world.elapsed)
+        probe = self.wm[wmp.TB10]
+        if probe.buffer:
+            drum = self.world.get("winch")
+            if float(np.hypot(*(drum.pos - char.pos)[[0, 2]])) > wmp.WALK_AWAY:
+                probe.clear()                      # walked away: the partial entry drops back
+                self._wm_pawl_reset(probe)
+
+    def _wm_local(self, char):
+        """Cue (in reach, 5 s), the mark of a chest within a few metres, the fixture at hand, control notices."""
+        parts = []
+        cue = self.wm_cue.text(self.world, char, self.world.elapsed)
+        if cue:
+            parts.append(cue)
+        near = []
+        for eid, mark in self.wm_marks.items():
+            e = self.world.get(eid)
+            d = float(np.hypot(*(e.pos - char.pos)[[0, 2]]))
+            if d <= WM_MARK_RANGE and abs(float(e.pos[1] - char.pos[1])) < INTERACT_HEIGHT + 1.0:
+                near.append((d, f"{e.label} mark: {wmp.mark_text(mark)}"))
+        for eid in self.wm_pawls:
+            e = self.world.get(eid)
+            d = float(np.hypot(*(e.pos - char.pos)[[0, 2]]))
+            if d <= INTERACT_REACH and abs(float(e.pos[1] - char.pos[1])) < INTERACT_HEIGHT:
+                near.append((d, f"Within reach: {e.label}"))
+        if near:
+            parts.append(min(near)[1])
+        if self.wm_control:
+            sites = {wmp.TB09: self._wm_ring_centre(), wmp.TB10: self.world.get("winch").pos[[0, 2]]}
+            for pid, probe in self.wm.items():
+                if not probe.solved and float(np.hypot(*(char.pos[[0, 2]] - sites[pid]))) <= WM_CONTROL_RANGE:
+                    parts.append(wmp.control_text(probe))
+        return parts
+
+    def _wm_ring_centre(self):
+        name, offset, _ = WM_CHEST_RING
+        return self.anchor(name) + offset
+
+    def wm_summary(self):
+        """Evaluator-only: per-probe scores plus where the source and use site are."""
+        out = {}
+        uses = {wmp.TB09: self._wm_ring_centre(), wmp.TB10: self.world.get("winch").pos[[0, 2]]}
+        for pid, probe in self.wm.items():
+            source = self.world.get(self.wm_sources[pid]).pos
+            xz = np.asarray(uses[pid], float)
+            use = np.array([xz[0], float(self.fw.terrain.height_at(*xz)), xz[1]])
+            out[pid] = dict(probe.summary(), source=[round(float(v), 3) for v in source],
+                            use_site=[round(float(v), 3) for v in use],
+                            distance=round(float(np.linalg.norm((use - source)[[0, 2]])), 2),
+                            content=list(probe.items), expected=list(probe.expected))
+        return out
 
     # ------------------------------------------------------------- elements
     def apply_element(self, char, element, reach):
@@ -482,6 +622,8 @@ class ExpeditionCourse:
     # ----------------------------------------------------------------- tick
     def tick(self, char, dt):
         elapsed = self.world.elapsed
+        if self.working_memory:
+            self._wm_tick(char)
         for vent in self.vents.values():
             if vent.expire(elapsed):
                 self.emit("vent_discharged", vent=vent.id)
@@ -558,6 +700,8 @@ class ExpeditionCourse:
                 self.finish_op()
             elif op.kind == "collect" and self.pack.get(op.params["item"], 0) > 0:
                 self.finish_op()
+            elif op.kind == "panel" and self.wm[op.params["wm"]].solved:
+                self.finish_op()
             elif op.kind == "reach":
                 p = self.anchor(op.target)
                 ground = self.fw.terrain.height_at(*p)
@@ -582,6 +726,8 @@ class ExpeditionCourse:
         text, when = self.feedback
         if text and now - when <= 8.0:
             parts.append(text)
+        if self.working_memory:
+            parts += self._wm_local(char)
         cues = []
         for unit in self.relays.values():
             core = self.world.get(unit.receivers["core"])
@@ -601,7 +747,7 @@ class ExpeditionCourse:
         parts += cues[:3]
         labels = []
         for eid, (role, owner) in self.roles.items():
-            if role in ("receiver",):
+            if role in ("receiver", "wm_pawl") or eid in self.wm_marks:
                 continue
             e = self.world.get(eid)
             d = float(np.linalg.norm(e.pos - char.pos))
@@ -622,7 +768,9 @@ class ExpeditionCourse:
                                for k, u in self.sentinels.items()},
                     vents={k: (v.charged, round(v.charged_at, 6), v.launches, v.sputters) for k, v in self.vents.items()},
                     statues=sorted(k for k, v in self.statues.items() if v),
-                    ops=[op.params.get("unlocked", False) for m in self.milestones for op in m.ops])
+                    ops=[op.params.get("unlocked", False) for m in self.milestones for op in m.ops],
+                    **(dict(working_memory={k: p.state() for k, p in self.wm.items()}, wm_cue=self.wm_cue.state(),
+                            wm_armed=sorted(self.wm_armed)) if self.working_memory else {}))
 
     def verify(self):
         failures = []
@@ -636,6 +784,9 @@ class ExpeditionCourse:
         for sid, unit in self.sentinels.items():
             if self.world.get(unit.entity).alive:
                 failures.append(f"sentinel {sid} alive")
+        for pid, probe in self.wm.items():
+            if not probe.solved:
+                failures.append(f"working-memory probe {pid} unsolved")
         return dict(success=not failures, failures=failures, completed=len(self.completed),
                     required=len(self.milestones), deaths=self.deaths)
 
@@ -679,7 +830,35 @@ def build_course(course: ExpeditionCourse):
     }
     c.spawn("camp_chest", EntityKind.CHEST, A("camp") + (6.0, 4.0), "chest", "camp_chest", "Raider strongbox")
     lake = A("lake")
-    c.spawn("lake_chest", EntityKind.CHEST, lake + (4.0, 3.0), "chest", "lake_chest", "Sunken marked chest")
+    if c.working_memory:
+        # WM-TB09: six marked chests on the lake bed, the boatman on the east shore.
+        probe = c.wm[wmp.TB09]
+        marks, target = wmp.chest_marks(probe, c.seed)
+        name, offset, radius = WM_CHEST_RING
+        centre = A(name) + offset
+        for k, mark in enumerate(marks):
+            eid = f"lake_chest_{k + 1}"
+            angle = k * np.pi / 3.0
+            c.spawn(eid, EntityKind.CHEST, centre + radius * np.array([np.cos(angle), np.sin(angle)]), "chest", eid,
+                    "Sunken chest", visual_role="wm_marked", visual_version=wmp.mark_code(mark))
+            c.chests[eid] = dict(item="coupling" if k == target else None, dive=True, wm=True, locked="")
+            c.wm_marks[eid] = mark
+        probe.set_expected((f"lake_chest_{target + 1}",))
+        name, offset = WM_BOATMAN
+        c.spawn("boatman", EntityKind.NPC, A(name) + offset, "wm_source", "boatman", "Lake boatman",
+                visual_role="wm_boatman")
+        # WM-TB10: the winch at the far (upper) end of the causeway, with six element pawls.
+        name, offset = WM_WINCH
+        drum = A(name) + offset
+        c.spawn("winch", EntityKind.PILLAR, drum, "wm_winch", "winch", "Causeway winch", visual_role="wm_winch")
+        for k, element in enumerate(wmp.PAWL_ELEMENTS):
+            eid = f"winch_pawl_{element}"
+            xz = drum + ((k - (len(wmp.PAWL_ELEMENTS) - 1) / 2) * WM_PAWL_SPACING, 4.0)
+            c.spawn(eid, EntityKind.PILLAR, xz, "wm_pawl", "winch", f"Winch pawl ({element})",
+                    visual_role="wm_pawl", visual_version=k + 1)
+            c.wm_pawls[eid] = element
+    else:
+        c.spawn("lake_chest", EntityKind.CHEST, lake + (4.0, 3.0), "chest", "lake_chest", "Sunken marked chest")
     c.spawn("reserve", EntityKind.CHEST, A("depot") + (9.0, 3.0), "chest", "reserve", "Reserve compartment")
     c.spawn("reliquary", EntityKind.CHEST, A("spire_top") + (-5.0, 3.0), "chest", "reliquary", "Reliquary")
     for k, offset in enumerate(((-8.0, -6.0), (9.0, -7.0), (-2.0, 10.0))):
@@ -762,13 +941,24 @@ def build_course(course: ExpeditionCourse):
     c.add("B07", "Survey the expedition cache", [T("", "survey", "depot_plaque")],
           (quartermaster, "Register done. The reserve compartment stays sealed until reserve power returns from the "
                           "upper valley. The causeway mechanic at the foot of the Scarp Cut needs a repair kit - "
-                          "raiders in the eastern hills took it - and the ferry coupling that sank in Mirror Lake."))
+                          "raiders in the eastern hills took it - and the ferry coupling that sank in Mirror Lake."
+                          + (" The boatman on the lake's east shore saw which chest it went down in."
+                             if c.working_memory else "")))
     c.add("B08", "Recover the causeway repair kit", [T("", "collect", "camp_chest", dict(item="kit"))])
-    c.add("B09", "Retrieve the submerged ferry coupling", [T("", "collect", "lake_chest", dict(item="coupling"))])
-    c.add("B10", "Reopen the expedition causeway",
-          [T("", "exchange", "mechanic", dict(requires=dict(kit=1, coupling=1), grants=CAUSEWAY_OPEN)),
-           T("", "reach", "cut_top", dict(radius=10.0))],
-          ("mechanic", "The valley signal station up the cut has been dark."))
+    if c.working_memory:
+        target = c.wm[wmp.TB09].expected[0]
+        c.add("B09", "Retrieve the submerged ferry coupling",
+              [T("", "talk", "boatman", dict(wm=wmp.TB09)), T("", "collect", target, dict(item="coupling"))])
+        c.add("B10", "Reopen the expedition causeway",
+              [T("", "exchange", "mechanic", dict(requires=dict(kit=1, coupling=1), grants=CAUSEWAY_OPEN)),
+               T("", "reach", "cut_top", dict(radius=10.0)), T("", "panel", "winch", dict(wm=wmp.TB10))],
+              ("mechanic", "The valley signal station up the cut has been dark."))
+    else:
+        c.add("B09", "Retrieve the submerged ferry coupling", [T("", "collect", "lake_chest", dict(item="coupling"))])
+        c.add("B10", "Reopen the expedition causeway",
+              [T("", "exchange", "mechanic", dict(requires=dict(kit=1, coupling=1), grants=CAUSEWAY_OPEN)),
+               T("", "reach", "cut_top", dict(radius=10.0))],
+              ("mechanic", "The valley signal station up the cut has been dark."))
     c.add("B11", "Restore the valley signal station", [T("", "relay", "relay_b11")],
           ("relay_b11:core", "Station log: the observation post on the eastern stacks reports the route north."))
     c.add("B12", "Reach the cliff observation post", [T("", "reach", "post", dict(radius=8.0))],
@@ -826,7 +1016,7 @@ class ExpeditionWorld(World):
         course = getattr(self, "expedition", None)
         if course is None:
             return None
-        hit = course._nearest(char, roles=("npc", "plaque", "chest", "receiver", "exchange", "signal", "statue"))
+        hit = course._nearest(char, roles=course.INTERACT_ROLES)
         return f"Interact: {self.get(hit[1]).label}" if hit else None
 
     def _update_enemy(self, e, char, dt):
@@ -929,8 +1119,12 @@ class ExpeditionQuests(QuestEngine):
 class TeyvatExpeditionEnv(OpenWorldEnv):
     """Native-action full-scale Task B."""
 
-    def __init__(self, seed=7, *, render_enabled=False, width=384, height=216, max_steps=90_000):
+    def __init__(self, seed=7, *, render_enabled=False, width=384, height=216, max_steps=90_000,
+                 working_memory=True, wm_control=False):
         self.render_enabled = render_enabled
+        # working_memory=False rebuilds the pre-2026-11-24 course (no WM-TB09/WM-TB10 fixtures).
+        self.working_memory = bool(working_memory)
+        self.wm_control = bool(wm_control)
         cfg = EnvConfig(seed=seed, text_obs=True, backend="soft", action_repeat=6, max_episode_steps=max_steps,
                         world=WorldConfig(prop_density=0, day_length=100000, start_time_of_day=.43),
                         camera=CameraConfig(distance=9, far=520),
@@ -1002,7 +1196,7 @@ class TeyvatExpeditionEnv(OpenWorldEnv):
         return result
 
     def state_digest(self):
-        state = {"suite": SUITE_VERSION, "physics": PHYSICS_VERSION, "course": COURSE_VERSION,
+        state = {"suite": SUITE_VERSION, "physics": PHYSICS_VERSION, "course": self.course.version,
                  "world": self.world_digest, "position": self.char.pos.tolist(), "velocity": self.char.vel.tolist(),
                  "stamina": float(self.char.stamina), "hp": float(self.char.hp), "move_state": int(self.char.state),
                  "yaw": float(self.char.yaw), "regen": float(self.char._regen_timer),

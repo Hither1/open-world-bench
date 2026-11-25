@@ -9,12 +9,14 @@ from collections import Counter
 from copy import deepcopy
 from dataclasses import dataclass, field
 import hashlib
+from itertools import permutations
 import json
 import numpy as np
 from gymnasium import spaces
 from .wildlands import WildlandsEnv, COMMANDS as BASE_COMMANDS
 from ..core.config import EnvConfig, WorldConfig, RenderConfig, SimConfig
 from ..core import blocks as B
+from ..core.working_memory import WorkingMemoryProbe, summaries as wm_summaries
 from ..physics.collide import box_collides
 from ..world.worldgen import generate, Landmark
 from ..world.fauna import populate
@@ -69,12 +71,57 @@ REFUSALS = {
     'body collision': 'the slab is blocked',
     'another body blocks movement': 'the slab is blocked',
     'dismount first': 'dismount first',
+    'locker keypad locked': 'the locker is locked',
+    'bays not released': 'the bay is locked; the yard office has not released it',
 }
 NO_EFFECT = ('not a counterweight control', 'not a shaft control', 'not a flow control')
 # Control posts carry their symbol as a painted colour (policy view only).
 SYMBOL_COLOURS = {'sun': (226, 182, 58), 'wave': (62, 120, 206), 'leaf': (78, 166, 74),
                   'star': (232, 230, 222), 'ring': (190, 104, 58)}
 STAKE_COLOUR = (236, 128, 36)
+
+# Working-memory probes (docs/working-memory-probes.md). Each adds a physical
+# requirement to an existing milestone: a cue read at a source fixture must be
+# used at a fixture out of its sight. Content comes from the probe's own
+# generator (owb/core/working_memory.py), never the simulation RNG. Fixture
+# positions are course-authoring data, like milestone sites.
+KEYPAD = tuple('0123456789')
+PITCHES = ('10', '20', '30', '40', '50')          # blade pitch settings, degrees
+BLADE_COLOURS = ('red', 'yellow', 'blue')         # weather-board listing order
+BAY_LABELS = ('pump fittings', 'engine fittings', 'couplings')
+WA07_BOARD = (130.5, Y + 1, 58.5)                 # depot entrance, on the access road
+# The stores room is a closed warehouse on a three-block loading dock. Its one
+# doorway is reached by climbing the dock face (a ridden horse cannot climb), and
+# floor-to-ceiling racks lay out a four-lane aisle to the locker at the far end.
+STORES = (104, 56, 120, 64)                       # footprint (x0, z0, x1, z1)
+STORES_FLOOR = Y + 3                              # standing height inside
+STORES_DOOR = (120, 57)                           # doorway in the east wall, above the dock face
+STORES_RACKS = ((58, 105), (60, 119), (62, 105))  # rack rows (z, gap x)
+LOCKER = (119.5, Y + 4, 63.5)                     # supply locker at the end of the last aisle
+KEYPAD_STANCE = (117.5, Y + 3, 63.5)              # a spot within reach of the keypad
+WA07_COPY = (117.0, Y + 4, 63.2)                  # wm_control copy, beside the keypad
+WB11_MANIFEST = (35.5, Y + 1, 62.5)               # yard gate, east of the yard office
+BAY_STORE = (27, 104, 34, 106)                    # coupling store south of the archive court
+BAY_X = tuple(range(28, 34))                      # bay 1..6 cells; doors face south (z = 106)
+WB11_COPY = (25.5, Y + 1, 107.5)
+WB15_BOARD = (95.5, Y + 1, 96.0)                  # weather board against the station base's east face
+DIAL = tuple((92.6, Y + 5.2, 95.4 + .3 * k) for k in range(len(PITCHES)))
+ROTOR_HUB = (92.6, Y + 6.0, 97.8)
+DECK_PARAPET = ((93, 33, 93), (93, 34, 99))       # two blocks high on the deck's east edge
+WB15_COPY = (91.5, Y + 5, 94.2)
+WM_TEXT = {
+    'WM-WA07': 'Depot dispatch board: the stores locker code is {code}. Key it in on the locker keypad inside the stores room.',
+    'WM-WB11': ('Yard manifest: pump coupling in bay {pump}; engine coupling in bay {engine}. '
+                'The coupling bays stand behind the archive court; the yard office releases them.'),
+    'WM-WB15': ('Weather board: set blade pitch by tag colour - red {red}, yellow {yellow}, blue {blue} degrees. '
+                "The deck dial sets blades by number (1, then 2, then 3); match each numbered blade's colour tag."),
+}
+WM_NAMES = {'WM-WA07': 'dispatch board', 'WM-WB11': 'yard manifest', 'WM-WB15': 'weather board'}
+WM_CUE_SECONDS = 5.0
+# Policy-view impostor colours (presentation only).
+WM_COLOURS = {'dispatch board': (222, 208, 170), 'yard manifest': (84, 120, 88), 'weather board': (120, 150, 176),
+              'keypad': (70, 74, 78), 'dial': (54, 58, 62), 'plate': (214, 214, 206),
+              'red': (206, 52, 40), 'yellow': (232, 196, 46), 'blue': (52, 92, 206)}
 
 
 @dataclass
@@ -209,9 +256,11 @@ class WildlandsReferenceEnv(WildlandsEnv):
     presentation_kind = 'wildlands_reference'
     world_features = frozenset({'riding', 'orchard'})
 
-    def __init__(self, task='a', seed=7, *, render_enabled=False):
+    def __init__(self, task='a', seed=7, *, render_enabled=False, wm_control=False):
         if task not in ('a','b'): raise ValueError('task must be a or b')
         self.task = task
+        # Matched diagnostic: also post each WM cue at its use site. Never a default.
+        self.wm_control = bool(wm_control)
         cfg = EnvConfig(seed=seed, starter_camp=False, max_steps=14000,
             obs_rgb=render_enabled, obs_text=True, reward_mode='sparse',
             world_cfg=WorldConfig(size_x=160,size_y=64,size_z=160,sea_level=12,
@@ -418,6 +467,8 @@ class WildlandsReferenceEnv(WildlandsEnv):
             family=m.kind if m.kind in ('balance','thermal') else 'flow'
             for k,tid in enumerate(m.targets.values()):
                 self.targets[tid]['symbol']=self.family_symbols[family][k%5]
+        # Added last, so every earlier target keeps its ID and symbol.
+        self._setup_working_memory()
         self.world.recompute_heightmaps()
         self.agent.pitch=-.08
         self.agent.inventory.add('rune_magnet',1)
@@ -478,6 +529,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
             else: pos=obj['pos']
             if not self._reachable(pos,4 if command=='grip' else 3.2):
                 return self._fail('target out of reach or occluded',target=tid)
+            if obj.get('wm'): return self._wm_interaction(command,obj,m)
             if command=='inspect':
                 text=self.clue(m)
                 self.last_text=text; s['observed']=True; self.exposed[m.id]=self.elapsed
@@ -541,11 +593,16 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 return [dict(type='station_engaged',milestone=m.id)]
             if m.kind=='exchange':
                 if s['done']: return self._fail('locker empty')
+                if m.id=='A07' and not self.wm['WM-WA07'].solved: return self._fail('locker keypad locked')
                 if any(self.satchel[k]<1 for k in m.consumes): return self._fail('exchange input missing')
                 if m.id in ('B10','B11') and not self.satchel['authorization']: return self._fail('commission required')
                 for k in m.consumes: self.satchel[k]-=1
                 for k in m.gives: self.satchel[k]+=1
                 s['done']=True
+                if m.id=='B11':
+                    # The couplings themselves wait in the numbered bays (WM-WB11).
+                    self.wm_world['bays_released']=True
+                    return [dict(type='bays_released',milestone=m.id)]
                 return [dict(type='item_exchange',milestone=m.id,inputs=m.consumes,outputs=m.gives)]
             if m.kind=='report':
                 if not self.drained or self.road_seen!={'north','south'}: return self._fail('verify the drained road first')
@@ -590,6 +647,23 @@ class WildlandsReferenceEnv(WildlandsEnv):
             elif t=='item_exchange': said.append(f"exchanged {list(e['inputs']) or 'nothing'} for {list(e['outputs'])}")
             elif t=='completion_signal': said.append('report delivered')
             elif t=='clue_exposed': said.append('you read it')
+            elif t=='wm_cue_read': said.append(f"you read the {WM_NAMES[e['probe']]}")
+            elif t=='fixture_read': said.append('you look it over')
+            elif t=='wm_entry':
+                said.append('the key clicks' if e['probe']=='WM-WA07' else 'the dial clicks')
+            elif t=='wm_attempt' and e['probe']=='WM-WA07':
+                said.append('the keypad chimes and the locker bolt slides back' if e['correct']
+                            else 'the keypad buzzes and clears')
+            elif t=='wm_attempt' and e['probe']=='WM-WB15':
+                said.append('the blades bite the wind and the rotor steadies' if e['correct']
+                            else 'the blades feather and the dial springs back to blade 1')
+            elif t=='bays_released': said.append('the yard office stamps your authorization and releases the coupling bays')
+            elif t=='bay_opened':
+                part=e['contents']
+                said.append(f"bay {e['bay']} swings open: it holds a {part.replace('_',' ')}; you take it" if part
+                            else f"bay {e['bay']} swings open: it is empty")
+            elif t=='bay_looked': said.append(f"bay {e['bay']} stands open and empty")
+            elif t=='wm_noop': said.append('nothing more happens')
         name=(f"{command} {tid}"+(f":{obj['symbol']}" if obj else '')) if tid else command
         return f"Last interaction: {name} -> {'; '.join(said) or 'nothing happens'}."
 
@@ -598,8 +672,9 @@ class WildlandsReferenceEnv(WildlandsEnv):
         control posts (plaques are short and broad) and stakes at the corners of
         each counterweight support plate. Presentation only; no collision."""
         out=super()._extra_entities()
+        out+=self._wm_entities()
         for obj in self.targets.values():
-            if obj['role'].startswith('weight'): continue
+            if obj['role'].startswith('weight') or obj.get('wm'): continue
             x,y,z=(float(v) for v in obj['pos']); plaque=obj['role']=='inspect'
             h,r=(.8,.2) if plaque else (1.05,.13)
             out.append(dict(pos=(x,y-1+h/2,z),radius=r,height=h,shape='box',
@@ -612,6 +687,316 @@ class WildlandsReferenceEnv(WildlandsEnv):
                     out.append(dict(pos=(cx,Y+.3,cz),radius=.08,height=.6,shape='box',
                                     color=STAKE_COLOUR,semantic=B.SEM_INTERACTIVE))
         return out
+
+    # ---------------- working-memory probes (docs/working-memory-probes.md) ----------------
+    def _wm_target(self,m,role,pos,label,probe,fixture,value=None):
+        tid=self._target(m,role,pos)
+        self.targets[tid].update(symbol=label,wm=probe,fixture=fixture,value=value)
+        return tid
+
+    def _setup_working_memory(self):
+        """Draw each probe's content from its own generator and build its fixtures.
+
+        Visible labels name a fixture but never carry the cue. The stores room and
+        the coupling-bay store are collision geometry; boards, keypad, dial and
+        blade tags are non-colliding fixtures like the other control posts."""
+        seed,control=self._seed,self.wm_control
+        self.wm={}; self.wm_world={}; self.wm_cue=None
+        w=self.world
+        if self.task=='a':
+            p=WorkingMemoryProbe.draw('WM-WA07','A07','hold',seed,KEYPAD,4,control=control)
+            self.wm[p.probe]=p; m=self.by_id['A07']
+            x0,z0,x1,z1=STORES; F=int(STORES_FLOOR)
+            w.fill_box((x0,29,z0),(x1,F-1,z1),B.STONE)             # loading dock
+            w.fill_box((x0,F,z0),(x1,F+1,z1),B.BRICK)
+            w.fill_box((x0+1,F,z0+1),(x1-1,F+1,z1-1),B.AIR)
+            w.fill_box((x0,F+2,z0),(x1,F+2,z1),B.PLANK)            # roof
+            for rz,gap in STORES_RACKS:
+                w.fill_box((x0+1,F,rz),(x1-1,F+1,rz),B.PLANK)
+                w.fill_box((gap,F,rz),(gap,F+1,rz),B.AIR)
+            dx,dz=STORES_DOOR
+            w.fill_box((dx,F,dz),(dx,F+1,dz),B.AIR)
+            self.targets[m.targets['interact']]['pos']=np.array(LOCKER,float)
+            self._wm_target(m,'inspect',WA07_BOARD,'dispatch board',p.probe,'source')
+            for i,d in enumerate(KEYPAD):
+                self._wm_target(m,f'key{d}',(119.05,F+1.3-.25*(i//5),63.1+.2*(i%5)),f'key {d}',p.probe,'key',d)
+            if control: self._wm_target(m,'inspect_copy',WA07_COPY,'dispatch board copy',p.probe,'copy')
+            self.wm_world['panel']=(119.05,F+1.2,63.5)
+        else:
+            p=WorkingMemoryProbe.draw('WM-WB11','B11','select',seed,range(1,len(BAY_X)+1),2,control=control)
+            self.wm[p.probe]=p; m=self.by_id['B11']
+            # The couplings wait in the bays; the yard office only releases them.
+            m.gives=()
+            rng=p.rng(seed)
+            labels=[BAY_LABELS[int(i)] for i in rng.permutation(np.repeat(np.arange(len(BAY_LABELS)),2))]
+            x0,z0,x1,z1=BAY_STORE
+            w.fill_box((x0,29,z0),(x1,30,z1),B.BRICK)
+            w.fill_box((x0+1,29,z0+1),(x1-1,30,z1-1),B.AIR)
+            w.fill_box((x0+1,29,z1),(x1-1,30,z1),B.PLANK)       # one plank door per bay
+            w.fill_box((x0,31,z0),(x1,31,z1),B.PLANK)
+            for k,x in enumerate(BAY_X,1):
+                self._wm_target(m,f'bay{k}',(x+.5,Y+1,z1+1.05),f'bay {k} {labels[k-1]}',p.probe,'bay',k)
+            self._wm_target(m,'inspect',WB11_MANIFEST,'yard manifest',p.probe,'source')
+            if control: self._wm_target(m,'inspect_copy',WB11_COPY,'yard manifest copy',p.probe,'copy')
+            self.wm_world.update(bays_released=False,bays_open=[],bay_labels=labels)
+
+            q=WorkingMemoryProbe.draw('WM-WB15','B15','remap',seed,PITCHES,3,control=control)
+            self.wm[q.probe]=q; m=self.by_id['B15']
+            # Blade numbers carry a colour-tag assignment drawn from the probe's layout
+            # stream; never the board's listing order, so the remap is always needed.
+            orders=[o for o in permutations(range(len(BLADE_COLOURS))) if o!=tuple(range(len(BLADE_COLOURS)))]
+            order=orders[int(q.rng(seed).integers(len(orders)))]
+            blades=[BLADE_COLOURS[i] for i in order]
+            q.set_expected(q.items[BLADE_COLOURS.index(c)] for c in blades)
+            # A parapet along the deck's east edge keeps the dial and rotor out of
+            # sight from the weather board's reading spots below.
+            w.fill_box(DECK_PARAPET[0],DECK_PARAPET[1],B.BRICK)
+            self._wm_target(m,'inspect',WB15_BOARD,'weather board',q.probe,'source')
+            for k,pos in enumerate(DIAL): self._wm_target(m,f'pitch{PITCHES[k]}',pos,f'pitch {PITCHES[k]}',q.probe,'dial',PITCHES[k])
+            for j,c in enumerate(blades):
+                self._wm_target(m,f'blade{j+1}',self._blade_tag(j),f'blade {j+1} {c} tag',q.probe,'blade',j+1)
+            if control: self._wm_target(m,'inspect_copy',WB15_COPY,'weather board copy',q.probe,'copy')
+            self.wm_world.update(blade_colours=blades,panel=DIAL[len(DIAL)//2])
+
+    @staticmethod
+    def _blade_tag(j,radius=.55):
+        angle=np.pi/2+j*2*np.pi/3
+        return (ROTOR_HUB[0],ROTOR_HUB[1]+radius*np.sin(angle),ROTOR_HUB[2]+radius*np.cos(angle))
+
+    def wm_cue_text(self,probe):
+        p=self.wm[probe]
+        if probe=='WM-WA07': return WM_TEXT[probe].format(code=' '.join(p.items))
+        if probe=='WM-WB11': return WM_TEXT[probe].format(pump=p.items[0],engine=p.items[1])
+        return WM_TEXT[probe].format(**dict(zip(BLADE_COLOURS,p.items)))
+
+    def _wm_ready(self,m):
+        p=next((p for p in self.wm.values() if p.milestone==m.id),None)
+        return p is None or p.solved
+
+    def _wm_interaction(self,command,obj,m):
+        p=self.wm[obj['wm']]; fixture=obj['fixture']; tid=obj['id']
+        if command=='inspect':
+            if fixture in ('source','copy'):
+                self.wm_cue=dict(probe=p.probe,target=tid,since=round(self.elapsed,6),text=self.wm_cue_text(p.probe))
+                return [p.read_cue(self.steps,self.elapsed)]
+            self.last_text=self._wm_describe(obj)
+            return [dict(type='fixture_read',target=tid)]
+        if fixture in ('source','copy'): return self._fail('inspect this source instead')
+        if fixture=='blade': return [dict(type='wm_noop',target=tid)]
+        if command not in ('operate','interact'): return [dict(type='wm_noop',target=tid)]
+        if not self.eligible(m): return self._fail('mechanism prerequisites incomplete',target=tid)
+        if fixture in ('key','dial'):
+            events=p.enter(obj['value'],self.steps,self.elapsed)
+            return events or [dict(type='wm_noop',target=tid)]
+        # A numbered bay: opening it is the selection; a wrong bay is simply empty.
+        k=obj['value']; world=self.wm_world
+        if not world['bays_released']: return self._fail('bays not released',target=tid)
+        if k in world['bays_open']: return [dict(type='bay_looked',bay=k)]
+        world['bays_open'].append(k)
+        x=BAY_X[k-1]; self.world.fill_box((x,29,BAY_STORE[3]),(x,30,BAY_STORE[3]),B.AIR)
+        parts=('pump_coupling','engine_coupling')
+        slot=next((i for i,b in enumerate(p.expected) if b==k),None)
+        contents=parts[slot] if slot is not None else None
+        if slot is None: slot=next((i for i,done in enumerate(p.slot_done) if not done),None)
+        events=[dict(type='bay_opened',bay=k,contents=contents)]
+        if contents: self.satchel[contents]+=1
+        if slot is not None: events+=p.choose(slot,k,self.steps,self.elapsed)
+        return events
+
+    def _wm_describe(self,obj):
+        f,v=obj['fixture'],obj['value']
+        if f=='key': return f'A keypad key marked {v}.'
+        if f=='dial': return f'A pitch dial stop marked {v} degrees. The dial sets blade 1, then 2, then 3.'
+        if f=='blade': return f"Blade {v} carries a {self.wm_world['blade_colours'][v-1]} tag."
+        if f=='bay': return f"Bay {v}, stencilled '{self.wm_world['bay_labels'][v-1]}'."
+        return ''
+
+    def _wm_tick(self):
+        """The cue clears on leaving reach or after five simulated seconds; a partial
+        keypad/dial entry clears when the agent walks away from the panel."""
+        cue=self.wm_cue
+        if cue is not None:
+            if (self.elapsed-cue['since']>=WM_CUE_SECONDS-1e-9
+                    or not self._reachable(self.targets[cue['target']]['pos'])):
+                self.wm_cue=None
+        for p in self.wm.values():
+            if p.buffer and np.linalg.norm(self.agent.pos-np.asarray(self.wm_world['panel']))>4.5:
+                p.clear()
+
+    def working_memory_summary(self):
+        """Evaluator-only: per-probe summary (contract section 7)."""
+        return wm_summaries(self.wm[k] for k in sorted(self.wm))
+
+    def working_memory_layout(self):
+        """Evaluator-only: source and use-site positions, and the drawn content."""
+        out={}
+        for k,p in sorted(self.wm.items()):
+            fixtures=[o for o in self.targets.values() if o.get('wm')==k]
+            source=next(o for o in fixtures if o['fixture']=='source')
+            use=[o for o in fixtures if o['fixture'] in ('key','bay','dial')]
+            centre=np.mean([o['pos'] for o in use],axis=0)
+            out[k]=dict(milestone=p.milestone,kind=p.kind,load=p.load,source=plain(source['pos']),
+                        use_site=plain(np.round(centre,3)),
+                        straight_line_m=round(float(np.linalg.norm(centre-source['pos'])),2),
+                        items=list(p.items),expected=list(p.expected),cue=self.wm_cue_text(k),
+                        control=p.control)
+            if k=='WM-WB11': out[k]['bay_labels']=list(self.wm_world['bay_labels'])
+            if k=='WM-WB15': out[k]['blade_colours']=list(self.wm_world['blade_colours'])
+        return out
+
+    def _wm_entities(self):
+        out=[]
+        for obj in self.targets.values():
+            if not obj.get('wm'): continue
+            x,y,z=(float(v) for v in obj['pos']); f=obj['fixture']
+            if f in ('source','copy'):
+                name=obj['symbol'].replace(' copy','')
+                out.append(dict(pos=(x,y-.15,z),radius=.5,height=.95,shape='box',color=WM_COLOURS[name],semantic=B.SEM_INTERACTIVE))
+            elif f=='bay':
+                out.append(dict(pos=(x,y+.55,z-.02),radius=.22,height=.16,shape='box',color=WM_COLOURS['plate'],semantic=B.SEM_INTERACTIVE))
+            elif f=='blade':
+                colour=self.wm_world['blade_colours'][obj['value']-1]
+                out.append(dict(pos=(x,y,z),radius=.12,height=.22,shape='box',color=WM_COLOURS[colour],semantic=B.SEM_INTERACTIVE))
+        if self.task=='a':   # the ladder up the stores dock
+            dx,dz=STORES_DOOR
+            out.append(dict(pos=(dx+1.08,Y+1.5,dz+.5),radius=.32,height=3.0,shape='box',color=(120,88,52),semantic=B.SEM_INTERACTIVE))
+        panel=self.wm_world.get('panel')
+        if panel is not None:
+            name='keypad' if self.task=='a' else 'dial'
+            out.append(dict(pos=tuple(panel),radius=.2,height=.5,shape='box',
+                            color=WM_COLOURS[name],semantic=B.SEM_INTERACTIVE))
+        return out
+
+    def _wm_meshes(self,batch):
+        """Cycles presentation of the WM fixtures. Appearance variation is keyed to
+        stable fixture identity, never to the simulation RNG; state (open bays,
+        entered digits, a solved panel) is read, not changed."""
+        from open_world_bench.render.assets import appearance_seed
+        wood,dark,metal,paper=(.42,.30,.18),(.22,.16,.10),(.36,.37,.38),(.90,.87,.78)
+        tags={'red':(.78,.14,.10),'yellow':(.90,.72,.12),'blue':(.14,.30,.78)}
+        def rng(*identity): return np.random.default_rng(appearance_seed(('wildlands-wm',self._seed,self.task)+identity))
+        def tint(r,c,a=.06): return tuple(np.clip(np.asarray(c)*(1+r.uniform(-a,a,3)),0,1))
+        def sign(pos,name,face):
+            # Two posts, a framed board and a shingled roof; face = +-1 along x or z.
+            x,y,z=pos; r=rng('board',name,round(x,1),round(z,1)); along=abs(face)==2
+            w=(0,0,.75) if not along else (.75,0,0)
+            for s in (-1,1):
+                foot=np.array((x,Y,z))+s*np.array(w)
+                batch.current_material=2
+                batch.tube(foot,foot+(0,2.25,0),.07,tint(r,dark))
+            batch.current_material=2
+            size=(.08,1.0,1.5) if not along else (1.5,1.0,.08)
+            batch.box((x,y+.25,z),size,tint(r,wood))
+            batch.box((x,y+.82,z),(size[0]+.06,.08,size[2]+.1),tint(r,dark))
+            batch.box((x,y+1.27,z),(size[0]+.5,.08,size[2]+.4),tint(r,(.30,.22,.16)))
+            batch.current_material=5
+            n=int(r.integers(3,6)); off=np.sign(face)*.05
+            for i in range(n):
+                u=-.55+1.1*(i+.5)/n+r.uniform(-.05,.05); v=r.uniform(-.2,.35)
+                c=tint(r,paper,.08); dims=(.012,r.uniform(.28,.42),r.uniform(.18,.26))
+                if along: batch.box((x+u,y+.2+v,z+off),(dims[2],dims[1],.012),c)
+                else: batch.box((x+off,y+.2+v,z+u),dims,c)
+            if name=='weather board':
+                for i,c in enumerate(BLADE_COLOURS):
+                    u=-.45+.45*i
+                    if along: batch.box((x+u,y-.12,z+off*1.3),(.2,.14,.015),tags[c])
+                    else: batch.box((x+off*1.3,y-.12,z+u),(.015,.14,.2),tags[c])
+                batch.current_material=4
+                batch.tube((x,y+1.08,z),(x,y+1.6,z),.025,metal)
+                batch.box((x,y+1.55,z),(.5,.05,.05),metal); batch.cone((x+.27,y+1.5,z),.06,.12,metal,6)
+            if name=='dispatch board':
+                batch.box((x+off*1.2,y+.66,z) if not along else (x,y+.66,z+off*1.2),
+                          (.014,.1,1.3) if not along else (1.3,.1,.014),(.62,.12,.10))
+            batch.current_material=0
+        p=self.wm
+        if self.task=='a':
+            r=rng('stores'); F=STORES_FLOOR; dx,dz=STORES_DOOR
+            sign(WA07_BOARD,'dispatch board',2)
+            if self.wm_control: sign(WA07_COPY,'dispatch board',1)
+            # A wooden ladder on the dock face below the doorway, and crates on the dock.
+            batch.current_material=2
+            for side in (-.32,.32):
+                batch.tube((dx+1.06,Y,dz+.5+side),(dx+1.06,F+.9,dz+.5+side),.04,tint(r,dark))
+            for k in range(9):
+                batch.tube((dx+1.06,Y+.3+.32*k,dz+.18),(dx+1.06,Y+.3+.32*k,dz+.82),.025,tint(r,wood))
+            for k,(cx,cz) in enumerate(((dx+1.6,dz-1.4),(dx+1.7,dz+2.2),(dx+2.4,dz-1.1))):
+                batch.box((cx,Y+.3,cz),(.6,.6,.6),tint(r,(.55,.40,.22),.12),yaw=r.uniform(-.3,.3))
+            # Rack shelves: boards and stock along each rack row.
+            x0,z0,x1,z1=STORES
+            for rz,gap in STORES_RACKS:
+                for x in range(x0+1,x1):
+                    if x==gap or r.random()<.35: continue
+                    for face in (-.06,1.06):
+                        batch.box((x+.5,F+.55+r.choice((0,.7)),rz+face),(.32,.3,.1),tint(r,(.55,.40,.22),.14))
+            # Steel locker cabinet against the east wall; the keypad is on its west face.
+            batch.current_material=4
+            batch.box((119.55,F+.95,63.5),(.8,1.9,.9),tint(r,(.34,.40,.42)))
+            batch.box((119.14,F+.95,63.5),(.02,1.7,.03),(.2,.22,.23))
+            batch.box((119.13,F+.7,63.85),(.04,.3,.05),(.65,.65,.6))
+            batch.box((119.12,F+1.17,63.5),(.04,.62,.95),(.12,.13,.14))
+            pr=p['WM-WA07']
+            for o in self.targets.values():
+                if o.get('fixture')!='key': continue
+                kx,ky,kz=o['pos']; pressed=len(pr.buffer)>0 and o['value']==pr.buffer[-1]
+                batch.box((kx+(.09 if pressed else .07),ky,kz),(.06,.16,.16),(.80,.78,.70))
+            lamp=(.25,.85,.35) if pr.solved else (.85,.35,.15)
+            batch.current_material=0
+            batch.box((119.09,F+1.45,63.5),(.03,.06,.06),lamp,emissive=1.5)
+            return
+        # Task B. Yard manifest lectern at the yard gate.
+        x,y,z=WB11_MANIFEST; r=rng('manifest')
+        batch.current_material=2
+        batch.tube((x,Y,z),(x,Y+1.05,z),.06,tint(r,dark))
+        batch.box((x,Y+.02,z),(.5,.04,.5),tint(r,dark))
+        batch.box((x-.05,Y+1.12,z),(.55,.06,.75),tint(r,wood))
+        batch.current_material=5
+        batch.box((x-.05,Y+1.16,z),(.42,.02,.6),tint(r,paper)); batch.box((x-.05,Y+1.18,z-.2),(.36,.01,.04),(.25,.25,.28))
+        batch.current_material=0
+        if self.wm_control: sign(WB11_COPY,'yard manifest',2)
+        # Bay store: number plates (k studs for bay k), stencil strips and doors.
+        x0,z0,x1,z1=BAY_STORE; world=self.wm_world
+        stripe={'pump fittings':(.32,.40,.48),'engine fittings':(.52,.30,.18),'couplings':(.30,.44,.30)}
+        for k,bx in enumerate(BAY_X,1):
+            r=rng('bay',k); front=z1+1.0
+            batch.current_material=4
+            batch.box((bx+.5,Y+2.2,front+.02),(.7,.26,.04),tint(r,(.78,.78,.72)))
+            for s in range(k):
+                batch.box((bx+.5-.25+.5*(s+.5)/k,Y+2.2,front+.05),(.06,.1,.03),(.15,.15,.16))
+            batch.current_material=5
+            batch.box((bx+.5,Y+1.95,front+.02),(.8,.1,.03),stripe[world['bay_labels'][k-1]])
+            batch.current_material=2
+            if k in world['bays_open']:
+                batch.box((bx+.05,Y+1.0,front+.45),(.06,1.9,.9),tint(r,wood))      # door swung outwards
+                batch.box((bx+.5,Y+.15,z1-.6),(.6,.3,.5),tint(r,(.45,.33,.2),.1))   # an empty crate inside
+            batch.current_material=0
+        # Wind deck: weather board at the base, pitch dial and tagged rotor above.
+        sign(WB15_BOARD,'weather board',1)
+        if self.wm_control: sign(WB15_COPY,'weather board',2)
+        q=p['WM-WB15']; r=rng('rotor')
+        batch.current_material=4
+        batch.tube((92.6,Y+4,95.9),(92.6,Y+4.9,95.9),.08,metal)
+        batch.box((92.75,Y+5.2,96.0),(.08,.36,1.6),(.18,.19,.2))
+        for o in self.targets.values():
+            if o.get('fixture')!='dial': continue
+            dx,dy,dz=o['pos']; batch.box((dx+.08,dy,dz),(.06,.14,.14),(.82,.80,.72))
+        k=len(q.buffer); batch.tube((92.68,Y+5.2,95.4),(92.68,Y+5.2+.18,95.4+.3*k),.02,(.75,.2,.15))
+        batch.current_material=0
+        batch.box((92.66,Y+5.42,96.7),(.03,.06,.06),(.25,.85,.35) if q.solved else (.85,.35,.15),emissive=1.5)
+        hx,hy,hz=ROTOR_HUB
+        station=self.by_id['B15'].state
+        spin=(self.elapsed*2.4) if (q.solved and station['installed']) else 0.0
+        batch.current_material=4
+        batch.tube((hx,Y+4,hz),(hx,hy,hz),.09,metal)
+        batch.ellipsoid((hx+.15,hy,hz),(.35,.2,.2),tint(r,(.62,.64,.62)))
+        for j,colour in enumerate(world['blade_colours']):
+            angle=np.pi/2+j*2*np.pi/3+spin; d=np.array((0,np.sin(angle),np.cos(angle)))
+            root=np.array((hx-.05,hy,hz))
+            batch.tube(root+.15*d,root+1.7*d,.07,tint(r,(.86,.86,.82)),end_radius=.03)
+            for s in range(j+1):     # blade number: j+1 dark bands at the root
+                c=root+(.28+.07*s)*d; batch.tube(c-.02*d,c+.02*d,.08,(.12,.12,.13))
+            t=root+.55*d; batch.current_material=5
+            batch.tube(t-.09*d,t+.09*d,.085,tags[colour]); batch.current_material=4
+        batch.current_material=0
 
     def clue(self,m):
         if m.id=='A01': return 'Ranger cache: forked tree at the central court. Complete the workshop before collecting repair parts.'
@@ -682,7 +1067,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                     if e['type']=='cook': s['cooked'].extend(k for k in e['effects'] if k in ('cold_resist','heat_resist'))
                 s['done']={'cold_resist','heat_resist'}<=set(s['cooked']) and self.world.get(x-2,29,z+2)==B.CAMPFIRE_LIT
             if m.kind=='calibrate' and s.get('engaged') and s['selected']==self.calibration: s['elapsed']+=dt
-            if m.kind=='station' and s['installed']: s['elapsed']+=dt
+            if m.kind=='station' and s['installed'] and self._wm_ready(m): s['elapsed']+=dt
         if self.drained:
             x,_,z=self.agent.pos
             if abs(x-24.5)<2:
@@ -698,6 +1083,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 'cool':s.get('temperature',90)<=45, 'prepare':s.get('outlets')==[k==s.get('expected') for k in range(3)] and not s.get('inlet',False),
                 'calibrate':s['elapsed']>=5,'station':s['elapsed']>=5,
                 'cook':s['done'],'exchange':s['done'],'report':s['done']}[m.kind]
+            ok=ok and self._wm_ready(m)
             if m.id=='B23':
                 flow=self.by_id['B22'].state
                 ok=ok and flow['stable']>=5 and {'B15','B16','B18','B21','B22'}<=completed_ids
@@ -716,6 +1102,7 @@ class WildlandsReferenceEnv(WildlandsEnv):
             self.elements.climate.weather='storm'
             events.append(dict(type='bridge_closed',version=2))
         if self.task=='a' and 'A09' in completed_ids: self.elements.climate.weather='rain'
+        self._wm_tick()
         self.success=(len(self.completed)==len(self.milestones) and self.drained
                       and self.agent.alive and self.system_operational())
         return self.success,reward+(10 if self.success else 0)
@@ -736,13 +1123,14 @@ class WildlandsReferenceEnv(WildlandsEnv):
         if self.current:
             visible=[f'{tid}:{obj["symbol"]}' for tid,obj in self.targets.items() if self._reachable(obj['pos'])]
             parts=(self.current.title,'Nearby controls '+', '.join(visible),self.last_feedback.strip(),
-                   self.last_text,'Repair satchel: '+str(dict(self.satchel)))
+                   self.last_text,self.wm_cue['text'] if self.wm_cue else '','Repair satchel: '+str(dict(self.satchel)))
             obs['text']=' '.join(p.strip().rstrip('.')+'.' for p in parts if p.strip())[:1024]
         return obs
 
     def _info(self,events):
         out=super()._info(events)
-        out.update(success=self.success,milestones=deepcopy(self.completed),task_progress=len(self.completed)/len(self.milestones))
+        out.update(success=self.success,milestones=deepcopy(self.completed),task_progress=len(self.completed)/len(self.milestones),
+                   working_memory=self.working_memory_summary())   # evaluator-only
         return out
 
     def _release_for_recovery(self):
@@ -760,7 +1148,9 @@ class WildlandsReferenceEnv(WildlandsEnv):
             terrain=hashlib.sha256(self.world.vox.tobytes()).hexdigest(),
             rng=self.np_random.bit_generator.state,weather=vars(self.elements.climate),
             npcs=[vars(n) for n in self.npcs.npcs if n.alive],online=self.online,drained=self.drained,road=self.road_seen,
-            riding=self.riding.state(),orchard=self.orchard.state(),plants=self.gameplay.plants)
+            riding=self.riding.state(),orchard=self.orchard.state(),plants=self.gameplay.plants,
+            wm={k:p.state() for k,p in sorted(self.wm.items())},wm_world=self.wm_world,wm_cue=self.wm_cue,
+            wm_control=self.wm_control)
         data['agent']['inventory']=self.agent.inventory.to_dict()
         data['agent']['effects']=[vars(e) for e in self.agent.effects]
         recovery=self.recovery_state()
@@ -785,8 +1175,9 @@ class WildlandsReferenceEnv(WildlandsEnv):
                 for k in range(5):
                     yy=Y+.7+(k+(self.elapsed%1))*1.1
                     batch.ellipsoid((x+3,yy,z+.5),(.13,.22,.13),color)
+        self._wm_meshes(batch)
         for obj in self.targets.values():
-            if obj['role'].startswith('weight'): continue
+            if obj['role'].startswith('weight') or obj.get('wm'): continue
             m=self.by_id[obj['milestone']]; pos=obj['pos']; role=obj['role']
             color=(.19,.49,.53)
             if m.kind in ('flow','cool','prepare') and (role=='inlet' or role.startswith('outlet')):

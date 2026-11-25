@@ -95,7 +95,8 @@ def test_render_resume_reuses_only_verified_frames(tmp_path,monkeypatch):
             return np.zeros((720,1280,3),np.uint8)
         def close(self): pass
     monkeypatch.setattr(recorder,'Overlay',DiagnosticOverlay)
-    trace=Path(__file__).resolve().parents[1]/'assets/demos/wildlands-reference/task-a-seed-7'
+    # The published demo traces predate the working-memory probes; use the current verified trace.
+    trace=Path(__file__).resolve().parents[1]/'assets/evaluation/working-memory/wildlands/task-a-seed-7'
     recorder.render_chunk(trace,tmp_path,1,1,checkpoints=True)
     assert calls==[1]
     recorder.render_chunk(trace,tmp_path,1,1,checkpoints=True)

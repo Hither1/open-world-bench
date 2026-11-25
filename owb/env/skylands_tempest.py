@@ -46,6 +46,7 @@ class SkylandsTempestEnv(SkylandsCampaignEnv):
     organic_world=False
     world_features=frozenset()
     commands=COMMANDS
+    wm_probes_enabled=False   # published traces predate the working-memory probes
 
     presentation_kind = "skylands_tempest"
 

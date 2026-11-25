@@ -1,0 +1,261 @@
+{
+  "task": "b",
+  "seed": 7,
+  "initial_digest": "bc760be3300a840af3a14540c7fd033a0b3c7a6c54af6c6b75ea28e082999a2a",
+  "final_digest": "80070cb6a14c428b771cc0a98158986b3a562fead52765c869d56f313af2cda8",
+  "decisions": 3250,
+  "simulated_seconds": 650.0000000000792,
+  "milestones": [
+    {
+      "id": "B01",
+      "step": 1,
+      "seconds": 0.2
+    },
+    {
+      "id": "B02",
+      "step": 64,
+      "seconds": 12.8
+    },
+    {
+      "id": "B03",
+      "step": 112,
+      "seconds": 22.4
+    },
+    {
+      "id": "B04",
+      "step": 245,
+      "seconds": 49.0
+    },
+    {
+      "id": "B05",
+      "step": 295,
+      "seconds": 59.0
+    },
+    {
+      "id": "B06",
+      "step": 386,
+      "seconds": 77.2
+    },
+    {
+      "id": "B07",
+      "step": 438,
+      "seconds": 87.6
+    },
+    {
+      "id": "B08",
+      "step": 678,
+      "seconds": 135.6
+    },
+    {
+      "id": "B09",
+      "step": 944,
+      "seconds": 188.8
+    },
+    {
+      "id": "B10",
+      "step": 1043,
+      "seconds": 208.6
+    },
+    {
+      "id": "B11",
+      "step": 1077,
+      "seconds": 215.4
+    },
+    {
+      "id": "B12",
+      "step": 1381,
+      "seconds": 276.2
+    },
+    {
+      "id": "B13",
+      "step": 1498,
+      "seconds": 299.6
+    },
+    {
+      "id": "B14",
+      "step": 1525,
+      "seconds": 305.0
+    },
+    {
+      "id": "B15",
+      "step": 1618,
+      "seconds": 323.6
+    },
+    {
+      "id": "B16",
+      "step": 2019,
+      "seconds": 403.8
+    },
+    {
+      "id": "B17",
+      "step": 2275,
+      "seconds": 455.0
+    },
+    {
+      "id": "B18",
+      "step": 2560,
+      "seconds": 512.0
+    },
+    {
+      "id": "B19",
+      "step": 2609,
+      "seconds": 521.8
+    },
+    {
+      "id": "B20",
+      "step": 2941,
+      "seconds": 588.2
+    },
+    {
+      "id": "B21",
+      "step": 3017,
+      "seconds": 603.4
+    },
+    {
+      "id": "B22",
+      "step": 3109,
+      "seconds": 621.8
+    },
+    {
+      "id": "B23",
+      "step": 3239,
+      "seconds": 647.8
+    },
+    {
+      "id": "B24",
+      "step": 3250,
+      "seconds": 650.0
+    }
+  ],
+  "required": 24,
+  "success": true,
+  "health": 24.0,
+  "events": {
+    "clue_exposed": 5,
+    "milestone_complete": 24,
+    "part_picked": 20,
+    "part_mounted": 20,
+    "cargo_loaded": 5,
+    "craft_moved": 65,
+    "cargo_delivered": 5,
+    "ascended": 5,
+    "gallery_serviced": 3,
+    "land": 5,
+    "reversal_started": 4,
+    "platform_reversed": 36,
+    "reversal_cancelled": 4,
+    "platform_landing_reached": 4,
+    "layer_changed": 6,
+    "lift_arrived": 6,
+    "reserves_cached": 1,
+    "wm_cue_read": 2,
+    "wm_entry": 8,
+    "wm_attempt": 2,
+    "yard_gate_opened": 1,
+    "service_part_recovered": 2,
+    "cache_retrieved": 2,
+    "outpost_opened": 1,
+    "cargo_towed": 4,
+    "station_engaged": 3,
+    "station_patched": 1,
+    "maintenance_bridge_closed": 1,
+    "lock_coupling_installed": 1,
+    "cargo_berth_opened": 1
+  },
+  "limitations": [
+    "Compact authored reference course, not the full island-scale or long-duration benchmark.",
+    "Privileged scripted controller, not evidence of learned skills or memory performance.",
+    "Cargo craft use four discrete mounts, rated flotation and a straight authored water channel; no general rigid-body vehicle or fluid solver.",
+    "Deck movement is grid-stepped and collision-backed; freight lifts and reversible platforms are authored actuators.",
+    "Heavy cargo uses a separate physical-position ledger with grounded roller-cradle towing, not the native inventory or a general contact solver.",
+    "Task A uses one fixed return mooring rather than several agent-chosen docks; this video does not establish that spatial-memory probe.",
+    "Standard cold-weather clothing is supplied at reset; provisioning is not evaluated.",
+    "The two reserve items share a selected surface cache in this compact course, rather than separate regional cache networks.",
+    "Training is given through inspectable local instructions and executed practice, not an animated teacher.",
+    "A maintenance lift shortens inter-layer travel; cross-layer clue assignments and navigation alternatives are limited.",
+    "Video samples verified simulator states and omits long walking intervals. Full action logs retain all intermediate steps."
+  ],
+  "working_memory": {
+    "WM-SB10": {
+      "milestone": "B10",
+      "kind": "hold",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "solve_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "source_target": 71,
+      "use_target": 72,
+      "source_pos": [
+        62.5,
+        39.2,
+        82.5
+      ],
+      "use_pos": [
+        21.0,
+        39.0,
+        100.0
+      ],
+      "path_metres": 55,
+      "line_of_sight": false
+    },
+    "WM-SB17": {
+      "milestone": "B17",
+      "kind": "reverse",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 69,
+        "seconds": 13.8
+      },
+      "solve_delay": {
+        "decisions": 69,
+        "seconds": 13.8
+      },
+      "source_target": 73,
+      "use_target": 74,
+      "source_pos": [
+        26.5,
+        39.2,
+        60.5
+      ],
+      "use_pos": [
+        13.0,
+        39.0,
+        99.0
+      ],
+      "path_metres": 48,
+      "line_of_sight": false
+    }
+  },
+  "wm_control": false,
+  "controller": "privileged action-only reference policy",
+  "sources": {
+    "owb/env/skylands_reference.py": "4f3a87419d62c1245bea6ad1fa37d6da0a5cc6e1019bc82981999271c49fd43c",
+    "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
+    "owb/env/skylands.py": "4c13573c8b7a92ad046a674a4ea72099405df36df2d5751d657f77929a988073",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  },
+  "actions_sha256": "c125f102a12c3992ba5ec260fc25e48e0dc4ee34aa7d0996e1b2e2d817794818"
+}

@@ -1,5 +1,13 @@
 # Wildlands reference demonstrations
 
+**Working-memory update (2026-11-24):** the videos, traces and preview images on
+this page predate the working-memory probes `WM-WA07`, `WM-WB11` and `WM-WB15`
+and do not replay on the current code. New replay-verified traces that include
+the probes are in [`assets/evaluation/working-memory/wildlands/`](../assets/evaluation/working-memory/wildlands/).
+They have not been rendered. The Wildlands checkpoint bank was also collected
+before the probes and must be re-collected before checkpoint starts can restore
+from it. See [Working-memory probes](#working-memory-probes).
+
 **Current status:** both complete action traces are independently replay-verified,
 and both walkthroughs are rendered in Blender Cycles (OptiX, 48 samples) with the
 [presentation landscape](rendering.md#presentation-landscape), with every encoded
@@ -45,6 +53,87 @@ For each course, the artifact directory contains:
 The recorder replays and checks the trace again before rendering each state.
 Scene capture is checked not to change the simulation. Assembly checks cached
 image hashes and decodes every MP4 frame before publishing the video.
+
+## Working-memory probes
+
+The compact courses implement the three Wildlands probes of the
+[working-memory contract](working-memory-probes.md) as extra physical
+requirements of A07, B11 and B15 ([task notes](wildlands-long-horizon-tasks.md#working-memory-probes)).
+Positions are world coordinates (x east, y up, z south); y = 30 is chest height
+at course level.
+
+| Probe | Source (cue) | Use site | Straight line | Reference path from cue to first attempt | First-attempt delay |
+| --- | --- | --- | ---: | --- | --- |
+| `WM-WA07` | Dispatch board on the depot access road, (130.5, 30, 58.5) | Keypad on the locker at the end of the stores warehouse aisles, (119.05, 33.2, 63.5) | 12.9 m | 72.3 m on foot: about 11 m to the dock, a 3 m climb, about 61 m of aisles | 119 decisions, 23.8 s |
+| `WM-WB11` | Yard manifest at the yard gate, (35.5, 30, 62.5) | Six numbered bays south of the archive court; doors at x 28.5–33.5, (·, 30, 107.05) | 44.8 m | 57.2 m on foot, by way of the yard office | 88 decisions, 17.6 s (solved at 93, 18.6 s) |
+| `WM-WB15` | Weather board against the east face of the station base, (95.5, 30, 96.0) | Pitch dial on the deck, (92.6, 34.2, 95.4–96.6), beside the colour-tagged rotor | 5.1 m | 42.3 m including the B14 vent, launch and glide (4 m climb) | 64 decisions, 12.8 s |
+
+Delays are measured from the most recent cue read to the first judged entry or
+opened bay. In both seed-7 reference runs each cue was read once and every first
+attempt was correct. The reference is a privileged controller, so these delays
+describe the course layout, not agent performance.
+
+What makes the use site out of sight:
+
+- **Stores warehouse** (A07): a closed brick building with a plank roof on a
+  three-block stone loading dock, x 104–120, z 56–64, floor at y = 32. Its only
+  doorway is in the east wall at (120, 32, 57), above a ladder on the dock face;
+  the rest of the dock face leads up the wall to the closed roof. Inside,
+  floor-to-ceiling plank racks at z 58, 60 and 62, each open at one end, make four
+  aisles from the doorway to the locker at the far end of the last one. The
+  locker moved here from the open court.
+- **Coupling store** (B11): a brick block at x 27–34, z 104–106. Its six plank
+  bay doors face south, away from the manifest. Opening a bay removes its door
+  voxel. Bay labels (`pump fittings`, `engine fittings`, `couplings`, each used
+  twice) are assigned from the probe's layout generator, independently of the contents.
+- **Wind deck** (B15): the dial and rotor stand on the raised deck. A two-block
+  brick parapet along the deck's east edge (x 93, y 33–34, z 93–99) hides them
+  from every spot within reading reach of the board. The blade-number-to-colour
+  assignment is drawn from the probe's layout generator and is never the board's
+  listing order.
+
+`WM-WA07` stays above ten seconds for any legal traversal, because the horse cannot
+cover the indoor part. A galloping horse moves at 3× walking speed (10.8 against 3.6 m/s), so a fully
+rideable route that takes 20–25 s on foot could be ridden in about 8–9 s. Riders
+cannot climb or operate fixtures, a jump (apex 1.44 m, plus 0.65 m step-up) cannot
+clear the 3 m dock, and the horse's own route planner finds no way up. The lower
+bound from the dispatch board, in 0.2-second decisions, is:
+
+- 4 decisions to reach the dock: one to mount, then a straight gallop over the
+  6.05 m from the edge of reading reach. Sprinting there instead takes 5.
+- 5 decisions for the climb: jump until the rise slows to climb speed, then climb at 1.9 m/s (1.17 s).
+- 46 decisions through the aisles: the taut shortest path of the agent's 0.35 m
+  radius body around the rack ends is 58.1 m, at a sprint of 6.4 m/s.
+- 4 decisions to key the code.
+
+That totals 59 decisions, or 11.8 s, against 23.8 s for the walking reference. A speed-up meal
+(×1.22 on walking, sprinting and riding, not on climbing) would lower the bound
+to 10.2 s. Course A has no speed-up food. `tests/test_wildlands_working_memory.py`
+recomputes this bound from the current geometry and physics constants.
+
+Tests check that no ray from the source, or from any standing spot within reading
+reach of it, reaches a use-site fixture. They also check that the cue is absent
+from policy observations (including the model runner's observation view) once the
+agent leaves reach of the source.
+
+The probes changed collision geometry and the A07, B11 and B15 mechanisms, so
+the traces were re-collected. They match the current-code checkpoint-bank traces
+exactly through A06 and B10. Course A now takes 1,205 actions (241.0 simulated
+seconds) and course B 2,651 actions (530.2 seconds), both complete without a
+death. The controller is `WorkingMemoryReferencePolicy` in
+[`owb/scripts/wildlands_reference.py`](../owb/scripts/wildlands_reference.py).
+It extends the unchanged base policy, parses each cue from the observation text
+right after inspecting its source, and keeps the cue in its own memory. It also
+climbs the stores dock and walks the warehouse aisles in and out.
+
+```bash
+python -m owb.scripts.wildlands_reference --verify assets/evaluation/working-memory/wildlands/task-a-seed-7
+python -m owb.scripts.wildlands_reference --verify assets/evaluation/working-memory/wildlands/task-b-seed-7
+```
+
+Each `reference-manifest.json` records `working_memory` (the per-probe summary)
+and `working_memory_layout` (positions, drawn content and cue text, evaluator-only).
+`verification.json` repeats the summary from the independent replay.
 
 ## World, creatures and skills
 

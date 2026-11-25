@@ -1,0 +1,74 @@
+{
+  "success": true,
+  "checked_actions": 2651,
+  "checked_positions": true,
+  "checked_events": true,
+  "working_memory": {
+    "WM-WB11": {
+      "milestone": "B11",
+      "kind": "select",
+      "load": 2,
+      "control": false,
+      "solved": true,
+      "attempts": 2,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 88,
+        "seconds": 17.6
+      },
+      "solve_delay": {
+        "decisions": 93,
+        "seconds": 18.6
+      }
+    },
+    "WM-WB15": {
+      "milestone": "B15",
+      "kind": "remap",
+      "load": 3,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 64,
+        "seconds": 12.8
+      },
+      "solve_delay": {
+        "decisions": 64,
+        "seconds": 12.8
+      }
+    }
+  },
+  "checked_rewards": true,
+  "checked_milestones": 24,
+  "final_digest": "521dc0ab7828a610275db3397874b9af22e16f3196f3a0e37b591f2375429b28",
+  "actions_sha256": "13861a2c57178e1b00ad3ac04f12356587af1e2c29e34593498dedfc92c8788b",
+  "sources": {
+    "owb/env/wildlands_reference.py": "dd7ca14d4e949a1dc2237463e7c3130a530856741688f29527a559a2d0d1c0b7",
+    "owb/bench/baselines/wildlands_reference.py": "385a3c7fde8cee46295728931a5ce2ed99037c51c018feda4055b8ac1e7a0e9e",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/wildlands_reference.py": "5f28ade94f54cea64d55529992ee2a64e770b7af0d20a2cf34b41edf3f7d7f58",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/physics/bodies.py": "a4be41f31c7ebbde580fc03729cad4527023b6a8faa66ac20a8b752e51ece214",
+    "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/dressing.py": "0108db6882a9a68f7bb5f47a1ff5ecd0336c56e9f3eeecba1ef8726226f4d3cb",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/render/cycles_batch.py": "cbad2360348f5b7092cf25398a8cb7936a6827c1b36a29f37264eaf135f02791",
+    "owb/render/blender_batch.py": "b8e59f0aefc98c0f9a0b2567a482cb3a727a2f232fc3fc3d7fdf18e1731a2f95",
+    "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
+    "owb/world/fauna.py": "85c7cb5d59b50dda6d1a6a164299fa9f9e6758943bf94c30761919b63bf58f2e",
+    "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "4fba32ab206fe7f01f2818125d31697c666abcaef79b6059928b91e23f059931",
+    "owb/sim/orchard.py": "f096a850736120a58d9ca9954e53beaf9de10a9d5a108756b66d6231df3573a5",
+    "owb/render/creatures.py": "88ef22857bba85cb009ff22fbfdd50669e891802fc3b8a3433b115d75fef5c23",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454",
+    "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1"
+  }
+}

@@ -1,6 +1,13 @@
 # Skylands full-scale campaign demonstrations
 
-Status: both campaigns were re-collected in the organic worlds (winding trails,
+Status (2026-11-24): the videos and traces on this page predate the
+[working-memory probes](working-memory-probes.md) `WM-SA12`, `WM-SB10` and
+`WM-SB17` and no longer replay on the current simulator. Verified campaign traces
+with the probes are in
+[`assets/evaluation/working-memory/skylands/campaign/`](../assets/evaluation/working-memory/skylands/campaign/);
+they have not been rendered.
+
+Earlier status: both campaigns were re-collected in the organic worlds (winding trails,
 contained water, creatures, riding, open-air gliding, fan striking and apple
 trees) and pass independent replay verification. **The Cycles videos below still
 show the previous rectangular-world traces and are pending re-render**; their

@@ -1,0 +1,325 @@
+{
+  "task": "b",
+  "seed": 7,
+  "controller": "privileged native-action reference policy",
+  "initial_digest": "bde2b38ff18b873df16f91049f0f921e737056e2e81e881311b1fca3ac98b1d3",
+  "final_digest": "521dc0ab7828a610275db3397874b9af22e16f3196f3a0e37b591f2375429b28",
+  "decisions": 2651,
+  "simulated_seconds": 530.200000000052,
+  "milestones": [
+    {
+      "id": "B01",
+      "step": 1,
+      "seconds": 0.2
+    },
+    {
+      "id": "B02",
+      "step": 101,
+      "seconds": 20.2
+    },
+    {
+      "id": "B03",
+      "step": 209,
+      "seconds": 41.8
+    },
+    {
+      "id": "B04",
+      "step": 286,
+      "seconds": 57.2
+    },
+    {
+      "id": "B05",
+      "step": 404,
+      "seconds": 80.8
+    },
+    {
+      "id": "B06",
+      "step": 499,
+      "seconds": 99.8
+    },
+    {
+      "id": "B07",
+      "step": 572,
+      "seconds": 114.4
+    },
+    {
+      "id": "B08",
+      "step": 671,
+      "seconds": 134.2
+    },
+    {
+      "id": "B09",
+      "step": 813,
+      "seconds": 162.6
+    },
+    {
+      "id": "B10",
+      "step": 860,
+      "seconds": 172.0
+    },
+    {
+      "id": "B11",
+      "step": 984,
+      "seconds": 196.8
+    },
+    {
+      "id": "B12",
+      "step": 1005,
+      "seconds": 201.0
+    },
+    {
+      "id": "B13",
+      "step": 1114,
+      "seconds": 222.8
+    },
+    {
+      "id": "B14",
+      "step": 1245,
+      "seconds": 249.0
+    },
+    {
+      "id": "B15",
+      "step": 1273,
+      "seconds": 254.6
+    },
+    {
+      "id": "B16",
+      "step": 1412,
+      "seconds": 282.4
+    },
+    {
+      "id": "B17",
+      "step": 1538,
+      "seconds": 307.6
+    },
+    {
+      "id": "B18",
+      "step": 1640,
+      "seconds": 328.0
+    },
+    {
+      "id": "B19",
+      "step": 1871,
+      "seconds": 374.2
+    },
+    {
+      "id": "B20",
+      "step": 2055,
+      "seconds": 411.0
+    },
+    {
+      "id": "B21",
+      "step": 2255,
+      "seconds": 451.0
+    },
+    {
+      "id": "B22",
+      "step": 2345,
+      "seconds": 469.0
+    },
+    {
+      "id": "B23",
+      "step": 2401,
+      "seconds": 480.2
+    },
+    {
+      "id": "B24",
+      "step": 2651,
+      "seconds": 530.2
+    }
+  ],
+  "required": 24,
+  "success": true,
+  "events": {
+    "clue_exposed": 10,
+    "npc_denned": 8,
+    "milestone_complete": 24,
+    "horse_calmed": 1,
+    "mounted": 3,
+    "dismounted": 3,
+    "brake_trip": 1,
+    "counterweight_control": 8,
+    "magnetic_grip": 7,
+    "magnetic_move": 135,
+    "magnetic_drop": 7,
+    "counterweight_open": 4,
+    "land": 11,
+    "riding_improved": 1,
+    "thermal_control": 10,
+    "jump": 5,
+    "updraft": 10,
+    "thermal_landed": 5,
+    "apple_fell": 6,
+    "flow_control": 10,
+    "gather": 2,
+    "cook": 2,
+    "light_campfire": 1,
+    "npc_attack": 1,
+    "swing": 3,
+    "hit": 3,
+    "npc_died": 1,
+    "item_exchange": 2,
+    "wm_cue_read": 2,
+    "bays_released": 1,
+    "bay_opened": 2,
+    "wm_attempt": 3,
+    "station_engaged": 1,
+    "wm_entry": 3,
+    "npc_emerged": 8,
+    "equip": 1,
+    "parts_installed": 3,
+    "bridge_closed": 1,
+    "lightning": 9,
+    "thunder": 5,
+    "burning": 10,
+    "road_drained": 1,
+    "completion_signal": 1
+  },
+  "health": 17.000000000000014,
+  "limitations": [
+    "Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.",
+    "Privileged reference controller; no claim that an agent learned skills or retained memories.",
+    "Counterweights use native magnetic bodies and supported-mass sensors; fixed gate/lift actuators are authored mechanisms.",
+    "Thermal flights use native jump/glide physics with authored shaft updraft fields and measured service-deck landings.",
+    "Flow and cooling are discrete authored networks, not a general fluid solver.",
+    "Training procedures are readable local instructions plus observable practice, not a separately animated teacher.",
+    "Role mappings, material/shape transfer variants, regional temperature exposure, and learning-from-memory ablations remain incomplete.",
+    "Repair parts use a separate persistent satchel; ordinary food uses native inventory and cooking.",
+    "The road and bridge really change voxel collision; no controller teleportation or direct completion edits.",
+    "Working-memory probes WM-WA07, WM-WB11 and WM-WB15 are physical requirements of A07, B11 and B15; the controller reads each cue from the observation text at its source and keeps it in its own memory."
+  ],
+  "working_memory": {
+    "WM-WB11": {
+      "milestone": "B11",
+      "kind": "select",
+      "load": 2,
+      "control": false,
+      "solved": true,
+      "attempts": 2,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 88,
+        "seconds": 17.6
+      },
+      "solve_delay": {
+        "decisions": 93,
+        "seconds": 18.6
+      }
+    },
+    "WM-WB15": {
+      "milestone": "B15",
+      "kind": "remap",
+      "load": 3,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 64,
+        "seconds": 12.8
+      },
+      "solve_delay": {
+        "decisions": 64,
+        "seconds": 12.8
+      }
+    }
+  },
+  "working_memory_layout": {
+    "WM-WB11": {
+      "milestone": "B11",
+      "kind": "select",
+      "load": 2,
+      "source": [
+        35.5,
+        30.0,
+        62.5
+      ],
+      "use_site": [
+        31.0,
+        30.0,
+        107.05
+      ],
+      "straight_line_m": 44.78,
+      "items": [
+        2,
+        4
+      ],
+      "expected": [
+        2,
+        4
+      ],
+      "cue": "Yard manifest: pump coupling in bay 2; engine coupling in bay 4. The coupling bays stand behind the archive court; the yard office releases them.",
+      "control": false,
+      "bay_labels": [
+        "couplings",
+        "engine fittings",
+        "pump fittings",
+        "pump fittings",
+        "engine fittings",
+        "couplings"
+      ]
+    },
+    "WM-WB15": {
+      "milestone": "B15",
+      "kind": "remap",
+      "load": 3,
+      "source": [
+        95.5,
+        30.0,
+        96.0
+      ],
+      "use_site": [
+        92.6,
+        34.2,
+        96.0
+      ],
+      "straight_line_m": 5.1,
+      "items": [
+        "20",
+        "40",
+        "30"
+      ],
+      "expected": [
+        "30",
+        "20",
+        "40"
+      ],
+      "cue": "Weather board: set blade pitch by tag colour - red 20, yellow 40, blue 30 degrees. The deck dial sets blades by number (1, then 2, then 3); match each numbered blade's colour tag.",
+      "control": false,
+      "blade_colours": [
+        "blue",
+        "red",
+        "yellow"
+      ]
+    }
+  },
+  "sources": {
+    "owb/env/wildlands_reference.py": "dd7ca14d4e949a1dc2237463e7c3130a530856741688f29527a559a2d0d1c0b7",
+    "owb/bench/baselines/wildlands_reference.py": "385a3c7fde8cee46295728931a5ce2ed99037c51c018feda4055b8ac1e7a0e9e",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/wildlands_reference.py": "5f28ade94f54cea64d55529992ee2a64e770b7af0d20a2cf34b41edf3f7d7f58",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/physics/bodies.py": "a4be41f31c7ebbde580fc03729cad4527023b6a8faa66ac20a8b752e51ece214",
+    "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/dressing.py": "0108db6882a9a68f7bb5f47a1ff5ecd0336c56e9f3eeecba1ef8726226f4d3cb",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/render/cycles_batch.py": "cbad2360348f5b7092cf25398a8cb7936a6827c1b36a29f37264eaf135f02791",
+    "owb/render/blender_batch.py": "b8e59f0aefc98c0f9a0b2567a482cb3a727a2f232fc3fc3d7fdf18e1731a2f95",
+    "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
+    "owb/world/fauna.py": "85c7cb5d59b50dda6d1a6a164299fa9f9e6758943bf94c30761919b63bf58f2e",
+    "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "4fba32ab206fe7f01f2818125d31697c666abcaef79b6059928b91e23f059931",
+    "owb/sim/orchard.py": "f096a850736120a58d9ca9954e53beaf9de10a9d5a108756b66d6231df3573a5",
+    "owb/render/creatures.py": "88ef22857bba85cb009ff22fbfdd50669e891802fc3b8a3433b115d75fef5c23",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454",
+    "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1"
+  },
+  "actions_sha256": "13861a2c57178e1b00ad3ac04f12356587af1e2c29e34593498dedfc92c8788b"
+}

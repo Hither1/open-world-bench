@@ -117,7 +117,7 @@ mobility and cargo mobility.
 | A09 | Open the vault's service entrance. | Reach its upper maintenance ledge and release the door. The intended route applies A to new ceiling and gallery geometry. Record the first delayed A attempt before help or a training revisit. |
 | A10 | Extract and secure the navigation core. | Isolate the visibly marked vault cradle, release the unique core, and secure it in the reusable transport cradle. The core remains a physical load; no inventory pickup substitutes for extraction. |
 | A11 | Ferry the core through the flooded gallery. | Assemble a craft from local salvage and deliver the intact core to A08's lift dock. Changed payload placement and hull options require C transfer; the workshop raft cannot be carried into this gallery. |
-| A12 | Raise the core to the surface. | Secure it on the fixed freight lift, operate the reachable service controls, and unload it into the surface receiving bay. The agent may travel separately; core identity and integrity must persist. |
+| A12 | Raise the core to the surface. | Secure it on the fixed freight lift, operate the reachable service controls, and unload it into the surface receiving bay. **Working memory (`WM-SA12`):** a dispatch placard at the loading berth shows a four-key release sequence; the receiving station at the top holds the loaded deck until that sequence is keyed on its control panel. The agent may ride the lift or travel separately; core identity and integrity must persist. |
 | A13 | Recover the staged raft and deliver to the sky hoist. | Retrieve A06's raft, ferry the core along the surface waterway, and dock at the hoist's loading berth. Tests an agent-created location binding and reuse with the actual payload. A replacement craft is allowed as a recovery, recorded separately. |
 | A14 | Raise the core to the observatory. | Load the fixed sky hoist, reach its elevated control gallery through an appropriate ascent route, and bring the core to the receiving cradle. Agent ascent alone cannot satisfy the cargo predicate. |
 | A15 | Restore navigation service. | Install the core, select A07's receiver calibration, and sustain correct beacon output for five simulated seconds. Success requires the original intact core installed and the observatory currently operational. |
@@ -157,14 +157,14 @@ complete a physical shipment. There is no required combat or NPC escort AI.
 | B07 | Retrieve the shuttle's survey pack. | Use a different platform with changed timing and lateral motion to recover a survey pack without procedural hints. Immediate R acquisition check. |
 | B08 | Survey the three freight regions. | Use the survey pack at the sky lookout to inspect paired sky/surface/depths landmarks and the normal approach to the central cargo lock. The lookout's survey board exposes this evidence locally; it does not add unseen objective coordinates to the agent's minimap. |
 | B09 | Distribute the expedition reserves. | Choose eligible caches and stow a bulky depths lamp kit and a final-lock drive coupling in their assigned regions. Record the agent-created item → cache bindings. The transportable loads cannot all fit the expedition carrier at once; capacity is visible. |
-| B10 | Recover the marsh-station coupling. | Reach the abandoned surface yard through ordinary traversal and retrieve its unique service coupling. Provides useful intervening work without a C/A/R fixture. |
+| B10 | Recover the marsh-station coupling. | Reach the abandoned surface yard through ordinary traversal and retrieve its unique service coupling. **Working memory (`WM-SB10`):** the coupling sits in a walled inner yard. Its four-key gate code is posted on the outer fence, out of sight of the inner gate keypad; the gate opens, and the coupling can be released, only after the complete code is keyed. Provides intervening work without a C/A/R fixture, and adds a short memory load during that interval. |
 | B11 | Obtain the sky-shuttle power cell. | Collect and charge the compatible service cell at the lowland quarry, using its visible rating and charging fixture. This supplies the later sky approach without rehearsing reversal. |
 | B12 | Establish the depths freight outpost. | Use B08's cross-layer evidence to find the outpost, retrieve B09's lamp kit, light the loading area, and release its power module using service authorization. Tests spatial/episodic retrieval and supplies the depths branch. |
 | B13 | Transport the depths power module. | Build a loaded craft from unfamiliar salvage and deliver the module across the flooded works. Delayed C transfer with a different load distribution and landing orientation. |
 | B14 | Reach the depths regulator gallery. | Find and use a viable ascent approach above the receiving berth, then open the installation shutter. Delayed A transfer with multiple ceiling layers and a blocked-exit decoy. |
 | B15 | Restore the depths station. | Install B12's module and hold valid station output for five simulated seconds. The regional output becomes available to the central lock. |
 | B16 | Deliver the marsh coupling. | Transport B10's coupling through the reed channels using a craft adapted to the shallow route. Visually similar hull variants have different visible load ratings; reusing an unsuitable old build is recoverable. |
-| B17 | Restore the surface station. | Install the delivered coupling, connect the locally marked output, and hold valid output for five simulated seconds. This is a repair outcome distinct from cargo arrival. |
+| B17 | Restore the surface station. | Install the delivered coupling, connect the locally marked output, and hold valid output for five simulated seconds. **Working memory (`WM-SB17`):** the output connects only after the patch panel inside is wired in the reverse of the four-jack order on the wiring schematic at the station entrance; the schematic states the reverse rule. This is a repair outcome distinct from cargo arrival. |
 | B18 | Recover the sky-station spindle. | Power the sky approach shuttle with B11's cell, inspect its current trajectory, and use reversal to reach the spindle's service landing. Delayed R transfer; the required history is generated now, not preserved from B07. |
 | B19 | Restore the sky station. | Reach its upper control room by a valid ascent route, install the inventory-sized spindle, and sustain output for five simulated seconds. This reuses A after the depths encounter. |
 | B20 | Establish the replacement lock approach. | Once all three stations operate, a visible actuator failure closes the normal maintenance bridge. Inspect the closure and survey a usable alternative via the adjacent moving platform. Updated evidence explicitly supersedes B08's route; another safe approach also qualifies. |
@@ -289,6 +289,79 @@ benchmark limits. Set final budgets after legal reference rollouts; useful
 construction and logistics should create the horizon without empty waiting.
 Optional session boundaries are after A08 and B12, preserving only the declared
 agent memory plus complete world state. Checkpoint/resume remains new work.
+
+## Working-memory probes
+
+A12, B10 and B17 carry the shared [working-memory probe contract](working-memory-probes.md).
+Milestone counts, IDs and order are unchanged; each probe adds a physical
+requirement and every earlier predicate still applies. The probes are on in the
+compact courses (`SkylandsReferenceEnv`) and the full-scale campaigns
+(`SkylandsCampaignEnv`). The tempest and restoration courses switch them off
+(`wm_probes_enabled = False`) because their published traces predate them.
+
+| Probe | Milestone | Source, read with `inspect` | Use site, keyed with `use` + `option` 0–3 | Load | Kind | Requirement |
+| --- | --- | --- | --- | ---: | --- | --- |
+| `WM-SA12` | A12 | Dispatch placard on the depths loading berth | Control panel at the receiving station on the surface | 4 | hold | The lift carries the loaded deck up, but the receiving station holds it and does not discharge the core until the sequence is keyed. |
+| `WM-SB10` | B10 | Gate-code board on the outer fence | Keypad at the inner yard gate | 4 | hold | The yard gate (collision blocks) opens, and the coupling can be taken, only after the code is keyed. |
+| `WM-SB17` | B17 | Wiring schematic at the station entrance | Patch panel inside the station | 4 | reverse | Station output does not accumulate until the jacks are wired in the reverse of the schematic order. The schematic states the rule. |
+
+Implementation notes:
+
+- Content is four keys from 0–3, drawn per episode by
+  `WorkingMemoryProbe.draw` from `np.random.default_rng([seed, crc32(probe)])`
+  (`owb/core/working_memory.py`). Hold codes may repeat a key; the schematic
+  order is a permutation. The simulation RNG is not consumed.
+- The cue appears only in the text observation (`last_text`), after `inspect`
+  on the source within 4.5 m. It clears after 5 simulated seconds or as soon as
+  the source leaves inspect reach. Fixture roles (`dispatch_placard`,
+  `gate_code_board`, `wiring_schematic`, `lift_panel`, `gate_keypad`,
+  `patch_panel`) name the fixture, never its content. Inspecting a use site
+  gives its operating instructions without the code.
+- Each key press gives the same neutral feedback ("click"). Only a complete
+  four-key entry is judged; a wrong one clears the panel and can be retried.
+  Moving out of 6 m reach or sight of a panel abandons a partial entry.
+- Events `wm_cue_read`, `wm_entry` and `wm_attempt` follow the contract.
+  `info['working_memory']` and the reference manifests carry the per-probe
+  summary, plus fixture positions and the walking-path length used for
+  placement. Probe state, the shown cue and the gate are part of
+  `state_digest()`, so replay verification checks them.
+- `wm_control=True` (constructor keyword, default off) also posts the cue when
+  the use site is inspected.
+- Source positions come from final world geometry, not the RNG: the
+  roadside walkable cell whose walking distance to the use site is within a
+  set span (compact 40–55 m, campaign 60–100 m; A12: 6–12 m from the lift
+  deck), with no line of sight to the use site, nearest to the direction the
+  agent arrives from.
+- Fixtures have distinct presentation meshes (posted placard with slips, fence
+  section with enamel board, easel schematic; steel key panel, pedestal keypad,
+  patch cabinet) keyed to the probe id. They have not been rendered in Cycles yet.
+
+Placement and reference delays (seed 7; delay is from the most recent cue read
+to the first complete entry, in decisions and simulated seconds):
+
+| Probe | World | Source position | Use-site position | Straight line | Walking path | Line of sight | Reference delay |
+| --- | --- | --- | --- | ---: | ---: | --- | ---: |
+| `WM-SA12` | compact | (65.5, 5.2, 52.5) | (82.0, 39.0, 42.0) | 39.1 m | 12 m + 34 m lift ride | none | 68 / 13.6 s |
+| `WM-SA12` | campaign | (637.5, 9.2, 603.5) | (656.5, 49.0, 597.5) | 44.5 m | 12 m + 40 m lift ride | none | 70 / 14.0 s |
+| `WM-SB10` | compact | (62.5, 39.2, 82.5) | (21.0, 39.0, 100.0) | 45.0 m | 55 m | none | 85 / 17.0 s |
+| `WM-SB10` | campaign | (891.5, 49.2, 910.5) | (963.0, 49.0, 880.0) | 77.7 m | 99 m | none | 56 / 11.2 s |
+| `WM-SB17` | compact | (26.5, 39.2, 60.5) | (13.0, 39.0, 99.0) | 40.8 m | 48 m | none | 69 / 13.8 s |
+| `WM-SB17` | campaign | (951.5, 49.2, 776.5) | (955.0, 49.0, 719.0) | 57.6 m | 60 m | none | 85 / 17.0 s |
+
+Verified seed-7 reference traces with the probes (not rendered) are in
+[`assets/evaluation/working-memory/skylands/`](../assets/evaluation/working-memory/skylands/):
+compact A 1,770 actions / 354.0 s, compact B 3,250 / 650.0 s, campaign A
+17,118 / 3,423.6 s, campaign B 28,757 / 5,751.4 s. Every probe was solved on its
+first attempt with one cue read. Each trace replays independently from reset,
+and verification also compares the working-memory summary with the manifest.
+
+The campaign reference rides its horse where it can, which is why the campaign
+`WM-SB10` delay is shorter than its path length suggests. A model agent's delay
+depends on its own route and must be measured, not assumed (contract item 9).
+The reference controller (`WorkingMemoryControl` in
+`owb/scripts/skylands_reference.py`, used by both collection scripts) reads each
+code from the text observation and keys it from its own record. It uses
+privileged state only for routing and for the count of keys already entered.
 
 ## Implementation order and presentation
 

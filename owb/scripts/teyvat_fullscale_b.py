@@ -27,6 +27,7 @@ from owb.scripts.teyvat_fullscale_preview import (CyclesFarm, blender_version, j
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ("open_world_bench/fullscale_b_env.py", "open_world_bench/fullscale_b_policy.py",
+           "open_world_bench/working_memory_probes.py", "owb/core/working_memory.py",
            "open_world_bench/fullscale_b_world.py", "open_world_bench/fullscale_mechanics.py",
            "open_world_bench/fullscale_nav.py", "open_world_bench/fullscale_physics.py",
            "open_world_bench/fullscale_reach.py", "open_world_bench/fullscale_sites.py",
@@ -52,18 +53,25 @@ FPS = 10
 STRIDE = dict(walk=8, swim=8, rest=8, glide=2, vent=2, mechanism=2, fight=2, done=1)
 HOLDS = dict(milestone_complete=16, fact_opened=12, item_acquired=10, housing_unlocked=8, relay_interrupted=8,
              vent_launch=5, sentinel_interrupted=5, sentinel_reformed=5, sentinel_slam=6, talk=12,
-             designed_context_boundary=10, relay_active=6, statue_heal=6)
+             designed_context_boundary=10, relay_active=6, statue_heal=6, wm_cue_read=12, wm_attempt=8)
 LABEL = "REFERENCE SOLUTION"
 DISCLAIMER = ("A privileged reference controller reads the hidden rule assignments and positions and acts only "
               "through native actions (move, look, jump/glide, sprint, interact, attack, skill, party swap). It shows "
               "that the course is solvable; it is not a model evaluation.")
 
 
-def make_env(seed):
+def make_env(seed, working_memory=True, wm_control=False):
     from open_world_bench.fullscale_b_env import TeyvatExpeditionEnv
-    env = TeyvatExpeditionEnv(seed, render_enabled=False)
+    env = TeyvatExpeditionEnv(seed, render_enabled=False, working_memory=working_memory, wm_control=wm_control)
     env.reset(seed=seed)
     return env
+
+
+def env_options(manifest):
+    """Course options a run was collected with; runs from before the working-memory probes
+    (no ``working_memory`` entry) replay on the legacy course."""
+    wm = manifest.get("working_memory")
+    return dict(working_memory=bool(wm and wm.get("enabled")), wm_control=bool(wm and wm.get("control")))
 
 
 def snapshot(env, policy):
@@ -102,15 +110,14 @@ def world_check(seeds, output, workers=9):
 
 
 # ---------------------------------------------------------------- collect
-def collect(seed, directory, max_steps=60_000):
-    from open_world_bench.fullscale_b_env import COURSE_VERSION
+def collect(seed, directory, max_steps=60_000, *, wm_control=False):
     from open_world_bench.fullscale_b_policy import ExpeditionReference
     from open_world_bench.fullscale_b_world import SUITE_VERSION
     from open_world_bench.fullscale_physics import PHYSICS_VERSION
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=False)
-    env = make_env(seed)
+    env = make_env(seed, wm_control=wm_control)
     policy = ExpeditionReference(env)
     initial = env.state_digest()
     started = time.time()
@@ -145,7 +152,7 @@ def collect(seed, directory, max_steps=60_000):
     for r in rows:
         modes[r["mode"]] = modes.get(r["mode"], 0) + 1
     manifest = dict(
-        kind="reference-solution", course=COURSE_VERSION, suite=SUITE_VERSION, physics=PHYSICS_VERSION, seed=seed,
+        kind="reference-solution", course=c.version, suite=SUITE_VERSION, physics=PHYSICS_VERSION, seed=seed,
         world_digest=env.world_digest, initial_digest=initial, final_digest=env.state_digest(),
         success=bool(verdict["success"]), verdict=verdict, terminated=bool(terminated), actions=step + 1,
         simulated_seconds=round(env.world.elapsed, 3), travel_metres=round(travel, 1),
@@ -164,6 +171,10 @@ def collect(seed, directory, max_steps=60_000):
                    for k, u in c.sentinels.items()},
         vents={k: dict(route=v.route, leg=v.leg, launches=v.launches, sputters=v.sputters, charges=v.charges)
                for k, v in c.vents.items()},
+        working_memory=dict(enabled=True, control=bool(wm_control), contract="docs/working-memory-probes.md",
+                            probes=c.wm_summary(),
+                            note="evaluator-only; probe content reaches the policy only through the cue while it "
+                                 "is in reach (5 s) or, under wm_control, at the use site"),
         replans=policy.replans, route_restarts=policy.route_restarts, decision_seconds=0.2,
         controller="ExpeditionReference: privileged; plans on the under-model graph; native actions only",
         limitations=[DISCLAIMER, "Seed 7 only in this pass; other seeds are untested.",
@@ -184,7 +195,7 @@ def verify(directory):
     for path, digest in manifest["sources"].items():
         if sha256(ROOT / path) != digest:
             raise SystemExit(f"Replay source changed: {path}")
-    env = make_env(manifest["seed"])
+    env = make_env(manifest["seed"], **env_options(manifest))
     assert env.world_digest == manifest["world_digest"], "world digest differs"
     assert env.state_digest() == manifest["initial_digest"], "initial state differs"
     for row in rows:
@@ -196,7 +207,8 @@ def verify(directory):
         assert env.state_digest() == row["digest"], f"state digest at step {row['step']}"
     assert env.state_digest() == manifest["final_digest"], "final state differs"
     assert env.course.verify()["success"] == manifest["success"]
-    result = dict(ok=True, actions=len(rows), success=manifest["success"],
+    result = dict(ok=True, actions=len(rows), success=manifest["success"], course_options=env_options(manifest),
+                  working_memory=env.course.wm_summary() if env.course.working_memory else None,
                   checked=["positions before and after every action", "event streams", "rewards and flags",
                            "state digest after every action", "initial and final digests", "world digest",
                            "course verdict", "source hashes"],
@@ -369,7 +381,7 @@ def render(directory, cache, *, gpus=(0,), per_gpu=1, samples=64, threads=8, dev
     work.mkdir(exist_ok=True)
     farm = CyclesFarm(blender, gpus, per_gpu, samples, threads, device)
     by_step = {p["step"]: p for p in plan}
-    env = make_env(manifest["seed"])
+    env = make_env(manifest["seed"], **env_options(manifest))
     started, rendered, reused = time.time(), 0, 0
     pending = []
 
@@ -586,7 +598,7 @@ def assemble(directory, cache, settings, plan):
     manifest = json.loads((directory / "manifest.json").read_text())
     rows = read_rows(directory)
     index = {r["step"]: i for i, r in enumerate(rows)}
-    env = make_env(manifest["seed"])
+    env = make_env(manifest["seed"], **env_options(manifest))
     overlay = Overlay(env, rows, manifest, settings)
     env.close()
     output = directory / "walkthrough.partial.mp4"
@@ -657,6 +669,8 @@ def main(argv=None):
     c = commands.add_parser("collect", help="run the reference controller and verify it by replay")
     c.add_argument("--seed", type=int, default=7)
     c.add_argument("--output", type=Path, required=True)
+    c.add_argument("--wm-control", action="store_true",
+                   help="matched control condition: the working-memory cue is also posted at each use site")
     v = commands.add_parser("verify", help="replay a recorded run in a fresh env")
     v.add_argument("directory", type=Path)
     r = commands.add_parser("render", help="render sampled states with Cycles and assemble the video")
@@ -677,7 +691,7 @@ def main(argv=None):
         if not all(ok.values()):
             raise SystemExit("world check failed")
     elif args.command == "collect":
-        collect(args.seed, args.output)
+        collect(args.seed, args.output, wm_control=args.wm_control)
         verify(args.output)
     elif args.command == "verify":
         verify(args.directory)

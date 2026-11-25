@@ -9,7 +9,7 @@ import time
 import numpy as np
 from owb.env.skylands_campaign import SkylandsCampaignEnv
 from owb.bench.baselines.skylands_campaign import SkylandsCampaignPolicy
-from owb.scripts.skylands_reference import save,sha,plain,checked_step,action_from_json,ROOT,SOURCES as BASE_SOURCES
+from owb.scripts.skylands_reference import save,sha,plain,checked_step,action_from_json,ROOT,SOURCES as BASE_SOURCES,WorkingMemoryControl
 
 SOURCES=BASE_SOURCES+('owb/env/skylands_campaign.py','owb/bench/baselines/skylands_campaign.py','owb/scripts/skylands_campaign.py',
          'owb/world/organic.py','owb/world/fauna.py','owb/entities/npc.py','owb/entities/agent.py','owb/sim/riding.py',
@@ -26,6 +26,33 @@ LIMITATIONS=[
 def sources(): return {p:sha(ROOT/p) for p in SOURCES}
 
 
+class SkylandsWMCampaignPolicy(WorkingMemoryControl,SkylandsCampaignPolicy):
+    """Full-campaign reference controller with the working-memory probe steps."""
+    def __init__(self,env):
+        super().__init__(env); self.wm_init()
+
+    def decide(self,obs):
+        a=self.wm_action(obs)
+        return a if a is not None else super().decide(obs)
+
+    def walk(self,pos):
+        try:
+            return super().walk(pos)
+        except RuntimeError:
+            # A horse can stray into a shallow dip beside a trail, leaving no
+            # route at trail level from the rider's own cell. Hop out toward
+            # the nearest trail-level cell, then replan from there.
+            e=self.env; y=int(round(float(pos[1])))
+            if not (e.agent.on_ground and .5<y-float(e.agent.pos[1])<1.6): raise
+            x,z=np.floor(e.agent.pos[[0,2]]).astype(int)
+            cells=[(x+dx,z+dz) for dx in range(-3,4) for dz in range(-3,4) if self.walkable(x+dx,z+dz,y)]
+            if not cells: raise
+            cx,cz=min(cells,key=lambda c:(float(np.hypot(c[0]+.5-e.agent.pos[0],c[1]+.5-e.agent.pos[2])),c))
+            self.path=[]; self.key=None
+            a=self.steer((cx+.5,y+.01,cz+.5)); a['buttons'][0]=1
+            self.explanation='Hop out of the dip back onto the trail'; return a
+
+
 def collect(task,seed,directory,*,resume=None):
     directory.mkdir(parents=True,exist_ok=True)
     if resume:
@@ -35,7 +62,7 @@ def collect(task,seed,directory,*,resume=None):
         if (directory/'actions.jsonl').exists(): raise FileExistsError(directory/'actions.jsonl')
         env=SkylandsCampaignEnv(task,seed); print('GENERATE',task,flush=True)
         obs,_=env.reset(seed=seed); print('WORLD',env.world.shape,flush=True)
-        initial=env.state_digest(); policy=SkylandsCampaignPolicy(env); counts=Counter(); mode='w'
+        initial=env.state_digest(); policy=SkylandsWMCampaignPolicy(env); counts=Counter(); mode='w'
     last_progress=env.steps; recent=[]; start=time.monotonic()
     try:
         with (directory/'actions.jsonl').open(mode) as stream:
@@ -63,6 +90,7 @@ def collect(task,seed,directory,*,resume=None):
             success=env.success,health=env.agent.health,events=dict(counts),limitations=LIMITATIONS,
             world_shape=env.world.shape,walked_metres=env.agent.distance_travelled,
             return_dock=env.return_choice,cache_bindings=env.cache_bindings,
+            working_memory=getattr(env,'wm',None) and env.wm_summary(),wm_control=env.wm_control,
             controller='privileged action-only full-campaign reference policy',sources=sources(),actions_sha256=sha(directory/'actions.jsonl')))
     except BaseException:
         save(directory/'failure-context.json',dict(recent=recent,position=env.agent.pos,health=env.agent.health,
@@ -88,8 +116,11 @@ def verify(directory):
         for row in rows: checked_step(env,row)
         assert env.success and env.system_operational() and len(env.completed)==manifest['required'] and not env.agent.deaths
         assert env.state_digest()==manifest['final_digest']
+        wm=getattr(env,'wm',None) and plain(env.wm_summary())
+        if wm!=manifest.get('working_memory'): raise RuntimeError('Working-memory summary differs from the manifest')
         result=dict(success=True,checked_actions=len(rows),checked_positions=True,checked_events=True,checked_rewards=True,
                     checked_milestones=len(env.completed),final_live_predicate=True,final_digest=env.state_digest(),
+                    working_memory=wm,checked_working_memory=bool(wm),
                     actions_sha256=manifest['actions_sha256'],sources=sources())
         save(directory/'verification.json',result); print('VERIFIED',manifest['task'],len(rows),flush=True); return result
     finally: env.close()

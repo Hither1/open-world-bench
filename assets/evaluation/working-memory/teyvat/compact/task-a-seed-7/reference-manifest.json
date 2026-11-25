@@ -1,0 +1,192 @@
+{
+  "task": "a",
+  "seed": 7,
+  "controller": "privileged native-action ReferencePolicy",
+  "verification": {
+    "success": true,
+    "failures": [],
+    "completed": 12,
+    "required": 12,
+    "scope": "compact native-simulator reference prototype"
+  },
+  "initial_digest": "28e55614057d0038b1b254eae4196491bf9227410fa703d4559cafd5a169c334",
+  "final_digest": "0c50445553c963068a51045ea51c7fe369d22f3e6dcac2810e56accdc011a501",
+  "decisions": 1432,
+  "simulated_seconds": 286.4000000000122,
+  "event_counts": {
+    "interact": 18,
+    "talk": 1,
+    "mechanism_feedback": 32,
+    "operation_complete": 18,
+    "party_swap": 17,
+    "skill": 19,
+    "relay_application": 15,
+    "move_land": 8,
+    "relay_active": 6,
+    "activate": 12,
+    "milestone_complete": 12,
+    "relay_interrupted": 2,
+    "player_hit": 4,
+    "enemy_hit": 6,
+    "reaction": 2,
+    "swing": 2,
+    "defeat": 2,
+    "item_acquired": 3,
+    "item_consumed": 3,
+    "wm_cue_read": 1,
+    "wm_entry": 3,
+    "wm_attempt": 1,
+    "item_granted": 2,
+    "designed_context_boundary": 2,
+    "lift_started": 1,
+    "lift_arrived": 1
+  },
+  "milestones": [
+    {
+      "id": "A01",
+      "time": 13.233333,
+      "operations": [
+        "op000_00",
+        "op001_00"
+      ]
+    },
+    {
+      "id": "A02",
+      "time": 27.233333,
+      "operations": [
+        "op002_01"
+      ]
+    },
+    {
+      "id": "A03",
+      "time": 50.833333,
+      "operations": [
+        "op003_02"
+      ]
+    },
+    {
+      "id": "A04",
+      "time": 76.033333,
+      "operations": [
+        "op005_03",
+        "op006_03"
+      ]
+    },
+    {
+      "id": "A05",
+      "time": 111.633333,
+      "operations": [
+        "op007_04",
+        "op008_04"
+      ]
+    },
+    {
+      "id": "A06",
+      "time": 157.633333,
+      "operations": [
+        "op009_05",
+        "wm06_panel"
+      ]
+    },
+    {
+      "id": "A07",
+      "time": 211.833333,
+      "operations": [
+        "op010_06",
+        "op011_06"
+      ]
+    },
+    {
+      "id": "A08",
+      "time": 224.833333,
+      "operations": [
+        "op012_07"
+      ]
+    },
+    {
+      "id": "A09",
+      "time": 240.433333,
+      "operations": [
+        "op013_08"
+      ]
+    },
+    {
+      "id": "A10",
+      "time": 259.233333,
+      "operations": [
+        "op014_09",
+        "op015_09"
+      ]
+    },
+    {
+      "id": "A11",
+      "time": 271.266667,
+      "operations": [
+        "op016_10"
+      ]
+    },
+    {
+      "id": "A12",
+      "time": 286.233333,
+      "operations": [
+        "op017_11"
+      ]
+    }
+  ],
+  "decision_seconds": 0.2,
+  "working_memory": {
+    "enabled": true,
+    "control": false,
+    "contract": "docs/working-memory-probes.md",
+    "probes": {
+      "WM-TA06": {
+        "milestone": "A06",
+        "kind": "hold",
+        "load": 3,
+        "control": false,
+        "solved": true,
+        "attempts": 1,
+        "first_attempt_correct": true,
+        "cue_reads": 1,
+        "first_attempt_delay": {
+          "decisions": 186,
+          "seconds": 37.2
+        },
+        "solve_delay": {
+          "decisions": 186,
+          "seconds": 37.2
+        },
+        "source": [
+          108.0,
+          12.0,
+          -122.0
+        ],
+        "use_site": [
+          120.0,
+          12.0,
+          55.0
+        ],
+        "distance": 177.41,
+        "content": [
+          "green",
+          "white",
+          "red"
+        ],
+        "expected": [
+          "green",
+          "white",
+          "red"
+        ]
+      }
+    },
+    "note": "evaluator-only; probe content never appears in policy observations except while the cue is in reach (5 s) or under wm_control at the use site"
+  },
+  "limitations": [
+    "Compact authored course, not the full island-scale task suite",
+    "Privileged reference controller: no claim about learned memory or model performance",
+    "Ferry/causeway repair represented by item exchanges, working-memory fixtures, and access milestones",
+    "Native service lift and vent flights; no teleportation by the controller",
+    "Sentinel trials test phase mechanics without active sentinel damage",
+    "Designed context boundaries logged, not evaluated with a language-model memory store"
+  ]
+}

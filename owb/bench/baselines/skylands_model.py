@@ -160,3 +160,16 @@ class SkylandsModelPolicy(WildlandsModelPolicy):
 
 class SkylandsPrivilegedPolicy(SkylandsModelPolicy):
     guide=GUIDE+PRIVILEGED_NOTE
+
+
+PERCEPTION_NOTE = """
+PERCEPTION-ORACLE CONDITION: observation.perceived lists what a perfect object detector reports for
+the current frame only: interaction target IDs with the same coarse categories as local_targets
+(control, part, raft, cargo...), plus creatures, each with world position, distance and bearing
+(+ = to your right). It does not reveal part kinds, ratings, charge, which objective a target belongs
+to, where the objective is, or why an interaction failed. Objects drop off the list when out of frame
+or occluded; remember them yourself."""
+
+
+class SkylandsPerceptionPolicy(SkylandsModelPolicy):
+    guide=GUIDE+PERCEPTION_NOTE

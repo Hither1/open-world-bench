@@ -1,6 +1,7 @@
 """Record verified native-action Teyvat reference-course walkthroughs.
 
 python -B -m owb.scripts.teyvat_reference --task a b --output /tmp/teyvat-reference
+python -B -m owb.scripts.teyvat_reference --task a b --trace-only --output /tmp/teyvat-wm-traces
 
 The controller runs first without rendering. A fresh environment replays its
 action log, verifies milestone/final hashes, and records actual simulator frames.
@@ -54,8 +55,15 @@ def save_json(path,value):
     path.write_text(json.dumps(jsonable(value),indent=2,allow_nan=False)+"\n")
 
 
-def collect_reference(task,seed,directory,max_steps=9000):
-    env=ReferenceTaskEnv(task,seed,render_enabled=False)
+def env_options(manifest):
+    """Course options a trace was recorded with. Traces made before the working-memory
+    probes (no ``working_memory`` entry) replay on the legacy course."""
+    wm=manifest.get("working_memory")
+    return dict(working_memory=bool(wm and wm.get("enabled")),wm_control=bool(wm and wm.get("control")))
+
+
+def collect_reference(task,seed,directory,max_steps=9000,*,wm_control=False):
+    env=ReferenceTaskEnv(task,seed,render_enabled=False,wm_control=wm_control)
     rows=[]
     counts=Counter()
     try:
@@ -93,9 +101,14 @@ def collect_reference(task,seed,directory,max_steps=9000):
                   "final_digest":env.state_digest(),"decisions":len(rows),
                   "simulated_seconds":env.world.elapsed,"event_counts":dict(counts),
                   "milestones":env.course.completed,"decision_seconds":.2,
+                  "working_memory":{"enabled":True,"control":bool(wm_control),
+                                    "contract":"docs/working-memory-probes.md",
+                                    "probes":env.course.wm_summary(),
+                                    "note":"evaluator-only; probe content never appears in policy observations "
+                                           "except while the cue is in reach (5 s) or under wm_control at the use site"},
                   "limitations":["Compact authored course, not the full island-scale task suite",
                     "Privileged reference controller: no claim about learned memory or model performance",
-                    "Ferry/causeway repair represented by item exchanges and access milestones",
+                    "Ferry/causeway repair represented by item exchanges, working-memory fixtures, and access milestones",
                     "Native service lift and vent flights; no teleportation by the controller",
                     "Sentinel trials test phase mechanics without active sentinel damage",
                     "Designed context boundaries logged, not evaluated with a language-model memory store"]}
@@ -316,7 +329,7 @@ class Overlay:
 
 def replay_video(task,seed,directory,rows,manifest,*,stride=5,fps=10,renderer="cycles",blender=None,samples=48,threads=8):
     from PIL import Image
-    env=ReferenceTaskEnv(task,seed,render_enabled=False,width=384,height=216)
+    env=ReferenceTaskEnv(task,seed,render_enabled=False,width=384,height=216,**env_options(manifest))
     overlay=Overlay(task,manifest,stride,fps,renderer=renderer,blender=blender,samples=samples,threads=threads)
     writer=Video(directory,fps)
     chapters=[]
@@ -379,13 +392,17 @@ def verify_recording(directory):
     """Independently replay every action, compare events/positions and final state."""
     manifest=json.loads((directory/"reference-manifest.json").read_text())
     rows=[json.loads(line) for line in (directory/"actions.jsonl").read_text().splitlines()]
-    env=ReferenceTaskEnv(manifest["task"],manifest["seed"],render_enabled=False)
+    env=ReferenceTaskEnv(manifest["task"],manifest["seed"],render_enabled=False,**env_options(manifest))
     try:
         env.reset(seed=manifest["seed"])
         assert env.state_digest()==manifest["initial_digest"]
         for row in rows:
             action={k:np.asarray(v,dtype=np.int8 if k=="buttons" else np.float32) if k in ("move","look","buttons") else v
                     for k,v in row["action"].items()}
+            # Traces recorded before the map controls existed carry no pointer/click: no click.
+            action.setdefault("pointer",np.zeros(2,np.float32))
+            action["pointer"]=np.asarray(action["pointer"],np.float32)
+            action.setdefault("click",0)
             assert env.action_space.contains(action)
             _,_,_,_,info=env.step(action)
             assert env.char.pos.tolist()==row["position_after"],f"Position mismatch at step {row['step']}"
@@ -396,6 +413,7 @@ def verify_recording(directory):
         assert env.quests.all_complete and env.course.verify()["success"]
         root=Path(__file__).resolve().parents[2]
         sources=["open_world_bench/reference_tasks.py","open_world_bench/reference_policy.py",
+                 "open_world_bench/working_memory_probes.py","owb/core/working_memory.py",
                  "open_world_bench/architecture.py","open_world_bench/render/architecture.py",
                  "open_world_bench/camera.py",
                  "open_world_bench/env.py","open_world_bench/world.py","open_world_bench/character.py",
@@ -406,6 +424,8 @@ def verify_recording(directory):
                 "checked_positions":True,"checked_milestone_hashes":len(manifest["milestones"]),
                 "runtime":{"python":platform.python_version(),"numpy":np.__version__},
                 "verification":env.course.verify(),
+                "course_options":env_options(manifest),
+                "working_memory":env.course.wm_summary() if env.course.working_memory else None,
                 "actions_sha256":hashlib.sha256((directory/"actions.jsonl").read_bytes()).hexdigest(),
                 "validated_source_sha256":{p:hashlib.sha256((root/p).read_bytes()).hexdigest() for p in sources},
                 "video_sha256":{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in directory.glob("walkthrough.*")}}
@@ -426,7 +446,7 @@ def render_chunk(directory,cache,first,last,stride=8,fps=10,*,renderer="cycles",
         raise ValueError("invalid milestone interval")
     folder=cache/f"{directory.name}-{first:02d}-{last:02d}"
     folder.mkdir(parents=True,exist_ok=True)
-    env=ReferenceTaskEnv(task,seed,render_enabled=False)
+    env=ReferenceTaskEnv(task,seed,render_enabled=False,**env_options(manifest))
     overlay=Overlay(task,manifest,stride,fps,renderer=renderer,blender=blender,samples=samples,threads=threads,view=view)
     entries=[]
     previous=None
@@ -581,6 +601,10 @@ def main():
     parser.add_argument("--fps",type=int,default=10)
     parser.add_argument("--max-steps",type=int,default=9000)
     parser.add_argument("--max-render-frames",type=int,help="Save this many new frames per chunk invocation, then resume with the same command")
+    parser.add_argument("--trace-only",action="store_true",
+                        help="with --output: collect and independently verify the action trace; no rendering or video")
+    parser.add_argument("--wm-control",action="store_true",
+                        help="with --output: matched control condition (the cue is also posted at each use site)")
     parser.add_argument("--view",choices=("presentation","first_person"),default="presentation",
                         help="presentation: the policy's orbit camera; first_person: the character's eyes (--render-chunk only)")
     add_render_arguments(parser)
@@ -604,6 +628,23 @@ def main():
         print(json.dumps({"success":result["success"],"actions":result["checked_actions"],
                           "milestones":result["checked_milestone_hashes"]}),flush=True)
         return
+    if args.trace_only:
+        for task in args.task:
+            directory=args.output/f"task-{task}-seed-{args.seed}"
+            directory.mkdir(parents=True,exist_ok=False)
+            rows,manifest=collect_reference(task,args.seed,directory,args.max_steps,wm_control=args.wm_control)
+            result=verify_recording(directory)
+            save_json(directory/"summary.json",{**manifest,"replay_verified":result["success"],"video":None,
+                      "note":"trace only: no frames were rendered for this recording",
+                      "actions_sha256":result["actions_sha256"]})
+            print(json.dumps({"task":task,"success":manifest["verification"]["success"],
+                              "replay_verified":result["success"],"decisions":manifest["decisions"],
+                              "working_memory":{k:{"first_attempt_correct":v["first_attempt_correct"],
+                                                   "delay":v["first_attempt_delay"],"distance":v["distance"]}
+                                                for k,v in manifest["working_memory"]["probes"].items()}}),flush=True)
+        return
+    if args.wm_control:
+        parser.error("--wm-control is a diagnostic condition; use it with --trace-only")
     # Fail before running the controller if presentation tools are unavailable.
     with PresentationRenderer(backend=args.renderer,blender=args.blender,
                               samples=args.samples,threads=args.threads):

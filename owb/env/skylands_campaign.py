@@ -45,9 +45,12 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
     # Riding commands are appended last: traces store integer command indices.
     commands=REFERENCE_COMMANDS+RIDING_COMMANDS
 
-    def __init__(self,task='a',seed=7,*,render_enabled=False):
+    #: Riding shortens surface travel, so ground-level WM sources sit further out.
+    wm_source_span=(60,100)
+
+    def __init__(self,task='a',seed=7,*,render_enabled=False,wm_control=False):
         self.geography_scale=1.5 if task=='a' else 2.0
-        super().__init__(task,seed,render_enabled=render_enabled)
+        super().__init__(task,seed,render_enabled=render_enabled,wm_control=wm_control)
         self.cfg.world_cfg=replace(self.cfg.world_cfg,size_x=int(640*self.geography_scale),
                                   size_y=144,size_z=int(704*self.geography_scale))
         self.cfg.max_steps=80000
@@ -403,6 +406,9 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
         shore[xs[~keep],zs[~keep]]=False
         return shore
 
+    def _wm_trail_mask(self,y):
+        return self._layer_roads[self.levels.index(y)] if y in self.levels else None
+
     def _road(self,w,layer,points,**organic):
         if self.organic_world: return self._organic_road(w,layer,points,**organic)
         y=self.levels[layer]
@@ -443,8 +449,8 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
                 w.fill_box((hx-2,floor,hz-2),(hx+2,floor,hz+2),B.BRICK)
             self._road(w,2,[(hx,hz),self.point(60,180)])
 
-    def _reset_mechanics(self):
-        super()._reset_mechanics()
+    def _reset_course(self):
+        super()._reset_course()
         # Remove the testbed's universal maintenance lift. Regional physical
         # ascent/descent routes and the task's actual freight lifts do the work.
         self._clear_deck(self.movers['transit']); self.movers.pop('transit')
@@ -876,7 +882,8 @@ class SkylandsCampaignEnv(SkylandsReferenceEnv):
     def system_operational(self):
         if self.task=='a': return super().system_operational()
         c=self.cargo['relief']
-        return (all(self.by_id[mid].state['installed'] and self.by_id[mid].state['stable']>=5 for mid in ('B15','B17','B19'))
+        return (self.wm_solved('WM-SB17')
+            and all(self.by_id[mid].state['installed'] and self.by_id[mid].state['stable']>=5 for mid in ('B15','B17','B19'))
             and all(self.cargo[cid]['anchored'] and self.cargo[cid]['parent']==mid and np.linalg.norm(self.cargo[cid]['pos']-self.by_id[mid].pos)<6
                     for cid,mid in (('power_module','B15'),('marsh_coupling','B17')))
             and self.by_id['B19'].state.get('station_part')=='spindle' and self.by_id['B21'].state['installed']

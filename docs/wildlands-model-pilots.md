@@ -20,6 +20,23 @@ through the saved Codex login, with no model fallback. The API preflight returne
 `credit_balance_exhausted`; the Codex CLI 0.166.0 live access preflight passed.
 These are Codex-runtime results, distinct from a direct Responses API baseline.
 
+`--transport claude` runs Claude models through a saved Claude Code login
+(`claude -p` with no tools, no MCP and no user settings; the image travels on
+stdin and the action comes back as structured output). It applies to both
+`wildlands_model` and `skylands_model`, and keeps the same retry, resume and
+budget rules as Codex. For example, Claude Fable 5.2:
+
+```bash
+python -u -B -m owb.scripts.wildlands_model --task a b --seed 7 \
+  --transport claude --account-home ~/.claude --model claude-fable-5-2 --effort medium \
+  --max-calls 200 --max-actions 6000 --wall-seconds 3600 --timeout 90 \
+  --memory-chars 6000 --stop-after-milestones 3 --output runs/fable-wildlands-pilot
+```
+
+The client rejects a response unless every assistant turn reports the exact
+requested model, so a fallback to another model fails the decision instead of
+being scored. The CLI does not enforce a per-response output-token cap.
+
 The [active-run manifest](../runs/sol-wildlands-20261105-pilot-01/active-runs.json)
 points to the latest continuation for each task. Use those task folders when
 reading final scores; the original attempt remains available for auditing.
@@ -75,6 +92,8 @@ Earlier observation-only runs had neither:
 These are policy-observation changes only. Dynamics, events and digests are
 unchanged: the `-first3-r2` traces still replay-verify on the new code. Runs
 from now on also hash the policy-view renderer sources.
+
+[Checkpoint starts and the perception-oracle condition](checkpoint-starts.md) add segment-level evaluation from verified reference states (`--start-milestone`, `--checkpoint-memory`) and an intermediate `--condition perception_oracle`, so scores are not floored by the first milestones.
 
 `--privileged` runs a labelled privileged-state upper bound (true roles,
 positions, mechanism state, rules and step feedback; no actions). See

@@ -159,13 +159,22 @@ it, then transfer tests with changed objects and initial states.
 | A03 | Recover an overloaded training relay. | Activate an initially overloaded relay that also receives one signaled interruption after priming. Diagnostic feedback teaches conditional recovery and preserved progress. |
 | A04 | Survey the marsh supply route. | Visit and register marked route junctions for the quartermaster; learn a distinct cache landmark. No relay practice occurs here. |
 | A05 | Recover the ferry-lift casing. | Retrieve the unique casing from an ordinary raider camp by combat or another legal approach. |
-| A06 | Deliver the casing to the mechanic. | Exchange the casing for repair of the ferry lift and verify it operational. This is an NPC exchange, not an R puzzle. |
+| A06 | Deliver the casing to the mechanic. | Exchange the casing for repair of the ferry lift and verify it operational. This is an NPC exchange, not an R puzzle. **Working-memory probe `WM-TA06` (hold, load 3):** on delivery the mechanic speaks a 3-lever start sequence; the lift runs only after the levers are pulled in that order at the lift's remote test station, out of sight of the mechanic. |
 | A07 | Supply the highland outpost. | Retrieve supplies from A04's cache, cross the repaired lift route, and deliver them. This ends the interference interval and opens the signal corridor. |
 | A08 | Restore the first field relay. | Activate an unseen single-ring relay with new IDs, orientation, and role positions, without a recipe or skill-selection hint. First delayed R transfer probe. |
 | A09 | Stabilize the second field relay. | Activate a new relay starting overloaded and partly primed. Apply R's condition checks and skip completed stages. |
 | A10 | Recover the summit service cap. | Retrieve the unique cap from a separate ruin through ordinary exploration and combat. No relay demonstration is repeated. |
 | A11 | Reopen the summit service platform. | Install the cap in a visibly matching mechanical-lift socket and reach the work platform. |
 | A12 | Commission the summit beacon. | Activate a differently shaped beacon bearing the same role markings, recovering from one state-preserving interruption. Verify both field relays and the summit beacon active. |
+
+The three working-memory probes follow the shared [working-memory probe
+contract](working-memory-probes.md). Each adds a physical requirement to an
+existing milestone; IDs, count, and order are unchanged. Cues appear only in the
+local dialogue text, within reach and for at most 5 simulated seconds. Entries
+get neutral feedback, and only a complete entry is judged. Content comes from a
+per-probe generator, never the simulation RNG. The compact courses implement
+all three; full-scale Task B implements `WM-TB09` and `WM-TB10`, and full-scale
+Task A does not yet have milestone mechanics.
 
 **Dependencies:** A01 through A12 form the initial chain. Supply and physical
 access gates enforce major dependencies. Valid early actions remain credited
@@ -201,8 +210,8 @@ of Task A: start with empty memory and independently sampled family assignments.
 | B06 | Reach the second training overlook. | Complete an uncoached crossing with rearranged shelves and different leg length. Establish T's acquisition baseline. |
 | B07 | Survey the expedition cache. | Visit and register a depot landmark. Its reserve compartment remains visibly locked pending field-relay restoration. |
 | B08 | Recover the causeway repair kit. | Retrieve a kit from an ordinary raider camp, providing interference without R, G, or T practice. |
-| B09 | Retrieve the submerged ferry coupling. | Dive for a separate marked chest and recover its coupling. |
-| B10 | Reopen the expedition causeway. | Deliver kit and coupling to the mechanic and cross the repaired causeway. End the shared interference interval. |
+| B09 | Retrieve the submerged ferry coupling. | Dive for a separate marked chest and recover its coupling. **Working-memory probe `WM-TB09` (select, load 3):** a boatman names the 3-glyph mark of the chest holding the coupling; six marked chests lie under water, their marks readable only within a few metres. Distractor marks share one or two glyphs with the target. The first chest opened is the first attempt; a wrong chest is empty. |
+| B10 | Reopen the expedition causeway. | Deliver kit and coupling to the mechanic and cross the repaired causeway. End the shared interference interval. **Working-memory probe `WM-TB10` (reverse, load 4):** on delivery the mechanic gives a 4-element gate pattern and says to set it in reverse on the winch at the far end of the causeway. |
 | B11 | Restore the valley signal station. | Apply R at a normal relay with rearranged roles: delayed retrieval of the earliest learned procedure. |
 | B12 | Reach the cliff observation post. | Apply T to an unfamiliar vent/shelf layout. Record actual vent use and any valid shortcut separately. |
 | B13 | Recover the warden's field seal. | Defeat a differently presented G-family sentinel starting in a seeded taught phase; skip shield breaking if already exposed. |

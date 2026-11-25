@@ -26,13 +26,20 @@ def teyvat_course(request):
 
 
 def test_teyvat_set_pieces_clear_the_recorded_reference_trace(teyvat_course):
+    from open_world_bench.reference_tasks import ReferenceTaskEnv
     task, env = teyvat_course
     layout = dressing.course_layout(env.world)
     kinds = dressing.layout_summary(layout)["kinds"]
     # Middle-scale locations, not a scatter of one kind of prop.
     assert len(layout.pieces) > 100 and len(kinds) >= 5
-    positions = _trace(ROOT / f"assets/demos/teyvat-reference-cycles/task-{task}-seed-7/actions.jsonl")
-    assert dressing.min_clearance(layout, positions) > 1.0
+    wm_trace = ROOT / f"assets/evaluation/working-memory/teyvat/compact/task-{task}-seed-7/actions.jsonl"
+    if wm_trace.exists():
+        assert dressing.min_clearance(layout, _trace(wm_trace)) > 1.0
+    # The archived demo traces predate the working-memory probes: compare them with the legacy course.
+    with ReferenceTaskEnv(task, 7, render_enabled=False, working_memory=False) as legacy:
+        legacy.reset(seed=7)
+        positions = _trace(ROOT / f"assets/demos/teyvat-reference-cycles/task-{task}-seed-7/actions.jsonl")
+        assert dressing.min_clearance(dressing.course_layout(legacy.world), positions) > 1.0
 
 
 def test_wildlands_set_pieces_clear_the_recorded_reference_trace():

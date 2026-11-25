@@ -1,0 +1,123 @@
+{
+  "success": true,
+  "checked_actions": 3618,
+  "checked_events": true,
+  "checked_positions": true,
+  "checked_milestone_hashes": 24,
+  "runtime": {
+    "python": "3.12.7",
+    "numpy": "2.1.3"
+  },
+  "verification": {
+    "success": true,
+    "failures": [],
+    "completed": 24,
+    "required": 24,
+    "scope": "compact native-simulator reference prototype"
+  },
+  "course_options": {
+    "working_memory": true,
+    "wm_control": false
+  },
+  "working_memory": {
+    "WM-TB09": {
+      "milestone": "B09",
+      "kind": "select",
+      "load": 3,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 177,
+        "seconds": 35.4
+      },
+      "solve_delay": {
+        "decisions": 177,
+        "seconds": 35.4
+      },
+      "source": [
+        -230.0,
+        12.0,
+        -40.0
+      ],
+      "use_site": [
+        -76.0,
+        -4.5,
+        -122.0
+      ],
+      "distance": 174.47,
+      "content": [
+        "key",
+        "fish",
+        "bell"
+      ],
+      "expected": [
+        "op013_08:chest1"
+      ]
+    },
+    "WM-TB10": {
+      "milestone": "B10",
+      "kind": "reverse",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 216,
+        "seconds": 43.2
+      },
+      "solve_delay": {
+        "decisions": 216,
+        "seconds": 43.2
+      },
+      "source": [
+        -122.0,
+        12.0,
+        -122.0
+      ],
+      "use_site": [
+        -215.0,
+        12.0,
+        40.0
+      ],
+      "distance": 186.8,
+      "content": [
+        "ember",
+        "tide",
+        "frost",
+        "gale"
+      ],
+      "expected": [
+        "gale",
+        "frost",
+        "tide",
+        "ember"
+      ]
+    }
+  },
+  "actions_sha256": "6bdba8016eb408398097cc26ce3ad8190e839337af29a907cf0b408ed79641c6",
+  "validated_source_sha256": {
+    "open_world_bench/reference_tasks.py": "000389ad1d2be979650d59fcb2e237ca8be3638adca1f2add3ed4fa1395f7c1a",
+    "open_world_bench/reference_policy.py": "e11ff6f28d17cd18305dc71dc4f2142faba3045432481cadceff1f28629e20cb",
+    "open_world_bench/working_memory_probes.py": "cb4c0f44d0282834a5d82867fa69975e5b83d3f4af40a75c1e2c427ed49504af",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "open_world_bench/architecture.py": "39738cfad69c8b1802146e650fede1a3800e4526aa083c0f65c2910de86dd869",
+    "open_world_bench/render/architecture.py": "8df5b2e18fd82339a7223d983160eaf790c59d346aa98bdc10e937919f3ffec7",
+    "open_world_bench/camera.py": "a1669aa0d09375f8771d8d601d7f877a441b669fdf7da2ac16bd02528b4cb0b8",
+    "open_world_bench/env.py": "59b311170707351f014ce67bb7e8ad920c0e690ef024ce29bd560df3da5466ab",
+    "open_world_bench/world.py": "d4a095ea776d76bf3a8c155a8323a5a8b854f7ac03cf123b35e3697baa26d425",
+    "open_world_bench/character.py": "89b169a174af06df3307e46f0a824e15bc7b76bd2bb08ae5e8b318da9eddc072",
+    "open_world_bench/party.py": "63a5bc0313e517d7724d6e0631fcfc0a144899a2fe46f6bb4c1628b7251c8bef",
+    "open_world_bench/terrain.py": "0142f368d91d7cb57ad778437cd7b3516ba75aa921c0a051b6f3c016042a9a87",
+    "owb/scripts/teyvat_reference.py": "fc5e49242740be57206681925fba9b79a62c6ca192e8f8dd545d59a4739e9880",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
+  },
+  "video_sha256": {}
+}

@@ -1,0 +1,296 @@
+{
+  "task": "b",
+  "seed": 7,
+  "initial_digest": "7c32d3bd50b636004a18c545db05641728384bdb12a7e87ba7375b66283b2985",
+  "final_digest": "7c823fdfdcc25bbaeb4d7d2eeeaa4ee6c4f0984f4a62cf2134f766141ab83535",
+  "decisions": 28757,
+  "simulated_seconds": 5751.400000003392,
+  "milestones": [
+    {
+      "id": "B01",
+      "step": 1,
+      "seconds": 0.2
+    },
+    {
+      "id": "B02",
+      "step": 761,
+      "seconds": 152.2
+    },
+    {
+      "id": "B03",
+      "step": 1615,
+      "seconds": 323.0
+    },
+    {
+      "id": "B04",
+      "step": 1892,
+      "seconds": 378.4
+    },
+    {
+      "id": "B05",
+      "step": 2287,
+      "seconds": 457.4
+    },
+    {
+      "id": "B06",
+      "step": 3044,
+      "seconds": 608.8
+    },
+    {
+      "id": "B07",
+      "step": 3646,
+      "seconds": 729.2
+    },
+    {
+      "id": "B08",
+      "step": 5717,
+      "seconds": 1143.4
+    },
+    {
+      "id": "B09",
+      "step": 7884,
+      "seconds": 1576.8
+    },
+    {
+      "id": "B10",
+      "step": 8885,
+      "seconds": 1777.0
+    },
+    {
+      "id": "B11",
+      "step": 9545,
+      "seconds": 1909.0
+    },
+    {
+      "id": "B12",
+      "step": 11336,
+      "seconds": 2267.2
+    },
+    {
+      "id": "B13",
+      "step": 12546,
+      "seconds": 2509.2
+    },
+    {
+      "id": "B14",
+      "step": 12803,
+      "seconds": 2560.6
+    },
+    {
+      "id": "B15",
+      "step": 13432,
+      "seconds": 2686.4
+    },
+    {
+      "id": "B16",
+      "step": 18408,
+      "seconds": 3681.6
+    },
+    {
+      "id": "B17",
+      "step": 18692,
+      "seconds": 3738.4
+    },
+    {
+      "id": "B18",
+      "step": 22596,
+      "seconds": 4519.2
+    },
+    {
+      "id": "B19",
+      "step": 22914,
+      "seconds": 4582.8
+    },
+    {
+      "id": "B20",
+      "step": 23728,
+      "seconds": 4745.6
+    },
+    {
+      "id": "B21",
+      "step": 27422,
+      "seconds": 5484.4
+    },
+    {
+      "id": "B22",
+      "step": 27597,
+      "seconds": 5519.4
+    },
+    {
+      "id": "B23",
+      "step": 28260,
+      "seconds": 5652.0
+    },
+    {
+      "id": "B24",
+      "step": 28757,
+      "seconds": 5751.4
+    }
+  ],
+  "required": 24,
+  "success": true,
+  "health": 24.0,
+  "events": {
+    "clue_exposed": 5,
+    "milestone_complete": 24,
+    "npc_denned": 91,
+    "horse_calmed": 1,
+    "mounted": 10,
+    "riding_improved": 2,
+    "dismounted": 9,
+    "part_picked": 20,
+    "part_mounted": 20,
+    "swing": 14,
+    "tree_struck": 11,
+    "apple_fell": 252,
+    "fan_struck": 3,
+    "cargo_loaded": 5,
+    "craft_moved": 1689,
+    "cargo_delivered": 5,
+    "gather": 1,
+    "ascended": 15,
+    "gallery_serviced": 3,
+    "land": 12,
+    "npc_emerged": 91,
+    "reversal_started": 4,
+    "platform_reversed": 112,
+    "reversal_cancelled": 4,
+    "platform_landing_reached": 4,
+    "new_day": 5,
+    "layer_changed": 8,
+    "reserves_cached": 2,
+    "whistled": 3,
+    "horse_arrived": 3,
+    "wm_cue_read": 2,
+    "wm_entry": 8,
+    "wm_attempt": 2,
+    "yard_gate_opened": 1,
+    "service_part_recovered": 2,
+    "thrown": 1,
+    "cache_retrieved": 2,
+    "outpost_opened": 1,
+    "cargo_towed": 5,
+    "station_engaged": 3,
+    "jump": 2,
+    "station_patched": 1,
+    "maintenance_bridge_closed": 1,
+    "lock_coupling_installed": 1,
+    "cargo_berth_opened": 1
+  },
+  "limitations": [
+    "Privileged scripted action-only oracle; demonstrates executability, not learned skills or memory performance.",
+    "Rated four-mount cargo craft and collision-backed grid-stepped actuators; no general rigid-body vehicle or fluid solver.",
+    "Cargo uses a grounded roller-cradle position ledger; it cannot follow the agent through Ascend.",
+    "Authored regional campaign geometry; the scene is not Nintendo game footage.",
+    "Standard cold-weather clothing and paraglider supplied at reset.",
+    "This reference itinerary does not validate every recovery, alternative construction, branch order, or held-out geometry in the research design."
+  ],
+  "world_shape": [
+    1280,
+    144,
+    1408
+  ],
+  "walked_metres": 21797.204711351933,
+  "return_dock": null,
+  "cache_bindings": {
+    "lamp_kit": 1,
+    "lock_coupling": 5
+  },
+  "working_memory": {
+    "WM-SB10": {
+      "milestone": "B10",
+      "kind": "hold",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 56,
+        "seconds": 11.2
+      },
+      "solve_delay": {
+        "decisions": 56,
+        "seconds": 11.2
+      },
+      "source_target": 79,
+      "use_target": 80,
+      "source_pos": [
+        891.5,
+        49.2,
+        910.5
+      ],
+      "use_pos": [
+        963.0,
+        49.0,
+        880.0
+      ],
+      "path_metres": 99,
+      "line_of_sight": false
+    },
+    "WM-SB17": {
+      "milestone": "B17",
+      "kind": "reverse",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "solve_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "source_target": 81,
+      "use_target": 82,
+      "source_pos": [
+        951.5,
+        49.2,
+        776.5
+      ],
+      "use_pos": [
+        955.0,
+        49.0,
+        719.0
+      ],
+      "path_metres": 60,
+      "line_of_sight": false
+    }
+  },
+  "wm_control": false,
+  "controller": "privileged action-only full-campaign reference policy",
+  "sources": {
+    "owb/env/skylands_reference.py": "4f3a87419d62c1245bea6ad1fa37d6da0a5cc6e1019bc82981999271c49fd43c",
+    "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
+    "owb/env/skylands.py": "4c13573c8b7a92ad046a674a4ea72099405df36df2d5751d657f77929a988073",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/env/skylands_campaign.py": "f3f3f2e691ee458aa2aa5d00312ff12026d2bb7ebb9b60f9f00a24d421db2493",
+    "owb/bench/baselines/skylands_campaign.py": "62d20bf8a7942e16ebbb7aaf04add42fe44cb4ed002b1481fdd3d4415a784174",
+    "owb/scripts/skylands_campaign.py": "712c8791dfafd53dfca145ef34e348fbcb2a52d9bc8c3126d3426dc9cb82df74",
+    "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
+    "owb/world/fauna.py": "85c7cb5d59b50dda6d1a6a164299fa9f9e6758943bf94c30761919b63bf58f2e",
+    "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "4fba32ab206fe7f01f2818125d31697c666abcaef79b6059928b91e23f059931",
+    "owb/sim/orchard.py": "f096a850736120a58d9ca9954e53beaf9de10a9d5a108756b66d6231df3573a5",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454",
+    "owb/world/settlements.py": "bc37f260c3c4647be713082b7394cb1201d047ffb04a660e8cf98c8278487171",
+    "owb/world/tempest.py": "f663a95de9f19a3f269c67928298a8ccf0410b410d25e60f57372b9e38cbb4ae",
+    "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1",
+    "owb/world/landmarks.py": "a7305a813bfe8c4d983c02e0180e24534bf5c6fa1ce1b2744b6b3b8b92b15555"
+  },
+  "actions_sha256": "39f51f05d196463d0a5316647fe8629bd4f671c803d03e8b0fefe269e94d5a7a"
+}

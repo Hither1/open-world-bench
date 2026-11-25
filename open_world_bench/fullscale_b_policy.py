@@ -35,6 +35,8 @@ class ExpeditionReference:
         self._nav = {}
         self._path, self._goal, self._facts, self._k = None, None, None, 0
         self._history = deque(maxlen=STUCK_WINDOW)
+        self._escape = None         # (direction xz, steps left) after walking into a corner
+        self.escapes = 0
         self._sprinting = True
         self.replans = 0
         self.route = None           # (route name, leg index, phase)
@@ -147,7 +149,17 @@ class ExpeditionReference:
             return self._entity(unit.receivers[unit.needed_role()]).pos[[0, 2]]
         if op.kind == "sentinel":
             return self._entity(c.sentinels[op.target].entity).pos[[0, 2]]
+        if op.kind == "panel":
+            return self._entity(self._next_pawl(op)).pos[[0, 2]]
         return None
+
+    def _next_pawl(self, op):
+        """Privileged: the pawl for the next entry of the expected (reversed) pattern."""
+        probe = self.course.wm[op.params["wm"]]
+        if probe.solved:
+            return op.target
+        want = probe.expected[len(probe.buffer)]
+        return next(e for e, element in self.course.wm_pawls.items() if element == want)
 
     # --------------------------------------------------------------- travel
     def _go(self, a, target, op):
@@ -183,7 +195,9 @@ class ExpeditionReference:
             return 1.6
         if op.kind == "reach":
             return 3.0
-        if op.kind == "collect" and op.target == "lake_chest":
+        if op.kind == "collect" and op.target.startswith("lake_chest"):
+            return 1.2
+        if op.kind == "panel":
             return 1.2
         return 2.0
 
@@ -209,13 +223,41 @@ class ExpeditionReference:
             return c.sentinels[op.target].label
         if op.kind == "reach":
             return op.target.replace("_", " ")
+        if op.kind == "panel":
+            return self._entity(self._next_pawl(op)).label
         return self._entity(op.target).label
+
+    def _escape_direction(self, goal):
+        """The walkable heading (16 tried) that makes the most progress toward ``goal``.
+
+        The planner's grid can route a diagonal step across a wall foot that the solid-terrain
+        controller refuses; stepping out along an open heading first gets past the corner."""
+        env = self.env
+        here = self.pos_xz()
+        to = np.asarray(goal, float) - here
+        to /= max(float(np.linalg.norm(to)), 1e-6)
+        best = None
+        for k in range(16):
+            d = np.array([np.cos(k * np.pi / 8), np.sin(k * np.pi / 8)])
+            # The controller's own step test, from the first few centimetres out to 3 m.
+            points = [here + d * r for r in (0.05, 0.15, 0.3, 0.6, 1.2, 2.0, 3.0)]
+            if all(env.controller._allowed(env.char, float(q[0]), float(q[1])) for q in points):
+                score = float(d @ to)
+                if best is None or score > best[0]:
+                    best = (score, d)
+        return None if best is None else best[1]
 
     def _walk(self, a, target, explanation, stop=0.6):
         env = self.env
         pos = env.char.pos
         facts = frozenset(env.fullscale.state.facts)
         goal = np.asarray(target, float)
+        if self._escape is not None and env.char.state == MoveState.GROUNDED:
+            direction, left = self._escape
+            self._escape = (direction, left - 1) if left > 1 else None
+            self._move_toward(a, self.pos_xz() + direction * 3.0, stop=0.0, sprint=False)
+            self.mode, self.explanation = "walk", "Step out of the corner: " + explanation
+            return
         stuck = self._stuck()
         if self._path is None or self._facts != facts or np.linalg.norm(goal - self._goal) > 1.0 or stuck:
             self._path = self.nav().plan(pos[[0, 2]], goal)
@@ -223,6 +265,11 @@ class ExpeditionReference:
             if stuck:
                 self.replans += 1
                 self._history.clear()
+                if self._path is not None and len(self._path) > 1:
+                    direction = self._escape_direction(self._path[min(2, len(self._path) - 1)])
+                    if direction is not None:
+                        self._escape = (direction, 6)
+                        self.escapes += 1
         path = self._path
         if path is None:
             waypoint = goal
@@ -365,6 +412,9 @@ class ExpeditionReference:
             self._collect(a, op)
         elif op.kind == "reach":
             self.explanation = f"Stand at {self._label(op)}"
+        elif op.kind == "panel":
+            a["buttons"][BUTTON["interact"]] = 1
+            self.explanation = f"Set the {self._label(op).lower()} (gate pattern, reversed)"
         elif op.kind == "relay":
             self._relay(a, op)
         elif op.kind == "sentinel":
@@ -376,13 +426,14 @@ class ExpeditionReference:
     def _collect(self, a, op):
         env = self.env
         st = env.char
-        if op.target == "lake_chest":
+        if op.target.startswith("lake_chest"):
             a["buttons"][BUTTON["jump"]] = 1          # hold to dive and stay down
             chest = self._entity(op.target)
             self.mode = "swim"
             if float(st.pos[1]) < float(chest.pos[1]) + 2.4:
                 a["buttons"][BUTTON["interact"]] = 1
-                self.explanation = "Open the sunken chest on the lake bed"
+                self.explanation = ("Open the sunken chest with the boatman's mark" if op.target != "lake_chest"
+                                    else "Open the sunken chest on the lake bed")
             else:
                 self.explanation = "Dive to the marked chest"
             return

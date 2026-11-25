@@ -5,6 +5,12 @@ These are executable **compact reference courses** corresponding to the
 privileged scripted controller. They are not the full long-duration campaigns
 or results from a learned agent.
 
+Status (2026-11-24): the traces linked below predate the
+[working-memory probes](working-memory-probes.md) `WM-SA12`, `WM-SB10` and
+`WM-SB17` and no longer replay on the current simulator. Verified traces with the
+probes are in
+[`assets/evaluation/working-memory/skylands/reference/`](../assets/evaluation/working-memory/skylands/reference/).
+
 These compact traces are retained as mechanics tests. Their video rendering was
 stopped when the requested scope changed to full-scale campaigns. There is no
 completed compact walkthrough MP4 or chapter player in this package.

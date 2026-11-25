@@ -355,8 +355,8 @@ sentinel warden, and wind guide before setting out."*
 | B06 | Reach the second training overlook | Uncoached; 3 legs, rearranged | Standing on overlook 2 | 180 m | 3.0 min |
 | B07 | Survey the expedition cache | Register the depot granary; the reserve compartment is visibly sealed | Depot registered | 470 m | 2.0 min |
 | B08 | Recover the causeway repair kit | Raider camp in the eastern hills; fighting or sneaking both legal | Kit in pack | 420 m | 4.0 min |
-| B09 | Retrieve the submerged ferry coupling | Dive in Mirror Lake to the marked chest at about 7 m depth | Coupling in pack | 260 m | 2.5 min |
-| B10 | Reopen the expedition causeway | Deliver kit and coupling; the causeway gate opens; climb the Scarp Cut | Character on the upper valley | 460 m | 2.5 min |
+| B09 | Retrieve the submerged ferry coupling | Hear the lake boatman on the east shore name the chest's 3-glyph mark; dive in Mirror Lake and open the chest with that mark among six on the bed at about 8 m depth (**working-memory probe `WM-TB09`**, select) | Boatman heard; coupling in pack | 260 m | 2.5 min |
+| B10 | Reopen the expedition causeway | Deliver kit and coupling; the mechanic gives a 4-element gate pattern; the causeway gate opens; climb the Scarp Cut; set the pattern in reverse on the winch at its far end (**working-memory probe `WM-TB10`**, reverse) | Character on the upper valley; winch set | 460 m | 2.5 min |
 | B11 | Restore the valley signal station | Stone-mast relay; no recipe (**first delayed R probe**) | Relay B11 active | 330 m | 2.5 min |
 | B12 | Reach the cliff observation post | Lookout stacks, 2 legs (**delayed T probe**) | Standing at the post | 520 m | 3.5 min |
 | B13 | Recover the warden's field seal | Different-looking sentinel, starts exposed (**delayed G probe**) | Seal in pack | 340 m | 2.5 min |
@@ -391,7 +391,7 @@ come in shorter than this table. The final budgets come from reference rollouts.
 | B04 | Warden | The wind guide waits by the sea stacks east of the village. |
 | B05 | Guide | Reach the second overlook on your own. |
 | B06 | Guide | The expedition quartermaster waits at the depot: the granary with the crane, south-east of Mirror Lake. |
-| B07 | Quartermaster; compartment plaque | The reserve compartment is sealed until reserve power returns from the upper valley. The causeway mechanic at the foot of the Scarp Cut needs a repair kit, which raiders in the eastern hills stole, and the ferry coupling, which sank in Mirror Lake. |
+| B07 | Quartermaster; compartment plaque | The reserve compartment is sealed until reserve power returns from the upper valley. The causeway mechanic at the foot of the Scarp Cut needs a repair kit, which raiders in the eastern hills stole, and the ferry coupling, which sank in Mirror Lake. The boatman on the lake's east shore saw which chest it went down in. |
 | B08, B09 | Item descriptions | "For the causeway mechanic." |
 | B10 | Mechanic | The valley signal station up the cut has been dark. |
 | B11 | Station plaque | The observation post on the eastern stacks reports the route north. |
@@ -410,7 +410,43 @@ come in shorter than this table. The final budgets come from reference rollouts.
 | B23 | Item description | The beacon heart, for the outpost beyond the Crown's north edge. |
 
 Dialogue stays in `local_text` while the agent is within about 4 m of the speaker, and for
-5 s afterwards.
+5 s afterwards. Working-memory cues (the boatman's mark, the mechanic's gate pattern) are
+stricter: they stay only while the agent is within 4 m **and** for at most 5 s, and do not
+return without a new interaction. Mechanism feedback lingers 8 s, but the cues are never
+put in it.
+
+### Working-memory probes
+
+B09 and B10 carry two probes from the shared [working-memory probe
+contract](working-memory-probes.md). Each is an extra physical requirement of the
+milestone; every existing predicate still applies and the world (terrain, gates, structures,
+proofs) is unchanged. The new fixtures are entities without collision, placed by offsets
+from existing anchors.
+
+| Probe | Source and cue | Use site | Load, kind |
+| --- | --- | --- | --- |
+| `WM-TB09` | Lake boatman, 66 m east of the lake centre on the shore: "The coupling is in the one marked *a-b-c*" (three of eight glyphs) | Six sunken chests in a 9 m ring on the lake bed; a chest's mark is readable only within 4 m. Distractor marks share one or two glyphs, in place, with the target | 3, select (one slot; the first chest opened is the first attempt; a wrong chest is empty) |
+| `WM-TB10` | Causeway mechanic, on delivery of kit and coupling: a pattern of four of six elements, "set it on the winch at the far end of the causeway in reverse order" | Causeway winch with six element pawls, beyond the top of the Scarp Cut | 4, reverse |
+
+Pawls and chests give neutral feedback ("Winch pawl (tide): click (2 set).", "Sunken chest:
+empty."). Only a complete winch entry is judged; a wrong one drops the pawls back, and a
+partial entry drops back when the agent walks more than 12 m away. The winch is chained
+until the mechanic has given the pattern. The boatman and the mechanic repeat the cue
+whenever they are asked while the probe is unsolved. `TeyvatExpeditionEnv(wm_control=True)`
+also posts each cue within 12 m of its use site (diagnostic only).
+`TeyvatExpeditionEnv(working_memory=False)` rebuilds the earlier course, version
+`teyvat-fullscale-b-course-v2`, whose initial state digest matches the archived seed-7 run.
+The course with the probes is `teyvat-fullscale-b-course-v3-wm`. Probe state is in the state
+digest; events and summaries follow the contract.
+
+| Probe | Source (x, y, z) | Use site (x, y, z) | Distance |
+| --- | --- | --- | ---: |
+| `WM-TB09` | Boatman (258.9, 0.6, 479.8) | Chest ring centre (196.9, −8.0, 482.8) | 62.1 m |
+| `WM-TB10` | Mechanic (45.2, 9.5, 326.0) | Winch (38.2, 57.5, 156.0) | 170.1 m |
+
+The winch is beyond the 144 m range at which the policy renderer draws entities, so the
+mechanic is not drawn from it. The lake is 124 m across, so the boatman can be in view from
+the lake surface; his words are not, and a chest's mark cannot be read from the shore.
 
 ### Progression rules
 
@@ -575,6 +611,32 @@ reuse the mechanics module.
 | Death | Respawn at the nearest discovered statue; counted | Terminate |
 
 ## Implementation results (seed 7)
+
+Status (2026-11-24): the results, trace and walkthrough video in this section predate the
+working-memory probes `WM-TB09` and `WM-TB10` (see [Working-memory
+probes](#working-memory-probes)). They were made on course `teyvat-fullscale-b-course-v2`,
+which `TeyvatExpeditionEnv(working_memory=False)` still builds. A new seed-7 reference with
+the probes, `teyvat-fullscale-b-course-v3-wm`, verified by an independent replay, is in
+`assets/evaluation/working-memory/teyvat/fullscale-b/seed-7/` (`manifest.json`,
+`actions.jsonl`, `verification.json`). It has not been rendered. It completes 24 / 24 in
+8,364 native actions (27.9 simulated minutes, 8.99 km, no deaths or falls, lowest HP 70,
+17 vent launches, no sputters):
+
+| Probe | First attempt | Cue reads | Delay from cue to first attempt |
+| --- | --- | ---: | --- |
+| `WM-TB09` | correct | 1 | 118 decisions, 23.6 s |
+| `WM-TB10` | correct | 1 | 164 decisions, 32.8 s |
+
+The privileged controller reads each cue from private state; its correct first attempts
+show the probes are solvable and say nothing about memory. Each cue was in `local_text`
+for 3 observations (0.6 s) before the controller left reach. The world proofs are unchanged:
+the probe fixtures add no terrain or collision. The reference controller gained a corner
+escape: when it is stuck on ground the solid-terrain controller will not leave in the
+planned direction, it steps out for six actions along a heading the controller accepts, then
+replans. Without it, the run stalled for good at the foot of the Scarp Cut after B10's
+exchange once the B09 route had changed. In the recorded run it fired three times (in B04,
+B08 and B10).
+
 
 | Module | Role |
 | --- | --- |

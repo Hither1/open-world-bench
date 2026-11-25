@@ -5,6 +5,7 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import re
 import time
 import numpy as np
 from owb.env.skylands_reference import SkylandsReferenceEnv, COMMANDS, plain
@@ -13,7 +14,7 @@ from owb.render.presentation import PresentationRenderer
 from owb.render.video import H264Writer
 
 ROOT=Path(__file__).resolve().parents[2]
-SOURCES=('owb/env/skylands_reference.py','owb/bench/baselines/skylands_reference.py',
+SOURCES=('owb/env/skylands_reference.py','owb/bench/baselines/skylands_reference.py','owb/core/working_memory.py',
  'owb/scripts/skylands_reference.py','owb/env/skylands.py','owb/env/wildlands.py',
  'owb/world/skylands.py','owb/physics/character.py','owb/render/scene_export.py',
  'owb/render/blender_scene.py','owb/render/presentation.py','owb/render/video.py')
@@ -32,6 +33,88 @@ LIMITATIONS=[
 ]
 
 
+# Working-memory cues as they appear in the observation text after inspecting
+# the source. The controller keeps what it read; it never reads probe content
+# from the simulator.
+WM_CUE_PATTERNS = {'WM-SA12': r'release sequence (\d)-(\d)-(\d)-(\d)',
+                   'WM-SB10': r'inner gate code (\d)-(\d)-(\d)-(\d)',
+                   'WM-SB17': r'jack order (\d)-(\d)-(\d)-(\d)'}
+
+
+class WorkingMemoryControl:
+    """Reference-controller extension for WM-SA12/SB10/SB17: read the source
+    with `inspect`, keep the code it showed in the text observation, travel,
+    and key it at the use site with `use`/`option`. Positions and routing are
+    privileged as in the base controller; the code itself is taken only from
+    the observation text."""
+
+    def wm_init(self):
+        self.wm_memory={}
+
+    def observe_cues(self,obs):
+        text=str(obs.get('text','')) if isinstance(obs,dict) else ''
+        for probe,pattern in WM_CUE_PATTERNS.items():
+            found=re.search(pattern,text)
+            if found:
+                items=[int(v) for v in found.groups()]
+                # The schematic states its own rule: wire in the reverse order.
+                self.wm_memory[probe]=items[::-1] if probe=='WM-SB17' and 'REVERSE' in text else items
+
+    def wm_pending(self,probe):
+        p=getattr(self.env,'wm',{}).get(probe)
+        return p is not None and not p.solved
+
+    def wm_read(self,probe):
+        e=self.env; tid=e.wm_sites[probe]['source']; p=np.asarray(e.targets[tid]['pos'],float)
+        if e._reachable(p,2.8):
+            a=self.command('inspect',tid); self.explanation='Read the '+e.targets[tid]['role'].replace('_',' '); return a
+        return self.go(p-(0,1.19,0))
+
+    def wm_enter(self,probe):
+        e=self.env; tid=e.wm_sites[probe]['use']
+        key=self.wm_memory[probe][len(e.wm[probe].buffer)]
+        a=self.approach(tid,'use',key)
+        if e.commands[int(a['command'])]=='use':
+            self.explanation=f'Key {key} on the '+e.targets[tid]['role'].replace('_',' ')+' from memory'
+        return a
+
+    def wm_step(self,probe):
+        """Read the cue if not yet held, otherwise key it; None once solved."""
+        if not self.wm_pending(probe): return None
+        if probe not in self.wm_memory: return self.wm_read(probe)
+        return self.wm_enter(probe)
+
+    def wm_action(self,obs):
+        """A WM action for the current milestone, or None to defer to the base controller."""
+        self.observe_cues(obs)
+        e=self.env; m=e.current
+        if m is None or not getattr(e,'wm',None): return None
+        s=m.state
+        if m.id=='B10': return self.wm_step('WM-SB10')
+        if m.id=='B17' and s['installed']: return self.wm_step('WM-SB17')   # output needs the patch
+        if m.id=='A12' and self.wm_pending('WM-SA12'):
+            mv=e.movers[s['mover']]
+            if mv['moving']: return None
+            if mv['cargo']!='core':
+                a=self.transport_cargo('core',mv['pos']+(-3,0,0),s['load_target'])
+                if a is not None: return a
+                # Read the dispatch placard, then board and ride up with the load.
+                if 'WM-SA12' not in self.wm_memory: return self.wm_read('WM-SA12')
+                if not e.on_deck(mv): return self.go(mv['pos']+(.5,.01,.5))
+                return None
+            return self.wm_step('WM-SA12')   # held at the receiving station
+        return None
+
+
+class SkylandsWMReferencePolicy(WorkingMemoryControl,SkylandsReferencePolicy):
+    def __init__(self,env):
+        super().__init__(env); self.wm_init()
+
+    def __call__(self,obs):
+        a=self.wm_action(obs)
+        return a if a is not None else super().__call__(obs)
+
+
 def save(p,data): Path(p).write_text(json.dumps(plain(data),indent=2,allow_nan=False)+'\n')
 def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def sources(): return {p:sha(ROOT/p) for p in SOURCES}
@@ -45,7 +128,7 @@ def action_from_json(a):
 def collect(task,seed,directory):
     directory.mkdir(parents=True,exist_ok=False)
     with SkylandsReferenceEnv(task,seed) as env:
-        obs,_=env.reset(seed=seed); initial=env.state_digest(); policy=SkylandsReferencePolicy(env); counts=Counter()
+        obs,_=env.reset(seed=seed); initial=env.state_digest(); policy=SkylandsWMReferencePolicy(env); counts=Counter()
         with (directory/'actions.jsonl').open('w') as stream:
             while not env._ended:
                 m=env.current; before=env.agent.pos.copy(); a=policy(obs)
@@ -62,6 +145,7 @@ def collect(task,seed,directory):
         save(directory/'reference-manifest.json',dict(task=task,seed=seed,initial_digest=initial,final_digest=env.state_digest(),
             decisions=env.steps,simulated_seconds=env.elapsed,milestones=env.completed,required=len(env.milestones),
             success=env.success,health=env.agent.health,events=dict(counts),limitations=LIMITATIONS,
+            working_memory=getattr(env,'wm',None) and env.wm_summary(),wm_control=env.wm_control,
             controller='privileged action-only reference policy',sources=sources(),actions_sha256=sha(directory/'actions.jsonl')))
     return verify(directory)
 
@@ -89,8 +173,11 @@ def verify(directory):
         for row in rows: checked_step(env,row)
         assert env.success and env.system_operational() and len(env.completed)==manifest['required'] and not env.agent.deaths
         assert env.state_digest()==manifest['final_digest']
+        wm=getattr(env,'wm',None) and plain(env.wm_summary())
+        if wm!=manifest.get('working_memory'): raise RuntimeError('Working-memory summary differs from the manifest')
         result=dict(success=True,checked_actions=len(rows),checked_positions=True,checked_events=True,checked_rewards=True,
                     checked_milestones=len(env.completed),final_live_predicate=True,final_digest=env.state_digest(),
+                    working_memory=wm,checked_working_memory=bool(wm),
                     actions_sha256=manifest['actions_sha256'],sources=sources())
         save(directory/'verification.json',result); return result
     finally: env.close()

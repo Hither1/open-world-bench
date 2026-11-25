@@ -5,8 +5,8 @@ docs/skylands-model-pilots.md for the Skylands action/observation adapter.
 """
 from owb.env.skylands_campaign import SkylandsCampaignEnv
 from dataclasses import replace
-from owb.bench.baselines import privileged_view
-from owb.bench.baselines.skylands_model import SkylandsModelPolicy,SkylandsPrivilegedPolicy,local_view
+from owb.bench.baselines import privileged_view,perception_view
+from owb.bench.baselines.skylands_model import SkylandsModelPolicy,SkylandsPrivilegedPolicy,SkylandsPerceptionPolicy,local_view
 from owb.scripts.skylands_campaign import SOURCES
 from owb.scripts.skylands_reference import checked_step
 from owb.scripts.wildlands_model import Course,main
@@ -20,11 +20,15 @@ SKYLANDS=Course('skylands_campaign',lambda task,seed: SkylandsCampaignEnv(task,s
                 SkylandsModelPolicy,MISSIONS,checked_step,
                 SOURCES+('owb/bench/baselines/skylands_model.py','owb/scripts/skylands_model.py',
                          'owb/bench/baselines/wildlands_model.py','owb/scripts/wildlands_model.py',
-                         'owb/bench/baselines/codex_policy.py','owb/sim/construction.py',
+                         'owb/bench/baselines/codex_policy.py','owb/bench/baselines/claude_policy.py','owb/sim/construction.py',
                          'owb/render/landscape.py','owb/render/models.py','owb/render/raycast.py'),
-                observe=lambda env,obs,events: dict(obs,local_targets=local_view(env)))
+                observe=lambda env,obs,events: dict(obs,local_targets=local_view(env)),
+                commands=SkylandsCampaignEnv.commands)
 SKYLANDS_PRIVILEGED=replace(SKYLANDS,policy=SkylandsPrivilegedPolicy,condition='privileged_state',
     sources=SKYLANDS.sources+('owb/bench/baselines/privileged_view.py',),
     observe=lambda env,obs,events: dict(SKYLANDS.observe(env,obs,events),privileged=privileged_view.skylands(env,events)))
+SKYLANDS_PERCEPTION=replace(SKYLANDS,policy=SkylandsPerceptionPolicy,condition='perception_oracle',
+    sources=SKYLANDS.sources+('owb/bench/baselines/perception_view.py',),
+    observe=lambda env,obs,events: dict(SKYLANDS.observe(env,obs,events),perceived=perception_view.skylands(env)))
 
-if __name__=='__main__': main(SKYLANDS,__doc__,SKYLANDS_PRIVILEGED)
+if __name__=='__main__': main(SKYLANDS,__doc__,SKYLANDS_PRIVILEGED,SKYLANDS_PERCEPTION)

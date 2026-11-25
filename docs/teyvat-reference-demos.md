@@ -1,5 +1,13 @@
 # Teyvat reference demonstration videos
 
+Status (2026-11-24): the videos and traces below predate the working-memory
+probes `WM-TA06`, `WM-TB09` and `WM-TB10` and show the earlier A06, B09 and B10.
+They replay only on the legacy course (`ReferenceTaskEnv(..., working_memory=False)`),
+which `--verify` selects for traces without a `working_memory` entry. New
+reference traces with the probes, verified by independent replay, are in
+`assets/evaluation/working-memory/teyvat/compact/`; see
+[Working-memory probes](#working-memory-probes). They have not been rendered.
+
 These recordings show successful, executable **compact reference courses** for
 the 12- and 24-milestone task designs. Frames come from the native Teyvat
 simulator. A privileged reference controller supplies ordinary movement,
@@ -94,6 +102,76 @@ Long-delay calibration, learned-skill evaluation, independent held-out layouts,
 full-world access gates, and robust reference planning across many seeds remain
 future work. These are ground-truth demonstrations **for this executable
 prototype**, not benchmark results for the full proposed task suite.
+
+## Working-memory probes
+
+The compact courses implement three probes from the shared
+[working-memory probe contract](working-memory-probes.md). Each adds a physical
+requirement to an existing milestone. Milestone IDs, count and order are
+unchanged, and existing sites, operation IDs and the course RNG stream are
+untouched; the probe fixtures are additions.
+
+| Probe | Milestone | Cue (source) | Use site | Load, kind |
+| --- | --- | --- | --- | --- |
+| `WM-TA06` | A06 | Ferry mechanic, on delivering the casing: three of five lever colours, in order | Lift lever bank at the lift's test station (five coloured levers) | 3, hold |
+| `WM-TB09` | B09 | Ferry boatman: the 3-glyph mark of the chest holding the coupling | Six sunken chests on the floor of a wider pool; a mark is readable within 3 m | 3, select (one slot) |
+| `WM-TB10` | B10 | Causeway mechanic, on delivering kit and coupling: four of six element pawls, to be set in reverse | Causeway winch with six element pawls, past the far end of the causeway | 4, reverse |
+
+Behaviour, as implemented in `open_world_bench/reference_tasks.py` and
+`open_world_bench/working_memory_probes.py`:
+
+- The cue appears in `local_text` as the source's words. It clears when the
+  character is more than 4 m from the source or 5 simulated seconds after it
+  was given, whichever comes first, and does not come back without a new
+  interaction. Other compact feedback (`last_feedback`) does not expire, so the
+  cue is kept on its own channel rather than in that feedback.
+- Labels name fixtures (for example "Green lift lever", "Sunken chest"), never
+  the answer. Entries give neutral feedback ("Green lift lever: click (1 set).").
+  Only a complete entry is judged; a wrong one resets the panel. A wrong chest
+  is empty. Partial entries are dropped when the character walks more than
+  12 m from the panel. The source can be revisited for the cue at any time
+  before the probe is solved.
+- Content is drawn per probe from `owb.core.working_memory.probe_rng(seed, probe)`.
+  Distractor chest marks share one or two glyphs, in place, with the target.
+- `ReferenceTaskEnv(..., wm_control=True)` also posts the cue within 10 m of the
+  use site. It is a diagnostic condition, not a default.
+- Probe state is part of `state_digest()`. Events `wm_cue_read`, `wm_entry` and
+  `wm_attempt` appear in `info["event_details"]`. Per-probe summaries, with
+  source and use-site positions, are written to the manifest under
+  `working_memory`.
+
+Placement on the 640 m plateau (x, z in metres). Each use site is farther from
+its source than the 160 m camera and view range:
+
+| Probe | Source | Use site | Distance |
+| --- | --- | --- | ---: |
+| `WM-TA06` | Mechanic (108, −122) | Lever bank (120, 55) | 177.4 m |
+| `WM-TB09` | Boatman (−230, −40) | Chest pool centre (−76, −122) | 174.5 m |
+| `WM-TB10` | Mechanic (−122, −122) | Winch (−215, 40) | 186.8 m |
+
+Seed-7 reference traces with the probes (`--trace-only`, no rendering):
+
+| Course | Completed | Native actions | Simulated time | Probe | First attempt | Delay from cue to first attempt |
+| --- | --- | ---: | ---: | --- | --- | --- |
+| Task A | 12 / 12 | 1,432 | 286.4 s | `WM-TA06` | correct | 186 decisions, 37.2 s |
+| Task B | 24 / 24 | 3,618 | 723.6 s | `WM-TB09` | correct | 177 decisions, 35.4 s |
+| | | | | `WM-TB10` | correct | 216 decisions, 43.2 s |
+
+The privileged reference controller reads each cue from private state and
+enters it with native actions (walking, interact, diving). Its correct first
+attempts show the probes are solvable; they say nothing about memory.
+
+```bash
+python -B -m owb.scripts.teyvat_reference --task a b --seed 7 --trace-only \
+  --output assets/evaluation/working-memory/teyvat/compact
+python -B -m owb.scripts.teyvat_reference --verify assets/evaluation/working-memory/teyvat/compact/task-b-seed-7
+```
+
+New fixture meshes (lever bank and test station, marked chests with carved
+glyphs, winch drum and pawls, the boatman's oar and hat) are in
+`open_world_bench/render/assets.py`. The observation renderer and the Cycles
+scene exporter share them. They are keyed to entity identity and
+`visual_version`, not to any RNG. They have not been rendered in Cycles.
 
 ## Verification and reproduction
 

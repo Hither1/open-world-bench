@@ -23,6 +23,16 @@ from .render import RenderSettings
 from .scatter import PropField
 from .terrain import Terrain, TerrainConfig
 from .world import CombatSystem, EntityKind, World, WorldConfig
+from . import working_memory_probes as wmp
+
+# Working-memory fixtures on the compact plateau (x, z). Each use site is more
+# than the 160 m camera range from its source; see docs/teyvat-reference-demos.md.
+WM_SITES = {"a": {"levers": (120.0, 55.0)},
+            "b": {"boatman": (-230.0, -40.0), "winch": (-215.0, 40.0)}}
+WM_POOL_RADIUS = 8.0
+WM_CHEST_RING = 4.5
+WM_MARK_RANGE = 3.0
+WM_PANEL_SPACING = 3.0
 
 
 @dataclass
@@ -45,10 +55,20 @@ class Milestone:
 class Course:
     """Private task/evaluator state. Only world actions may change operations."""
 
-    def __init__(self, world: World, task: str, seed: int):
+    def __init__(self, world: World, task: str, seed: int, *, working_memory: bool = True, wm_control: bool = False):
         if task not in ("a", "b"):
             raise ValueError("task must be 'a' or 'b'")
         self.world, self.task = world, task
+        self.seed = seed
+        # Working-memory probes draw from their own generators, before and apart from self.rng.
+        self.working_memory = bool(working_memory)
+        self.wm = wmp.make_probes(task, seed, control=wm_control) if working_memory else {}
+        self.wm_control = bool(wm_control) and self.working_memory
+        self.wm_cue = wmp.CueChannel()
+        self.wm_sources = {}        # probe id -> source entity id
+        self.wm_armed = set()       # probes whose cue has been given at least once by the course
+        self.wm_marks = {}          # chest entity id -> mark tuple
+        self.decisions = lambda: 0  # set by the env: decisions taken so far
         self.rng = np.random.default_rng(seed + 739)
         elements = [Element.EMBER, Element.TIDE, Element.GALE]
         self.relay_elements = dict(zip(("source", "vane", "drain"), self.rng.permutation(elements)))
@@ -142,6 +162,19 @@ class Course:
                 self.entity(op, f"shelf{k}", EntityKind.WAYPOINT, point, label=f"Wind shelf {k+1}",
                             visual_role="vent")
             op.state["points"] = [v.tolist() for v in points]
+        elif kind == "dive" and self.working_memory:
+            # WM-TB09: six marked chests on a wider pool floor; one holds the item.
+            self.flat_patch(p, -4.5, radius=WM_POOL_RADIUS)
+            probe = self.wm[wmp.TB09]
+            marks, target = wmp.chest_marks(probe, self.seed)
+            for k, mark in enumerate(marks):
+                a = k * np.pi / 3
+                eid = self.entity(op, f"chest{k+1}", EntityKind.CHEST,
+                                  p + WM_CHEST_RING * np.array([np.cos(a), np.sin(a)]),
+                                  label="Sunken chest", visual_role="wm_marked", visual_version=wmp.mark_code(mark))
+                self.wm_marks[eid] = mark
+            probe.set_expected((op.entities[target],))
+            op.state["wm"] = wmp.TB09
         elif kind == "dive":
             self.flat_patch(p, -4.5, radius=5.0)
             self.entity(op, "chest", EntityKind.CHEST, p, label=title)
@@ -152,6 +185,34 @@ class Course:
             ek = EntityKind.NPC if kind in ("lesson", "exchange") else (
                  EntityKind.CHEST if kind == "collect" else EntityKind.WAYPOINT)
             self.entity(op, "target", ek, p, label=title)
+        return op
+
+    def make_wm(self, kind, title, probe_id, site, **state):
+        """A working-memory operation at an explicit site; consumes no grid cell and no course RNG."""
+        op = Operation(f"wm{len(self.milestones)+1:02d}_{kind}", kind, title, state=dict(state))
+        p = np.asarray(site, dtype=float)
+        op.state.update(site=p.tolist(), wm=probe_id)
+        probe = self.wm[probe_id]
+        if kind == "cue":
+            eid = self.entity(op, "source", EntityKind.NPC, p, label=title, visual_role="wm_boatman")
+            self.wm_sources[probe_id] = eid
+        elif kind == "panel":
+            symbols = wmp.LEVER_COLOURS if probe_id == wmp.TA06 else wmp.PAWL_ELEMENTS
+            role = "wm_lever" if probe_id == wmp.TA06 else "wm_pawl"
+            noun = "lift lever" if probe_id == wmp.TA06 else "winch pawl"
+            op.state["symbols"] = {}
+            for k, symbol in enumerate(symbols):
+                xz = p + ((k - (len(symbols) - 1) / 2) * WM_PANEL_SPACING, 0.0)
+                eid = self.entity(op, f"{role[3:]}_{symbol}", EntityKind.PILLAR, xz,
+                                  label=f"{symbol.title()} {noun}", visual_role=role, visual_version=k + 1)
+                op.state["symbols"][eid] = symbol
+            # The housing names the fixture; it is not an entry and not in the operation's entities.
+            housing = f"{op.id}:housing"
+            kind_ = EntityKind.ALTAR if probe_id == wmp.TA06 else EntityKind.PILLAR
+            self.world.spawn_at(housing, kind_, float(p[0]), float(p[1] + 4.0), radius=2.1,
+                                label="Lift test station" if probe_id == wmp.TA06 else "Causeway winch",
+                                visual_role="wm_station" if probe_id == wmp.TA06 else "wm_winch")
+            op.state["housing"] = housing
         return op
 
     def add(self, title, *ops):
@@ -180,7 +241,13 @@ class Course:
                  self.make("survey","Remember the supply cache",site=cache))
         self.add("Recover the lift casing", self.make("fight","Clear the camp"),
                  self.make("collect","Lift casing",item="casing"))
-        self.add("Repair the ferry lift", self.make("exchange","Ferry mechanic",requires={"casing":1},grants="ferry_open"))
+        if self.working_memory:
+            mechanic=self.make("exchange","Ferry mechanic",requires={"casing":1},wm_cue=wmp.TA06)
+            self.add("Repair the ferry lift",mechanic,
+                     self.make_wm("panel","Lift lever bank",wmp.TA06,WM_SITES["a"]["levers"],grants="ferry_open"))
+            self.wm_sources[wmp.TA06]=mechanic.entities[0]
+        else:
+            self.add("Repair the ferry lift", self.make("exchange","Ferry mechanic",requires={"casing":1},grants="ferry_open"))
         self.add("Supply the outpost", self.make("collect","Supply cache",site=cache,item="supplies",requires={"ferry_open":1},keep=True),
                  self.make("exchange","Highland quartermaster",requires={"supplies":1},grants="corridor_open"))
         self.add("Restore a field relay", self.make("relay","First field relay"))
@@ -199,9 +266,17 @@ class Course:
         depot=self.site()
         self.add("Survey the supply depot",self.make("survey","Reserve depot landmark",site=depot))
         self.add("Recover the repair kit",self.make("fight","Camp sentry"),self.make("collect","Repair kit",item="kit"))
-        self.add("Dive for the coupling",self.make("dive","Submerged coupling",item="coupling"))
-        self.add("Reopen the causeway",self.make("exchange","Causeway mechanic",requires={"kit":1,"coupling":1},grants="causeway_open"),
-                 self.make("survey","Cross the repaired causeway"))
+        if self.working_memory:
+            self.add("Dive for the coupling",self.make_wm("cue","Ferry boatman",wmp.TB09,WM_SITES["b"]["boatman"]),
+                     self.make("dive","Submerged coupling",item="coupling"))
+            mechanic=self.make("exchange","Causeway mechanic",requires={"kit":1,"coupling":1},grants="causeway_open",wm_cue=wmp.TB10)
+            self.add("Reopen the causeway",mechanic,self.make("survey","Cross the repaired causeway"),
+                     self.make_wm("panel","Causeway winch",wmp.TB10,WM_SITES["b"]["winch"]))
+            self.wm_sources[wmp.TB10]=mechanic.entities[0]
+        else:
+            self.add("Dive for the coupling",self.make("dive","Submerged coupling",item="coupling"))
+            self.add("Reopen the causeway",self.make("exchange","Causeway mechanic",requires={"kit":1,"coupling":1},grants="causeway_open"),
+                     self.make("survey","Cross the repaired causeway"))
         self.add("Restore the signal station",self.make("relay","Valley signal station"))
         self.add("Reach the cliff post",self.make("crossing","Cliff vent route"))
         self.add("Recover the field seal",self.make("sentinel","Exposed field sentinel",phase="exposed",grants="field_seal"))
@@ -237,6 +312,14 @@ class Course:
         if op.kind=="crossing":
             k=op.state["leg"] + int(op.state["launched"])
             return self.world.get(op.entities[min(k,2)])
+        if op.kind=="panel":
+            # Privileged: the next lever/pawl of the expected entry (the reference reads this).
+            probe=self.wm[op.state["wm"]]
+            if not probe.solved:
+                want=probe.expected[len(probe.buffer)]
+                return self.world.get(next(e for e,v in op.state["symbols"].items() if v==want))
+        if op.kind=="dive" and op.state.get("wm"):
+            return self.world.get(self.wm[op.state["wm"]].expected[0])
         return self.world.get(op.entities[0])
 
     def local_entities(self):
@@ -246,7 +329,8 @@ class Course:
     _STEP_PHRASES={"lesson":"talk to the instructor","relay":"restore the relay","survey":"visit the landmark",
                    "collect":"recover the item","exchange":"hand over or use mission items",
                    "fight":"defeat the guard","sentinel":"defeat the sentinel","crossing":"cross by wind vent",
-                   "dive":"dive to recover the item","lift":"ride the service lift"}
+                   "dive":"dive to recover the item","lift":"ride the service lift",
+                   "cue":"get directions","panel":"set the mechanism"}
     _LESSON_TITLES={"Learn R":"relay lesson","Learn G":"sentinel lesson","Learn T":"wind lesson"}
 
     def step_text(self):
@@ -266,7 +350,7 @@ class Course:
     def interact_hint(self,char):
         """Label of a current-step entity that interact would act on, else None."""
         op=self.op
-        if op is None or op.kind not in ("relay","lesson","survey","collect","exchange","dive","lift"):
+        if op is None or op.kind not in ("relay","lesson","survey","collect","exchange","dive","lift","cue","panel"):
             return None
         near=[self.world.get(eid) for eid in op.entities]
         near=[e for e in near if self._in_reach(e,char,e.radius,2.8)]
@@ -330,12 +414,23 @@ class Course:
         candidates=[self.world.get(eid) for eid in op.entities]
         candidates=[e for e in candidates if np.linalg.norm((e.pos-char.pos)[[0,2]])<=e.radius and abs(float(e.pos[1]-char.pos[1]))<2.8]
         if not candidates:
+            if self._wm_reread(char):
+                return
             other=self._off_step_entity(char)
             if other is not None:
                 self.off_step_feedback(other,"this object")
             return
         entity=min(candidates,key=lambda e:float(np.linalg.norm(e.pos-char.pos)))
         self.emit("interact",entity=entity.id,operation=op.id)
+        if op.kind=="cue":
+            self.feedback(f"{entity.label} speaks.")
+            self._wm_read(op.state["wm"],entity.id)
+            entity.used=True
+            self.finish_operation()
+            return
+        if op.kind=="panel":
+            self._wm_enter(op,entity)
+            return
         if op.kind=="relay":
             s=op.state
             if entity.id!=s["roles"]["core"]:
@@ -354,6 +449,9 @@ class Course:
             if op.kind=="dive" and (char.pos[1]>-2.8 or char.state!=MoveState.SWIMMING):
                 self.feedback("Dive to the chest; surface interaction cannot recover it.")
                 return
+            if op.kind=="dive" and op.state.get("wm"):
+                self._wm_open_chest(op,entity)
+                return
             if op.kind=="lesson":
                 self.dialogue=op.state["text"]
                 self.emit("talk",entity=entity.id,text=self.dialogue)
@@ -371,6 +469,132 @@ class Course:
                 self.emit("item_acquired",item=item,entity=entity.id)
             entity.used=True
             self.finish_operation()
+            if op.state.get("wm_cue"):
+                # The exchange is done; the mechanic now gives the cue for the next step.
+                self.feedback(f"{entity.label} takes the mission items and speaks.")
+                self._wm_read(op.state["wm_cue"],entity.id)
+
+    # ------------------------------------------------------- working memory
+    def _wm_emit(self,payloads):
+        for payload in payloads:
+            self.events.append(wmp.wm_event(payload))
+
+    def _wm_read(self,probe_id,eid):
+        probe=self.wm[probe_id]
+        self.wm_armed.add(probe_id)
+        self._wm_emit([probe.read_cue(self.decisions(),self.world.elapsed)])
+        self.wm_cue.post(probe_id,eid,wmp.cue_text(probe,compact=True),self.world.elapsed)
+
+    def _wm_reread(self,char):
+        """The source can always be revisited while its probe is unsolved."""
+        for pid in sorted(self.wm_armed):
+            probe=self.wm[pid]
+            e=self.world.get(self.wm_sources[pid])
+            if not probe.solved and self._in_reach(e,char,e.radius,2.8):
+                self.emit("interact",entity=e.id,operation=None)
+                self.feedback(f"{e.label} speaks again.")
+                self._wm_read(pid,e.id)
+                return True
+        return False
+
+    def _wm_panel_reset(self,op,probe):
+        for eid,symbol in op.state["symbols"].items():
+            self.world.get(eid).used=probe.solved and symbol in probe.expected
+
+    def _wm_enter(self,op,entity):
+        pid=op.state["wm"]
+        probe=self.wm[pid]
+        symbol=op.state["symbols"].get(entity.id)
+        if symbol is None:
+            return
+        events=probe.enter(symbol,self.decisions(),self.world.elapsed)
+        self._wm_emit(events)
+        entity.used=True
+        house=self.world.get(op.state["housing"]).label
+        if not any(e["type"]=="wm_attempt" for e in events):
+            self.feedback(wmp.neutral_entry(entity.label,len(probe.buffer)),entity=entity.id)
+            return
+        self._wm_panel_reset(op,probe)
+        if probe.solved:
+            done={wmp.TA06:"the engine turns over; the ferry lift runs.",
+                  wmp.TB10:"the drum turns and locks the causeway open."}[pid]
+            self.feedback(f"{house}: {done}")
+            self.finish_operation()
+        else:
+            failed={wmp.TA06:"the levers spring back; the engine does not turn over.",
+                    wmp.TB10:"the pawls drop back; the drum does not turn."}[pid]
+            self.feedback(f"{house}: {failed}")
+
+    def _wm_open_chest(self,op,entity):
+        probe=self.wm[op.state["wm"]]
+        if entity.used:
+            self.feedback(f"{entity.label}: open and empty.")
+            return
+        entity.used=True
+        self._wm_emit(probe.choose(0,entity.id,self.decisions(),self.world.elapsed))
+        if not probe.solved:
+            self.feedback(f"{entity.label}: empty.")
+            return
+        item=op.state["item"]
+        self.inventory[item]=self.inventory.get(item,0)+1
+        self.emit("item_acquired",item=item,entity=entity.id)
+        self.feedback(f"{entity.label}: the ferry coupling is inside.")
+        self.finish_operation()
+
+    def _wm_use_site(self,pid):
+        op=next(o for m in self.milestones for o in m.operations
+                if o.state.get("wm")==pid and o.kind in ("panel","dive"))
+        return op
+
+    def _wm_tick(self,char):
+        self.wm_cue.update(self.world,char,self.world.elapsed)
+        op=self.op
+        if op is not None and op.kind=="panel":
+            probe=self.wm[op.state["wm"]]
+            if probe.buffer and np.hypot(*(char.pos[[0,2]]-np.asarray(op.state["site"])))>wmp.WALK_AWAY:
+                probe.clear()                      # walked away: the partial entry springs back
+                self._wm_panel_reset(op,probe)
+
+    def local_text(self,char):
+        """Policy-visible local text: feedback, plus the cue and marks while they are in reach."""
+        if not self.working_memory:
+            return self.last_feedback
+        parts=[self.last_feedback]
+        cue=self.wm_cue.text(self.world,char,self.world.elapsed)
+        if cue:
+            parts.append(cue)
+        near=[]
+        for eid,mark in self.wm_marks.items():
+            e=self.world.get(eid)
+            if self._in_reach(e,char,WM_MARK_RANGE,2.8):
+                near.append((float(np.linalg.norm(e.pos-char.pos)),f"{e.label} mark: {wmp.mark_text(mark)}"))
+        op=self.op
+        if op is not None and op.kind=="panel":
+            for eid in op.state["symbols"]:
+                e=self.world.get(eid)
+                if self._in_reach(e,char,e.radius,2.8):
+                    near.append((float(np.linalg.norm(e.pos-char.pos)),f"Within reach: {e.label}"))
+        if near:
+            parts.append(min(near)[1])
+        if self.wm_control:
+            for pid,probe in self.wm.items():
+                site=np.asarray(self._wm_use_site(pid).state["site"])
+                if not probe.solved and np.hypot(*(char.pos[[0,2]]-site))<=10.0:
+                    parts.append(wmp.control_text(probe,compact=True))
+        return " | ".join(p for p in parts if p)
+
+    def wm_summary(self):
+        """Evaluator-only: per-probe scores plus where the source and use site are."""
+        out={}
+        for pid,probe in self.wm.items():
+            source=self.world.get(self.wm_sources[pid]).pos
+            site=np.asarray(self._wm_use_site(pid).state["site"])
+            use=np.array([site[0],float(self.world.terrain.height_at(*site)),site[1]])
+            out[pid]=dict(probe.summary(),source=[round(float(v),3) for v in source],
+                          use_site=[round(float(v),3) for v in use],
+                          distance=round(float(np.linalg.norm((use-source)[[0,2]])),2),
+                          content=list(probe.items),expected=list(probe.expected))
+        return out
 
     def apply_element(self,char,element):
         op=self.op
@@ -447,6 +671,8 @@ class Course:
         return []
 
     def tick(self,char,dt):
+        if self.working_memory:
+            self._wm_tick(char)
         op=self.op
         if op is None:
             return
@@ -505,10 +731,15 @@ class Course:
                 self.finish_operation()
 
     def state(self):
-        return {"task":self.task,"milestone_index":self.index,"operation_index":self.operation_index,
-                "inventory":dict(self.inventory),"completed":list(self.completed),
-                "operations":{o.id:{"kind":o.kind,"complete":o.complete,"state":o.state}
-                              for m in self.milestones for o in m.operations}}
+        state={"task":self.task,"milestone_index":self.index,"operation_index":self.operation_index,
+               "inventory":dict(self.inventory),"completed":list(self.completed),
+               "operations":{o.id:{"kind":o.kind,"complete":o.complete,"state":o.state}
+                             for m in self.milestones for o in m.operations}}
+        if self.working_memory:
+            state["working_memory"]={pid:p.state() for pid,p in self.wm.items()}
+            state["wm_cue"]=self.wm_cue.state()
+            state["wm_armed"]=sorted(self.wm_armed)
+        return state
 
     def verify(self):
         failures=[]
@@ -522,6 +753,9 @@ class Course:
                     failures.append(f"{m.id}: enemy alive")
                 if op.kind=="crossing" and (op.state["landings"]!=2 or op.state["glide_legs"]!=2):
                     failures.append(f"{m.id}: two demonstrated vent/glide landings not verified")
+        for pid,probe in self.wm.items():
+            if not probe.solved:
+                failures.append(f"{probe.milestone}: working-memory probe {pid} unsolved")
         if len(self.completed)!=len(self.milestones):
             failures.append("milestone count mismatch")
         return {"success":not failures,"failures":failures,"completed":len(self.completed),
@@ -574,9 +808,12 @@ class CourseWorld(World):
 class ReferenceTaskEnv(OpenWorldEnv):
     """Native-action demonstration env with compact authored course geometry."""
 
-    def __init__(self,task="a",seed=7,*,render_enabled=True,width=384,height=216):
+    def __init__(self,task="a",seed=7,*,render_enabled=True,width=384,height=216,working_memory=True,wm_control=False):
         self.task=task
         self.render_enabled=render_enabled
+        # working_memory=False rebuilds the pre-2026-11-24 course, so archived traces still replay.
+        self.working_memory=bool(working_memory)
+        self.wm_control=bool(wm_control)
         cfg=EnvConfig(seed=seed,text_obs=True,backend="soft",action_repeat=6,max_episode_steps=30000,
                       world=WorldConfig(terrain=TerrainConfig(size=640,resolution=321,max_height=65),
                                         prop_density=0,day_length=100000,start_time_of_day=.43),
@@ -602,7 +839,8 @@ class ReferenceTaskEnv(OpenWorldEnv):
         self.party=Party(self.cfg.party)
         empty=PropField(np.empty((0,3),np.float32),np.empty(0,np.float32),np.empty(0,np.float32),np.empty(0,np.int8))
         self.world=CourseWorld(replace(self.cfg.world,seed=seed),terrain=terrain,props=empty,party=self.party)
-        self.course=Course(self.world,self.task,seed)
+        self.course=Course(self.world,self.task,seed,working_memory=self.working_memory,wm_control=self.wm_control)
+        self.course.decisions=self._decisions
         self.world.course=self.course
         terrain._compute_normals(); terrain._compute_biomes()
         # Refresh heights after all authored shelf/pool patches are constructed.
@@ -629,6 +867,9 @@ class ReferenceTaskEnv(OpenWorldEnv):
         self._last_events=[]
         self._last_frame=None
 
+    def _decisions(self):
+        return self.steps
+
     def _observe(self):
         if self.render_enabled:
             obs=super()._observe()
@@ -637,7 +878,7 @@ class ReferenceTaskEnv(OpenWorldEnv):
                  "proprio":self._proprio(),"task":self._task_vector(),"party":self.party.as_vector(),
                  "instruction":self.quests.instruction()}
         # Local dialogue/feedback is observable, but rule tables and target coordinates are private.
-        obs["local_text"]=self.course.last_feedback
+        obs["local_text"]=self.course.local_text(self.char)
         step=self.course.step_text()
         if step and "instruction" in obs:
             obs["instruction"]=f"{obs['instruction']} | {step}"

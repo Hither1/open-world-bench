@@ -111,7 +111,12 @@ def test_reference_completes_and_replays(tmp_path):
                      "summit_power", "outpost_clear"]
     kinds = {e["type"] for r in rows for e in r["events"]}
     assert {"vent_launch", "sentinel_interrupted", "relay_interrupted", "housing_unlocked",
-            "designed_context_boundary"} <= kinds
+            "designed_context_boundary", "wm_cue_read", "wm_entry", "wm_attempt"} <= kinds
+    wm = manifest["working_memory"]["probes"]
+    assert sorted(wm) == ["WM-TB09", "WM-TB10"] and result["working_memory"] == wm
+    for probe in wm.values():
+        assert probe["solved"] and probe["first_attempt_correct"] and probe["cue_reads"] == 1
+        assert 10.0 <= probe["first_attempt_delay"]["seconds"] <= 60.0
     assert all(v["launches"] >= 1 for v in manifest["vents"].values())
     assert manifest["relays"]["relay_b19"]["version"] == 2
     plan = script.frame_plan(rows)

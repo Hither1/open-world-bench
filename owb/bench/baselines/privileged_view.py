@@ -111,12 +111,17 @@ SKYLANDS_RULES = {
 }
 
 
+def skylands_owners(env, m):
+    """The milestone's craft (if any) and the target owners that belong to it."""
+    s = m.state; rid = s.get('raft') if isinstance(s.get('raft'), str) else (m.id if m.id in env.rafts else None)
+    return rid, {m.id, f'{m.id}_ballast'} | ({rid, f'{rid}_ballast'} if rid else set())
+
+
 def skylands(env, events):
     m = env.current
     if m is None:
         return dict(objective=None, feedback=feedback(events))
-    s = m.state; rid = s.get('raft') if isinstance(s.get('raft'), str) else (m.id if m.id in env.rafts else None)
-    owners = {m.id, f'{m.id}_ballast'} | ({rid, f'{rid}_ballast'} if rid else set())
+    s = m.state; rid, owners = skylands_owners(env, m)
     targets = []
     for tid, obj in sorted(env.targets.items()):
         near = np.linalg.norm(obj['pos']-env.agent.pos) < 40

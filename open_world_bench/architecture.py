@@ -159,6 +159,8 @@ def populate_architecture(world, spawn=None):
                             segments.append((a, b))
                 if current:
                     previous = current
+                if op.state.get("wm") and op.kind in ("cue", "panel"):
+                    continue    # working-memory fixtures keep their routes clear but get no building
                 family = {"lesson": "timber_house", "exchange": "market_stall",
                           "relay": "pavilion", "crossing": "windmill",
                           "sentinel": "ruin_gate", "fight": "watchtower",

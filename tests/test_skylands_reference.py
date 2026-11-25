@@ -4,7 +4,8 @@ import numpy as np
 import pytest
 from owb.core import blocks as B
 from owb.env.skylands_reference import SkylandsReferenceEnv, LEVELS
-from owb.bench.baselines.skylands_reference import SkylandsReferencePolicy, neutral
+from owb.bench.baselines.skylands_reference import neutral
+from owb.scripts.skylands_reference import SkylandsWMReferencePolicy as SkylandsReferencePolicy
 
 
 def test_remote_manipulation_and_incompatible_mount_are_atomic():

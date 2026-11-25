@@ -234,3 +234,5 @@ videos/skylands/skylands-15-milestones.mp4
 videos/skylands/skylands-24-milestones.mp4
 videos/skylands/skylands-15-milestones-first-person.mp4
 assets/demos/skylands-campaign-first-person/task-a-seed-7/walkthrough.mp4
+_site/
+assets/evaluation/checkpoint-bank/**/resume.pkl

@@ -58,6 +58,8 @@ event and reward, plus the milestone and final digests.
 These are single-seed pilots, not a memory ablation or a claim of held-out
 skill transfer.
 
+[Checkpoint starts and the perception-oracle condition](checkpoint-starts.md) add segment-level evaluation from verified reference states (`--start-milestone`, `--checkpoint-memory`) and an intermediate `--condition perception_oracle`, so scores are not floored by the first milestones.
+
 ## Privileged-state condition (upper bound)
 
 `--privileged` (in both `owb.scripts.wildlands_model` and

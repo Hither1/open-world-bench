@@ -1,0 +1,243 @@
+{
+  "task": "a",
+  "seed": 11,
+  "required": 12,
+  "actions_sha256": "fd05334dca3be93b7cfd7127e61c21ebc73882c367dd16009f139c34fbec363c",
+  "initial_digest": "7c66aa38bb7a217b60fe1a243839fef88150ec865056a72193fbeaaf701fd765",
+  "reference_actions": 839,
+  "checkpoints": [
+    {
+      "completed": 0,
+      "milestone": null,
+      "rows": 0,
+      "digest": "7c66aa38bb7a217b60fe1a243839fef88150ec865056a72193fbeaaf701fd765",
+      "seconds": 0.0,
+      "completed_ids": [],
+      "next_milestone": "A01",
+      "segment_actions": 1,
+      "segment_seconds": 0.2
+    },
+    {
+      "completed": 1,
+      "milestone": "A01",
+      "rows": 1,
+      "digest": "6f3c79d3a48e7c1c5e29e2576308bcff269142792d8e5c28f206b5f1df1dcc68",
+      "seconds": 0.2,
+      "completed_ids": [
+        "A01"
+      ],
+      "next_milestone": "A02",
+      "segment_actions": 99,
+      "segment_seconds": 19.8
+    },
+    {
+      "completed": 2,
+      "milestone": "A02",
+      "rows": 100,
+      "digest": "9d50b5b5083ef048048d39df7f4f5ab69b49fad8e3a7a9b6a6961c69d09746d4",
+      "seconds": 20.000000000000014,
+      "completed_ids": [
+        "A01",
+        "A02"
+      ],
+      "next_milestone": "A03",
+      "segment_actions": 82,
+      "segment_seconds": 16.4
+    },
+    {
+      "completed": 3,
+      "milestone": "A03",
+      "rows": 182,
+      "digest": "dfd9164ec80754bec8c07617fe0cc587ed5a7624c88fe1b1d11519d889a28d37",
+      "seconds": 36.40000000000025,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03"
+      ],
+      "next_milestone": "A04",
+      "segment_actions": 134,
+      "segment_seconds": 26.8
+    },
+    {
+      "completed": 4,
+      "milestone": "A04",
+      "rows": 316,
+      "digest": "8aa2a86f0a1945c88a08d720998f9afce223f63a19595c52e83254e2aa282c62",
+      "seconds": 63.20000000000063,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04"
+      ],
+      "next_milestone": "A05",
+      "segment_actions": 63,
+      "segment_seconds": 12.6
+    },
+    {
+      "completed": 5,
+      "milestone": "A05",
+      "rows": 379,
+      "digest": "29cb23cca01a435385433c4d1dda2d193c77fb7f80be797f5fd1c75151ad0a85",
+      "seconds": 75.79999999999997,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05"
+      ],
+      "next_milestone": "A06",
+      "segment_actions": 69,
+      "segment_seconds": 13.8
+    },
+    {
+      "completed": 6,
+      "milestone": "A06",
+      "rows": 448,
+      "digest": "00d5690add3a9ef5fd38d66d5dcea7de475825ce4158066c96a663fc21e6c56d",
+      "seconds": 89.59999999999918,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06"
+      ],
+      "next_milestone": "A07",
+      "segment_actions": 25,
+      "segment_seconds": 5.0
+    },
+    {
+      "completed": 7,
+      "milestone": "A07",
+      "rows": 473,
+      "digest": "e53910b63eb2ad4a8d9251a2454f31d6a2ba030ae1eccb12e71170f2c36e5224",
+      "seconds": 94.5999999999989,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07"
+      ],
+      "next_milestone": "A08",
+      "segment_actions": 27,
+      "segment_seconds": 5.4
+    },
+    {
+      "completed": 8,
+      "milestone": "A08",
+      "rows": 500,
+      "digest": "26b25739926a09968d60fbad6200e3050470855a1467b76c03a8c1679d34b074",
+      "seconds": 99.9999999999986,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08"
+      ],
+      "next_milestone": "A09",
+      "segment_actions": 115,
+      "segment_seconds": 23.0
+    },
+    {
+      "completed": 9,
+      "milestone": "A09",
+      "rows": 615,
+      "digest": "2083d44d10c9d080335a2ace2c57edd9e815f3439d90fc3b29b776975144db7a",
+      "seconds": 122.99999999999729,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09"
+      ],
+      "next_milestone": "A10",
+      "segment_actions": 61,
+      "segment_seconds": 12.2
+    },
+    {
+      "completed": 10,
+      "milestone": "A10",
+      "rows": 676,
+      "digest": "2e92af7cb1ac1f859513201bd558934101caad6962e8721404f490acda7f9f58",
+      "seconds": 135.1999999999966,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10"
+      ],
+      "next_milestone": "A11",
+      "segment_actions": 27,
+      "segment_seconds": 5.4
+    },
+    {
+      "completed": 11,
+      "milestone": "A11",
+      "rows": 703,
+      "digest": "b5da6ffa8a9bd5adf4b1c7d3b8213a0216034c8ebdf30d46e3192971f3b0ab7e",
+      "seconds": 140.5999999999963,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11"
+      ],
+      "next_milestone": "A12",
+      "segment_actions": 136,
+      "segment_seconds": 27.2
+    },
+    {
+      "completed": 12,
+      "milestone": "A12",
+      "rows": 839,
+      "digest": "4986bd07c1c0da43640a6f42f10ea6e756b32cb6855c8b5248e984927d13a910",
+      "seconds": 167.79999999999475,
+      "completed_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12"
+      ],
+      "next_milestone": null,
+      "segment_actions": 0,
+      "segment_seconds": 0.0
+    }
+  ]
+}

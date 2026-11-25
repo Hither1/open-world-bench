@@ -16,6 +16,7 @@ from .skylands import SkylandsEnv, COMMANDS as BASE_COMMANDS
 from .wildlands import WildlandsEnv
 from .wildlands_reference import plain
 from ..core import blocks as B
+from ..core.working_memory import WorkingMemoryProbe, summaries as wm_summaries
 from ..core.config import EnvConfig, WorldConfig, RenderConfig, SimConfig
 from ..world.skylands import generate, _island, _tree
 from ..world.worldgen import Landmark
@@ -41,11 +42,44 @@ SKY_REFUSALS = {'no held part': "you aren't holding a part", 'part unavailable':
                 'one steering axis per decision': 'steer along one axis at a time',
                 'release load before ascent': "you can't ascend while carrying something",
                 'unsupported local operation': 'nothing happens',
-                'inspect source or operate physical mechanism': 'nothing happens'}
+                'inspect source or operate physical mechanism': 'nothing happens',
+                'yard gate locked': 'the yard gate is locked'}
 FAN_SOUNDS = {'clean': 'the fan spins up cleanly', 'from rest': 'the fan turns over from rest',
               'jammed': 'the fan jams'}
 SILENT = {'land', 'jump', 'swing', 'milestone_complete', 'npc_denned', 'npc_emerged', 'apple_fell',
           'horse_spooked'}
+
+
+# Working-memory probes (docs/working-memory-probes.md). Each adds a physical
+# requirement to an existing milestone. Entries are `use` on the use-site
+# fixture with option = key 0-3; only a complete entry is judged.
+#   probe, milestone, kind, load, distinct items, source role, use-site role
+WM_PROBES = (
+    ('WM-SA12', 'A12', 'hold', 4, False, 'dispatch_placard', 'lift_panel'),
+    ('WM-SB10', 'B10', 'hold', 4, False, 'gate_code_board', 'gate_keypad'),
+    ('WM-SB17', 'B17', 'reverse', 4, True, 'wiring_schematic', 'patch_panel'),
+)
+WM_CUE_SECONDS = 5.0     # a read cue stays in the text channel at most this long
+WM_READ_REACH = 4.5      # ... and only while the source is within inspect reach
+WM_KEYS = 4              # keys/jacks 0-3, selected with the existing `option`
+WM_PANEL_TEXT = {
+    'WM-SA12': 'Receiving-station control panel: four keys, 0 to 3. Key the dispatch release sequence to discharge the freight lift.',
+    'WM-SB10': 'Inner yard gate keypad: four keys, 0 to 3. Key the gate code to open the yard.',
+    'WM-SB17': 'Station patch panel: four jacks, 0 to 3. Wire them as the station wiring schematic directs.',
+}
+WM_SOLVED_EVENT = {'WM-SA12': 'freight_release_keyed', 'WM-SB10': 'yard_gate_opened', 'WM-SB17': 'station_patched'}
+
+
+def wm_cue_text(probe, items):
+    code = '-'.join(str(int(i)) for i in items)
+    if probe == 'WM-SA12':
+        return (f'Dispatch placard, freight lift: release sequence {code}. Key it on the receiving-station '
+                'control panel at the top of the lift (keys 0 to 3). The lift holds its load until then.')
+    if probe == 'WM-SB10':
+        return (f'Marsh yard outer fence: inner gate code {code}. Key it on the inner yard gate keypad '
+                '(keys 0 to 3).')
+    return (f'Surface station wiring schematic: jack order {code}. Wire the patch panel inside in the '
+            'REVERSE of this order (jacks 0 to 3).')
 
 
 def sky_refusal(reason):
@@ -124,9 +158,17 @@ class SkylandsReferenceEnv(SkylandsEnv):
 
     def shuttle_span(self,m): return 11
 
-    def __init__(self,task='a',seed=7,*,render_enabled=False):
+    #: Working-memory probes WM-SA12/SB10/SB17. Subclasses with traces
+    #: published before the probes (tempest, restoration) switch them off.
+    wm_probes_enabled = True
+    #: Walking-path span (metres) between a ground-level source and its use site.
+    wm_source_span = (40,55)
+
+    def __init__(self,task='a',seed=7,*,render_enabled=False,wm_control=False):
         if task not in ('a','b'): raise ValueError('task must be a or b')
         self.task=task
+        # Diagnostic matched control: the use site also posts the cue.
+        self.wm_control=bool(wm_control)
         cfg=EnvConfig(seed=seed,starter_camp=False,max_steps=30000,obs_rgb=render_enabled,
             obs_text=True,reward_mode='sparse',
             world_cfg=WorldConfig(size_x=96,size_y=112,size_z=112),
@@ -183,6 +225,10 @@ class SkylandsReferenceEnv(SkylandsEnv):
         return result
 
     def _reset_mechanics(self):
+        self._reset_course()
+        self._setup_working_memory()
+
+    def _reset_course(self):
         super()._reset_mechanics()
         self.agent.inventory.add('warm_doublet',1)
         self.agent.inventory.equip(self.agent.inventory.find('warm_doublet'))
@@ -240,6 +286,178 @@ class SkylandsReferenceEnv(SkylandsEnv):
         for k in range(3):
             self._target('reserves','cache',np.array((66+k*3,self.levels[1]+1,78)),option=k)
         self.world.recompute_heightmaps()
+
+    # ------------------------------------------------------------------
+    # Working-memory probes (docs/working-memory-probes.md)
+    def _setup_working_memory(self):
+        """Draw probe content from dedicated generators and author the fixtures.
+        Runs after all course geometry exists; never touches the simulation RNG."""
+        self.wm={}; self.wm_sites={}; self._wm_showing=None; self.wm_gate=None
+        if not self.wm_probes_enabled: return
+        for probe,mid,kind,load,distinct,source_role,use_role in WM_PROBES:
+            if mid not in self.by_id: continue
+            self.wm[probe]=WorkingMemoryProbe.draw(probe,mid,kind,self._seed,range(WM_KEYS),load,
+                                                   distinct=distinct,control=self.wm_control)
+        if 'WM-SB10' in self.wm: self._build_inner_yard(self.by_id['B10'])
+        placed=[]
+        for probe,mid,kind,load,distinct,source_role,use_role in WM_PROBES:
+            if probe not in self.wm: continue
+            use,origin,toward,span=self.wm_use_site(probe)
+            source,path,sight=self._wm_place_source(use,origin,toward,span,placed)
+            placed += [source,use]
+            self.wm_sites[probe]=dict(
+                source=self._target(probe,source_role,source,probe=probe,wm='source'),
+                use=self._target(probe,use_role,use,probe=probe,wm='use'),
+                path_metres=path,line_of_sight=sight)
+        self.world.recompute_heightmaps()
+
+    def wm_use_site(self,probe):
+        """(use-site fixture position, floor point the source's walking distance
+        is measured from, approach anchor for the source, allowed path span in
+        metres)."""
+        if probe=='WM-SA12':
+            m=self.by_id['A12']; mv=self.movers['freight']; top=mv['top']
+            r=self.rafts['A11']
+            toward=r.get('receiver',np.array((r['end']+3,m.y,r['pos'][2])))
+            # Panel on the receiving station at the top of the lift. The source
+            # is on the loading berth below, a short walk from the lift deck;
+            # the lift ride itself is most of the interval.
+            use=self._wm_spot(np.array((mv['pos'][0]+7,top+1,mv['pos'][2]-4)))
+            return use,mv['pos'].copy(),toward,(6,12)
+        if probe=='WM-SB10':
+            m=self.by_id['B10']; use=self._wm_spot(m.pos+(3,1,0))
+            return use,use-(0,1,0),self.by_id['B09'].pos,self.wm_source_span
+        m=self.by_id['B17']; r=self.rafts['B16']; use=self._wm_spot(m.pos+(-5,1,-1))
+        toward=r.get('receiver',np.array((r['end']+3,m.y,r['pos'][2])))
+        return use,use-(0,1,0),toward,self.wm_source_span
+
+    def _build_inner_yard(self,m):
+        """Collision-backed yard around the marsh coupling with a 3-wide gate
+        facing the take control; the gate opens only for the correct code."""
+        c=np.rint(self.cargo['marsh_coupling']['pos']).astype(int); x,y,z=c
+        lo,hi=(x-4,y,z-2),(x+4,y+2,z+4)
+        w=self.world
+        for xx in range(lo[0],hi[0]+1):
+            for zz in range(lo[2],hi[2]+1):
+                ring=xx in (lo[0],hi[0]) or zz in (lo[2],hi[2])
+                if not ring: continue
+                corner=xx in (lo[0],hi[0]) and zz in (lo[2],hi[2])
+                for yy in range(y,y+3): w.set_block(xx,yy,zz,B.LOG if corner else B.PLANK,update_height=False)
+        self.wm_gate=((x-1,y,z-2),(x+1,y+2,z-2))
+        w.fill_box(*self.wm_gate,B.GATE)
+        self.wm_yard=(lo,hi)
+
+    def _wm_spot(self,nominal):
+        """The nominal fixture point if it stands over walkable ground in open
+        air, else the nearest such cell centre (stable world geometry only)."""
+        nominal=np.asarray(nominal,float); y=int(round(nominal[1]))-1
+        walk,x0,z0=self._walk_window(y,nominal,6)
+        i,j=int(np.floor(nominal[0]))-x0,int(np.floor(nominal[2]))-z0
+        if 0<=i<walk.shape[0] and 0<=j<walk.shape[1] and walk[i,j]: return nominal
+        cells=np.argwhere(walk)
+        if not len(cells): raise RuntimeError(f'No walkable ground for a fixture near {nominal}')
+        d=np.hypot(cells[:,0]+x0+.5-nominal[0],cells[:,1]+z0+.5-nominal[2])
+        i,j=cells[int(np.argmin(d))]
+        return np.array((x0+i+.5,nominal[1],z0+j+.5))
+
+    def _wm_trail_mask(self,y):
+        """Cells where a roadside source is preferred (None: no preference)."""
+        return None
+
+    def _walk_window(self,y,center,radius):
+        w=self.world; cx,cz=int(center[0]),int(center[2])
+        x0,x1=max(1,cx-radius),min(w.size_x-1,cx+radius+1); z0,z1=max(1,cz-radius),min(w.size_z-1,cz+radius+1)
+        v=w.vox[x0:x1,y-1:y+2,z0:z1]
+        walk=B.SOLID[v[:,0,:]]&~B.SOLID[v[:,1,:]]&~B.SOLID[v[:,2,:]]
+        return walk,x0,z0
+
+    def _wm_place_source(self,use,origin,toward,span,avoid):
+        """Deterministic source placement from final course geometry: an edge
+        cell of walkable ground whose walking-path distance from the use site
+        lies within `span` metres and which has no line of sight to it,
+        nearest to where the agent approaches from."""
+        from collections import deque as _dq
+        y=int(round(origin[1]))
+        walk,x0,z0=self._walk_window(y,origin,int(span[1])+8)
+        dist=np.full(walk.shape,-1,np.int32); queue=_dq()
+        ux,uz=origin[0]-x0,origin[2]-z0
+        for i,j in np.argwhere(walk):
+            if np.hypot(i+.5-ux,j+.5-uz)<=3: dist[i,j]=0; queue.append((i,j))
+        while queue:
+            i,j=queue.popleft()
+            for a,b in ((i+1,j),(i-1,j),(i,j+1),(i,j-1)):
+                if 0<=a<walk.shape[0] and 0<=b<walk.shape[1] and walk[a,b] and dist[a,b]<0:
+                    dist[a,b]=dist[i,j]+1; queue.append((a,b))
+        pad=np.pad(walk,1)
+        edge=~(pad[2:,1:-1]&pad[:-2,1:-1]&pad[1:-1,2:]&pad[1:-1,:-2])
+        targets=[np.asarray(o['pos'],float) for o in self.targets.values()]+[np.asarray(q,float) for q in avoid]
+        trail=self._wm_trail_mask(y)
+        best=None
+        for i,j in np.argwhere((dist>=span[0])&(dist<=span[1])):
+            pos=np.array((x0+i+.5,y+1.2,z0+j+.5))
+            if any(np.linalg.norm(pos-q)<4 for q in targets): continue
+            sight=self.world.line_of_sight(pos,use) or self.world.line_of_sight(pos+(0,.6,0),np.asarray(use)+(0,.6,0))
+            off=trail is not None and not trail[x0+i,z0+j]
+            key=(bool(sight),off,not edge[i,j],round(float(np.hypot(pos[0]-toward[0],pos[2]-toward[2])),3),i,j)
+            if best is None or key<best[0]: best=(key,pos,int(dist[i,j]),bool(sight))
+        if best is None: raise RuntimeError(f'No working-memory source location near {use}')
+        return best[1],best[2],best[3]
+
+    def wm_solved(self,probe):
+        p=getattr(self,'wm',{}).get(probe)
+        return p is None or p.solved
+
+    def _wm_interact(self,command,tid,obj,option):
+        p=self.wm[obj['probe']]; site=obj['wm']
+        if command=='inspect':
+            if site=='source' or p.control:
+                text=wm_cue_text(p.probe,p.items)
+                if site=='use': text=WM_PANEL_TEXT[p.probe]+' Posted copy: '+text
+                self.last_text=text; self._wm_showing=dict(probe=p.probe,target=tid,since=self.elapsed,text=text)
+                return [p.read_cue(self.steps,self.elapsed),dict(type='clue_exposed',site=p.probe,text=text)]
+            self.last_text=WM_PANEL_TEXT[p.probe]
+            return [dict(type='clue_exposed',site=p.probe,text=self.last_text)]
+        if command=='use' and site=='use':
+            if p.solved: return self._fail('unsupported local operation')
+            events=p.enter(int(option),self.steps,self.elapsed)
+            if any(e['type']=='wm_attempt' and e['correct'] for e in events):
+                events+=self._wm_effect(p.probe)
+            return events
+        return self._fail('inspect source or operate physical mechanism')
+
+    def _wm_effect(self,probe):
+        events=[dict(type=WM_SOLVED_EVENT[probe],probe=probe)]
+        if probe=='WM-SA12':
+            mv=self.movers['freight']
+            if mv.get('cargo') and not mv['moving'] and mv['pos'][1]==mv['top']: events+=self._discharge('freight')
+        elif probe=='WM-SB10':
+            self.world.fill_box(*self.wm_gate,B.AIR)
+        return events
+
+    def _wm_tick(self):
+        """Clear a shown cue after WM_CUE_SECONDS or once its source leaves
+        inspect reach; abandon a partial entry once the agent walks away."""
+        show=self._wm_showing if self.wm else None
+        if show:
+            pos=self.targets[show['target']]['pos']
+            if self.elapsed-show['since']>=WM_CUE_SECONDS-1e-6 or not self._reachable(pos,WM_READ_REACH):
+                if self.last_text==show['text']: self.last_text=''
+                self._wm_showing=None
+        for probe,site in self.wm_sites.items():
+            p=self.wm[probe]
+            if p.buffer and not self._reachable(self.targets[site['use']]['pos'],6): p.clear()
+
+    def wm_summary(self):
+        out=wm_summaries(self.wm.values())
+        for probe,site in self.wm_sites.items():
+            out[probe].update(source_target=site['source'],use_target=site['use'],
+                source_pos=plain(self.targets[site['source']]['pos']),use_pos=plain(self.targets[site['use']]['pos']),
+                path_metres=site['path_metres'],line_of_sight=site['line_of_sight'])
+        return out
+
+    def wm_state(self):
+        return dict(probes={k:p.state() for k,p in self.wm.items()},showing=self._wm_showing,
+                    last_text=self.last_text,gate=self.wm_gate)
 
     def _target(self,owner,role,pos,**extra):
         tid=max(self.targets,default=0)+1
@@ -336,6 +554,12 @@ class SkylandsReferenceEnv(SkylandsEnv):
             if t=='action_failed': line=sky_refusal(e.get('reason',''))
             elif t=='fan_struck': line=FAN_SOUNDS.get(e.get('quality'),'the fan spins')
             elif t=='clue_exposed': line='you read it'
+            elif t=='wm_cue_read': continue
+            elif t=='wm_entry': line='click'
+            elif t=='wm_attempt': line='the entry is accepted' if e['correct'] else 'the entry is rejected and the panel clears'
+            elif t=='freight_held': line='the lift stops at the receiving station and holds its load'
+            elif t=='freight_discharged': line='the lift releases its load'
+            elif t=='freight_release_keyed': line='the release is keyed'
             elif t=='craft_moved': line='the craft moves'
             elif t=='motion_blocked': line='movement is blocked'
             else: line=t.replace('_',' ')
@@ -370,6 +594,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
         obj=self.targets.get(tid)
         if not obj or not self._reachable(obj['pos'],6 if command in ('pick','mount','load','unload','drive','reverse','cancel') else 4.5):
             return self._advance(self._fail('target not visible and within reach'))
+        if 'wm' in obj: return self._advance(self._wm_interact(command,tid,obj,option))
         owner=obj['owner']; m=self.by_id.get(owner); s=m.state if m else {}; role=obj['role']
         if command=='inspect':
             if m:
@@ -504,6 +729,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
             self.selected_calibration=option; s['installed']=True; c['anchored']=True; c['parent']='observatory'
             return [dict(type='core_installed',calibration=option)]
         if m.kind=='take':
+            if mid=='B10' and not self.wm_solved('WM-SB10'): return self._fail('yard gate locked')
             if mid=='B10': self.cargo['marsh_coupling']['anchored']=False
             else: self.satchel['sky_cell']=1
             s['done']=True; return [dict(type='service_part_recovered',site=mid)]
@@ -596,16 +822,26 @@ class SkylandsReferenceEnv(SkylandsEnv):
                 if q[1]==mv['goal']:
                     mv['moving']=False; events.append(dict(type='lift_arrived',lift=name,level=q[1],rider=rider))
                     if mv.get('cargo'):
-                        cid=mv['cargo']; c=self.cargo[cid]
-                        c['parent']=None; c['pos']=q+(4,0,0); mv['cargo']=None
-                        self.by_id['A12' if name=='freight' else 'A14'].state['done']=True
+                        if name=='freight' and not self.wm_solved('WM-SA12'):
+                            # The receiving station holds the deck until the
+                            # dispatch release is keyed on its control panel.
+                            events.append(dict(type='freight_held',lift=name))
+                        else: events+=self._discharge(name)
         return events
+
+    def _discharge(self,name):
+        mv=self.movers[name]; cid=mv['cargo']; c=self.cargo[cid]
+        c['parent']=None; c['pos']=mv['pos']+(4,0,0); mv['cargo']=None
+        self.by_id['A12' if name=='freight' else 'A14'].state['done']=True
+        return [dict(type='freight_discharged',lift=name,cargo=cid)] if name=='freight' and 'WM-SA12' in self.wm else []
 
     def _task_outcome(self,events):
         reward=0.
+        self._wm_tick()
         for m in self.milestones:
             s=m.state
-            if s['installed'] and m.kind in ('station','ascend_station','calibrate'):
+            if m.id=='B17' and not self.wm_solved('WM-SB17'): pass   # output not patched through
+            elif s['installed'] and m.kind in ('station','ascend_station','calibrate'):
                 s['stable']+=.2
                 if s['stable']>=5:
                     s['done']=True
@@ -648,7 +884,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
         inputs=all(self.cargo[cid]['anchored'] and self.cargo[cid]['parent']==mid
                    and np.linalg.norm(self.cargo[cid]['pos']-self.by_id[mid].pos)<6
                    for cid,mid in (('power_module','B15'),('marsh_coupling','B17')))
-        return (inputs and self.by_id['B19'].state.get('station_part')=='spindle'
+        return (inputs and self.wm_solved('WM-SB17') and self.by_id['B19'].state.get('station_part')=='spindle'
                 and relief.get('delivered_to')==self.destination and relief['parent']=='refuge'
                 and np.linalg.norm(relief['pos']-destination)<.1
                 and all(self.by_id[mid].state['installed'] and self.by_id[mid].state['stable']>=5 for mid in ('B15','B17','B19'))
@@ -674,6 +910,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
     def _info(self,events):
         out=WildlandsEnv._info(self,events)
         out.update(success=self.success,milestones=deepcopy(self.completed),task_progress=len(self.completed)/len(self.milestones))
+        if self.wm: out['working_memory']=self.wm_summary()
         return out
 
     def _safe_ground_ok(self):
@@ -700,6 +937,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
         data['agent']['inventory']=self.agent.inventory.to_dict(); data['agent']['effects']=[vars(e) for e in self.agent.effects]
         recovery=self.recovery_state()
         if recovery is not None: data['recovery']=recovery   # absent unless used: old digests unchanged
+        if self.wm: data['working_memory']=self.wm_state()   # absent when probes are off
         return hashlib.sha256(json.dumps(plain(data),sort_keys=True,default=str).encode()).hexdigest()
 
     def presentation_camera(self):
@@ -789,6 +1027,62 @@ class SkylandsReferenceEnv(SkylandsEnv):
             batch.box(q+(0,.6,0),(1.5,1.2,1.5),(.3,.24,.16))
             batch.box(q+(0,1.25,0),(1.6,.15,1.6),(.18,.45,.4))
             if items: batch.box(q+(0,1.4,0),(.5,.15,.5),(.3,.8,.6),emissive=.5)
+        if getattr(self,'wm_sites',None): self._wm_fixture_meshes(batch)
+
+    def _wm_fixture_meshes(self,batch):
+        """Distinct, recognisable fixtures for the working-memory probes. Shape
+        variation is keyed to the probe id (stable entity identity), never to
+        the simulation RNG; nothing shown encodes the probe content."""
+        import zlib
+        for probe,site in self.wm_sites.items():
+            p=self.wm[probe]; h=zlib.crc32(probe.encode())
+            src=np.asarray(self.targets[site['source']]['pos'],float)-(0,1.2,0)
+            use=np.asarray(self.targets[site['use']]['pos'],float)-(0,1,0)
+            yaw=(h%8)*np.pi/4
+            lit=(.25,.85,.45) if p.solved else (.95,.62,.2)
+            if probe=='WM-SA12':
+                # Dispatch placard: two timber posts, slate board, brass frame, pinned slips.
+                for dz in (-.55,.55): batch.tube(src+(0,0,dz),src+(0,1.9,dz),.06,(.36,.25,.14))
+                batch.box(src+(0,1.35,0),(.08,.8,1.25),(.18,.2,.22),yaw=yaw)
+                batch.box(src+(.03,1.78,0),(.1,.06,1.3),(.62,.48,.2),yaw=yaw)
+                for k in range(2+h%3):
+                    batch.box(src+(.06,1.2+.14*(k%2),-.35+.28*k),(.02,.22,.18),(.9,.86,.74),yaw=yaw)
+                # Receiving-station control panel: steel cabinet, angled face, four keys, status lamp.
+                batch.box(use+(0,.5,0),(.6,1.0,.7),(.34,.37,.38))
+                batch.box(use+(0,1.06,0),(.66,.12,.76),(.24,.27,.28),yaw=.0)
+                for k in range(WM_KEYS):
+                    batch.tube(use+(.3,.85,-.27+.18*k),use+(.38,.85,-.27+.18*k),.05,(.82,.78,.66))
+                batch.box(use+(0,1.25,.25),(.14,.14,.14),lit,emissive=1.5)
+                batch.tube(use+(-.3,.1,0),use+(-2.6,.1,0),.07,(.3,.3,.28))
+            elif probe=='WM-SB10':
+                # Outer fence section with a hanging enamel gate-code board.
+                for dx in (-1.4,0,1.4): batch.tube(src+(dx,0,0),src+(dx,1.5,0),.07,(.42,.3,.17))
+                for y in (.5,1.15): batch.tube(src+(-1.5,y,0),src+(1.5,y,0),.04,(.47,.35,.2))
+                batch.box(src+(.7,1.0,.06),(.75,.5,.04),(.86,.88,.84))
+                batch.box(src+(.7,1.0,.09),(.6,.08,.02),(.16,.3,.55))
+                batch.box(src+(.7,.68,.06),(.12,.14,.06),(.55,.5,.3))
+                # Inner gate keypad: stone pedestal, housing, 2 x 2 keys, lamp.
+                batch.box(use+(0,.45,0),(.38,.9,.38),(.46,.45,.41))
+                batch.box(use+(0,1.0,0),(.32,.4,.12),(.2,.22,.24))
+                for k in range(WM_KEYS):
+                    batch.box(use+(-.07+.14*(k%2),.94+.12*(k//2),-.07),(.09,.09,.03),(.85,.82,.7))
+                batch.box(use+(0,1.24,-.05),(.06,.06,.04),lit,emissive=1.5)
+            else:
+                # Wiring schematic: easel frame, pale board, four printed traces.
+                batch.tube(src+(-.5,0,-.2),src+(0,1.9,0),.05,(.4,.29,.17))
+                batch.tube(src+(.5,0,-.2),src+(0,1.9,0),.05,(.4,.29,.17))
+                batch.tube(src+(0,0,.5),src+(0,1.9,0),.05,(.4,.29,.17))
+                batch.box(src+(0,1.3,-.06),(1.1,.8,.04),(.88,.9,.86))
+                for k,color in enumerate(((.75,.2,.15),(.15,.35,.7),(.2,.55,.25),(.8,.65,.1))):
+                    batch.box(src+(0,1.05+.15*k,-.09),(.85-.1*((h>>k)&1),.03,.01),color)
+                # Patch panel: tall cabinet, four jacks, cables for each entry made.
+                batch.box(use+(0,.75,0),(.5,1.5,.9),(.3,.33,.3))
+                plugged=WM_KEYS if p.solved else len(p.buffer)
+                for k in range(WM_KEYS):
+                    jack=use+(.27,1.1,-.3+.2*k)
+                    batch.tube(jack,jack+(.06,0,0),.045,(.1,.1,.1))
+                    if k<plugged: batch.tube(jack+(.06,0,0),use+(.45,.35,-.3+.2*((k+1)%WM_KEYS)),.03,(.12,.12,.1))
+                batch.box(use+(.27,1.4,0),(.04,.06,.06),lit,emissive=1.5)
 
     def presentation_lights(self):
         return [dict(pos=(m.pos+(-3,4,-3)).tolist(),color=[.35,.8,.75],power=1800.,radius=1.)

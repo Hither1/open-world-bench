@@ -129,7 +129,7 @@ def test_item_exchange_is_atomic_and_not_repeatable(env):
 
 def test_coupling_requires_an_actual_dive(env):
     op=select(env,"B09","dive")
-    stand_at(env,op.entities[0])
+    stand_at(env,env.course.target().id)
     env.char.state=MoveState.SWIMMING
     env.char.pos[1]=-.15
     env.course.interact(env.char)

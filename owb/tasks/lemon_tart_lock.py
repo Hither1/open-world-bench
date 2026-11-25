@@ -25,12 +25,19 @@ makes the three knobs the recipe uses turn up only in a particular order:
   agent has to work it out and remember it for the second bake.
 
 Both are off by default; the scored milestones are unchanged.
+
+With `oven_knob_order="recipe"`, `knobs_zeroed` is also the working-memory probe
+`WM-LT1` (docs/working-memory-probes.md): the order leaves the instruction when
+`crust_baked` latches, and the knobs must come down in reverse. `ReverseKnobProbe`
+scores it; `LemonTart(wm_control=True)` keeps the order in view as the control.
 """
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
 import numpy as np
+
+from owb.core.working_memory import WorkingMemoryProbe
 
 MODES = ("recipe", "hidden")
 DOOR_JOINT = "toaster_oven_main_group_door_joint"
@@ -68,7 +75,7 @@ def knob_hint(order):
     return (
         f" The toaster oven's knobs only turn up in this order: {order[0]}, then {order[1]}, "
         f"then {order[2]}. A knob stays stuck until the ones before it are on. They only turn back "
-        f"down in the reverse order: {order[2]}, then {order[1]}, then {order[0]}."
+        "down in the reverse of that order."
     )
 
 
@@ -339,3 +346,39 @@ class OvenLock:
             "relocks": self.relocks,
             "door_angle": self.door_angle(),
         }
+
+
+class ReverseKnobProbe:
+    """Scores `knobs_zeroed` as working-memory probe WM-LT1.
+
+    The recipe's knob order (and the rule that they come down in reverse) is in
+    the instruction until `crust_baked` latches; that moment counts as the last
+    cue read. From then until `knobs_zeroed`, every blocked turn is a wrong
+    attempt: the mechanism holds a knob turned out of turn, which is physical
+    feedback per knob, so a guesser needs at most a few blocked turns. The
+    primary score is therefore whether the knobs came down with none.
+    """
+
+    def __init__(self, order, control=False):
+        order = tuple(order)
+        self.probe = WorkingMemoryProbe(
+            probe="WM-LT1", milestone="knobs_zeroed", kind="reverse", load=len(order),
+            items=order, expected=tuple(reversed(order)), control=bool(control),
+        )
+        self._blocked_seen = 0
+
+    def update(self, latched, blocked_total, step, seconds):
+        """Call once per control step after the milestones update. Returns events."""
+        probe = self.probe
+        if probe.solved or "crust_baked" not in latched:
+            return []
+        events = []
+        if probe.cue_reads == 0:
+            events.append(probe.read_cue(step, seconds))
+            self._blocked_seen = blocked_total  # blocked turns while baking don't count
+        for _ in range(blocked_total - self._blocked_seen):
+            events += probe.record_attempt(False, step, seconds)
+        self._blocked_seen = blocked_total
+        if "knobs_zeroed" in latched:
+            events += probe.record_attempt(True, step, seconds)
+        return events

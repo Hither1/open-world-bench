@@ -5,16 +5,18 @@ from collections import Counter
 import hashlib
 import json
 from pathlib import Path
+import re
 import textwrap
 import time
 import numpy as np
 from owb.env.wildlands_reference import WildlandsReferenceEnv, plain, COMMANDS
+from owb.env import wildlands_reference as W
 from owb.bench.baselines.wildlands_reference import WildlandsReferencePolicy
 from owb.render.cycles_batch import CyclesBatchRenderer
 from owb.render.video import H264Writer
 
 ROOT=Path(__file__).resolve().parents[2]
-SOURCES=('owb/env/wildlands_reference.py','owb/bench/baselines/wildlands_reference.py',
+SOURCES=('owb/env/wildlands_reference.py','owb/bench/baselines/wildlands_reference.py','owb/core/working_memory.py',
          'owb/scripts/wildlands_reference.py','owb/env/wildlands.py','owb/physics/character.py',
          'owb/physics/bodies.py','owb/physics/elements.py','owb/render/scene_export.py',
          'owb/render/blender_scene.py','owb/render/dressing.py','owb/render/presentation.py','owb/render/video.py',
@@ -31,7 +33,132 @@ LIMITATIONS=[
  'Role mappings, material/shape transfer variants, regional temperature exposure, and learning-from-memory ablations remain incomplete.',
  'Repair parts use a separate persistent satchel; ordinary food uses native inventory and cooking.',
  'The road and bridge really change voxel collision; no controller teleportation or direct completion edits.',
+ 'Working-memory probes WM-WA07, WM-WB11 and WM-WB15 are physical requirements of A07, B11 and B15; '
+ 'the controller reads each cue from the observation text at its source and keeps it in its own memory.',
 ]
+
+# Working-memory cues, parsed from the observation text right after inspecting a
+# source (the environment shows a cue only within reach, for at most five seconds).
+CUES={
+    'WM-WA07':(r'locker code is ((?:\d ){3}\d)',lambda g: tuple(g[0].split())),
+    'WM-WB11':(r'pump coupling in bay (\d+); engine coupling in bay (\d+)',lambda g: (int(g[0]),int(g[1]))),
+    'WM-WB15':(r'red (\d+), yellow (\d+), blue (\d+) degrees',lambda g: dict(zip(('red','yellow','blue'),g))),
+}
+
+
+class WorkingMemoryReferencePolicy(WildlandsReferencePolicy):
+    """The privileged reference controller plus the working-memory probes.
+
+    It inspects each probe's source, parses the cue from the observation text it
+    receives, carries it in ``wm_memory``, travels by native movement, and keys
+    or chooses at the use site. Panel progress (how many items are entered, which
+    coupling is still missing) is read from privileged state, as the rest of this
+    controller reads mechanism state. Everything else is the unchanged base policy.
+    """
+    def __init__(self,env):
+        super().__init__(env); self.wm_memory={}; self.up_path=[]
+
+    # -- the A07 stores warehouse: climb the dock, walk the aisles, come back down --
+    def in_stores(self):
+        x0,z0,x1,z1=W.STORES; a=self.env.agent
+        return a.pos[1]>W.STORES_FLOOR-.6 and x0<=a.pos[0]<x1+1.2 and z0<=a.pos[2]<z1+1
+
+    def floor_cells(self):
+        w=self.env.world; x0,z0,x1,z1=W.STORES; F=int(W.STORES_FLOOR)
+        return {(x,z) for x in range(x0,x1+1) for z in range(z0,z1+1)
+                if w.is_solid(x,F-1,z) and not w.is_solid(x,F,z) and not w.is_solid(x,F+1,z)}
+
+    def walk_floor(self,goal):
+        """Breadth-first route over the warehouse floor, followed cell by cell."""
+        e=self.env; cells=self.floor_cells(); here=tuple(e.agent.pos[[0,2]].astype(int))
+        if not self.up_path or self.up_path[-1]!=goal or here not in cells:
+            prev={here:None}; queue=[here]
+            for n in queue:
+                if n==goal: break
+                for dx,dz in ((1,0),(-1,0),(0,1),(0,-1)):
+                    q=(n[0]+dx,n[1]+dz)
+                    if q in cells and q not in prev: prev[q]=n; queue.append(q)
+            if goal not in prev: raise RuntimeError(f'No floor route {here} -> {goal}')
+            path=[goal]
+            while path[-1]!=here: path.append(prev[path[-1]])
+            self.up_path=list(reversed(path))
+        while len(self.up_path)>1 and np.linalg.norm(e.agent.pos[[0,2]]-(np.array(self.up_path[0])+.5))<.3:
+            self.up_path.pop(0)
+        x,z=self.up_path[0]
+        a=self.steer((x+.5,W.STORES_FLOOR,z+.5)); self.explanation='Walk the stores aisles'
+        return a
+
+    def climb_dock(self):
+        e=self.env; dx,dz=W.STORES_DOOR
+        if e.riding.mounted: a=self.command('dismount'); self.explanation='Dismount below the stores dock'; return a
+        foot=np.array((dx+1.5,W.Y,dz+.5))
+        if e.agent.on_ground and e.agent.pos[1]<W.Y+.5 and np.linalg.norm((e.agent.pos-foot)[[0,2]])>.3:
+            return self.navigate(foot)
+        a=self.steer((dx+.5,W.STORES_FLOOR,dz+.5)); a['buttons'][2]=1
+        self.explanation='Climb the ladder up the stores dock'; return a
+
+    def stores_target(self,tid,name):
+        if self.env._reachable(self.env.targets[tid]['pos']):
+            self.up_path=[]; return self.command(name,tid)
+        return self.walk_floor(tuple(int(v) for v in np.asarray(W.KEYPAD_STANCE)[[0,2]]))
+
+    def leave_stores(self):
+        e=self.env; dx,dz=W.STORES_DOOR
+        if e.agent.on_ground and e.agent.pos[0]<dx+.2:
+            return self.walk_floor((dx,dz))
+        self.up_path=[]
+        a=self.steer((dx+2.6,W.Y,dz+.5)); self.explanation='Step off the stores dock'; return a
+
+    def recall(self,probe,obs):
+        if probe in self.wm_memory: return True
+        pattern,parse=CUES[probe]
+        found=re.search(pattern,str(obs.get('text','')))
+        if found is None: return False
+        self.wm_memory[probe]=parse(found.groups())
+        return True
+
+    def enter(self,probe,m,prefix):
+        e=self.env; p=e.wm[probe]; held=self.wm_memory[probe]
+        if probe=='WM-WB15':
+            # Blade j+1's colour tag is listed beside the dial ("blade 2 red tag").
+            tags=[e.targets[m.targets[f'blade{j+1}']]['symbol'].split()[2] for j in range(3)]
+            sequence=[held[c] for c in tags]
+        else: sequence=list(held)
+        return self.at_target(m.targets[f'{prefix}{sequence[len(p.buffer)]}'],'operate')
+
+    def wm_decide(self,m,obs):
+        e=self.env; s=m.state
+        if m.id=='A07':
+            p=e.wm['WM-WA07']
+            if not p.solved and not self.recall('WM-WA07',obs): return self.at_target(m.targets['inspect'],'inspect')
+            if not self.in_stores() or not e.agent.on_ground: return self.climb_dock()
+            if not p.solved:
+                held=self.wm_memory[p.probe]
+                return self.stores_target(m.targets[f'key{held[len(p.buffer)]}'],'operate')
+            return self.stores_target(m.targets['interact'],'interact')
+        if self.env.task=='a' and self.in_stores(): return self.leave_stores()
+        if m.id=='B11' and not e.wm['WM-WB11'].solved:
+            if not self.recall('WM-WB11',obs): return self.at_target(m.targets['inspect'],'inspect')
+            if not s['done']: return self.at_target(m.targets['interact'],'interact')   # yard office
+            p=e.wm['WM-WB11']; slot=p.slot_done.index(False)
+            return self.at_target(m.targets[f'bay{self.wm_memory[p.probe][slot]}'],'interact')
+        if m.id=='B14' and not self.recall('WM-WB15',obs):
+            # The weather board stands at the station base, below the deck the ascent reaches.
+            return self.at_target(e.by_id['B15'].targets['inspect'],'inspect')
+        if m.id=='B15' and s['installed'] and not e.wm['WM-WB15'].solved:
+            if not self.recall('WM-WB15',obs): return self.at_target(m.targets['inspect'],'inspect')
+            return self.enter('WM-WB15',m,'pitch')
+        return None
+
+    def decide(self,obs):
+        m=self.env.current
+        action=self.wm_decide(m,obs) if m is not None else None
+        if action is None: return super().decide(obs)
+        if m.id!=self.last_mid:
+            self.last_mid=m.id; self.chapter_steps=0; self.path=[]; self.path_key=None
+        self.chapter_steps+=1
+        if self.chapter_steps>1500: raise RuntimeError(f'Reference stuck at {m.id}: pos={self.env.agent.pos}')
+        return action
 
 
 def save(path,data): path.write_text(json.dumps(plain(data),indent=2,allow_nan=False)+'\n')
@@ -47,7 +174,7 @@ def restore_action(a):
 def collect(task,seed,directory):
     directory.mkdir(parents=True,exist_ok=False)
     env=WildlandsReferenceEnv(task,seed); obs,_=env.reset(seed=seed)
-    policy=WildlandsReferencePolicy(env); initial=env.state_digest(); counts=Counter()
+    policy=WorkingMemoryReferencePolicy(env); initial=env.state_digest(); counts=Counter()
     try:
         with (directory/'actions.jsonl').open('w') as stream:
             while not env._ended:
@@ -67,6 +194,7 @@ def collect(task,seed,directory):
             initial_digest=initial,final_digest=env.state_digest(),decisions=env.steps,
             simulated_seconds=env.elapsed,milestones=env.completed,required=len(env.milestones),
             success=True,events=dict(counts),health=env.agent.health,limitations=LIMITATIONS,
+            working_memory=env.working_memory_summary(),working_memory_layout=env.working_memory_layout(),
             sources={p:sha(ROOT/p) for p in SOURCES},actions_sha256=sha(directory/'actions.jsonl'))
         save(directory/'reference-manifest.json',manifest)
         return verify(directory)
@@ -99,7 +227,9 @@ def verify(directory):
         for row in rows: checked_step(env,row)
         assert env.success and len(env.completed)==manifest['required'] and not env.agent.deaths
         assert env.state_digest()==manifest['final_digest']
+        if 'working_memory' in manifest: assert plain(env.working_memory_summary())==manifest['working_memory']
         result=dict(success=True,checked_actions=len(rows),checked_positions=True,checked_events=True,
+            working_memory=env.working_memory_summary(),
             checked_rewards=True,checked_milestones=len(env.completed),final_digest=env.state_digest(),
             actions_sha256=sha(directory/'actions.jsonl'),sources={p:sha(ROOT/p) for p in SOURCES})
         save(directory/'verification.json',result)

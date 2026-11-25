@@ -112,7 +112,7 @@ which earlier skill should be recalled.
 | A04 | Open the practice service gate. | Solve a fresh S1 fixture with changed masses and control positions, without procedural hints. The gate must move safely and latch open; record first-attempt performance and retries as the immediate acquisition check. |
 | A05 | Recover the workshop salvage kit. | Reach a new gallery with changed hearth and landing placement, using a valid solution. An S2 solution provides the immediate acquisition check; the unique kit is needed at the coastal depot. |
 | A06 | Survey the valley. | Reach the survey tower through an ordinary accessible route and inspect the intake's seeded calibration mark and the coastal depot bearings. This begins work that does not rehearse S1 or S2. |
-| A07 | Obtain the replacement regulator. | Navigate to the coast and exchange A05's kit at a mechanical supply locker for the unique regulator and ranger-cache key. Gathering and cooking adequate travel provisions are supporting actions, not separate memory milestones. |
+| A07 | Obtain the replacement regulator. | Navigate to the coast and exchange A05's kit at a mechanical supply locker for the unique regulator and ranger-cache key. Gathering and cooking adequate travel provisions are supporting actions, not separate memory milestones. **Working memory (`WM-WA07`, hold, load 4):** the locker stays shut until a four-digit code is keyed in on its keypad. The locker stands at the end of the aisles of a closed stores warehouse on a loading dock, which is entered by climbing, so a horse cannot shorten the trip. The code is drawn per episode and posted only on the dispatch board at the depot entrance, which cannot be seen from the keypad. |
 | A08 | Retrieve the cached service handle. | Use A01's remembered landmark and A07's key to find and open the ranger cache. Acquire the handle. No new location marker supplies the answer. |
 | A09 | Open the upper intake's service housing. | Apply S1 to a new arrangement with several eligible weights, a different safe load band, and rotated controls. Verify stable opening. This is the first delayed S1 transfer probe. |
 | A10 | Reach the intake control gallery. | Apply S2 in a rainy setting with an exposed decoy hearth and a usable sheltered shaft. The shaft is accessible after A09. Verify a safe arrival; this is the first delayed S2 transfer probe. |
@@ -170,11 +170,11 @@ all three skills and facts acquired at different times, after a route changes.
 | B08 | Survey the reserve depot. | Reach the causeway tower and inspect the depot's landmark and normal bridge approach. Its powered shutter will open only when all regional stations operate; remember a place that is not yet useful. |
 | B09 | Establish expedition supplies. | Reach the ridge refuge, light its sheltered fire, and prepare separate cold/heat provisions. Its pot and resupply route remain available. Ordinary campfire use does not supply S2's shaft-control procedure. |
 | B10 | Recover the wind coupling. | Retrieve the unique coupling from a raider-held yard by combat or a viable stealth route. This is useful intervening work that does not exercise the three learned procedures. |
-| B11 | Recover the pump and engine couplings. | Navigate the coastal supply route and retrieve both unique parts using the commission's service authorization. The route requires ordinary traversal, not an S1/S2/S3 fixture. |
+| B11 | Recover the pump and engine couplings. | Navigate the coastal supply route and retrieve both unique parts using the commission's service authorization. The route requires ordinary traversal, not an S1/S2/S3 fixture. **Working memory (`WM-WB11`, select, 2 slots):** the yard manifest at the yard gate names the bay holding each coupling. The yard office releases six numbered bays in a store out of sight of the manifest; the bays look alike and carry similar part-name labels. Opening a bay is the choice, and a wrong bay is simply empty. |
 | B12 | Survey the downstream channels. | Reach the archive gauge station and inspect the seeded valve-symbol-to-basin map. Also inspect a readable furnace warning identifying the plume-temperature gauge and safe launch band. It supplies new local safety information without repeating a skill procedure. |
 | B13 | Open the ridge actuator housing. | Recognize the counterweight device family and apply S1 to new masses and geometry. Verify the housing is stably open. |
 | B14 | Reach the wind-station service deck. | Recognize a usable thermal shaft, apply S2 under changed wind/shelter conditions, and reach the deck. It is accessible after B13. |
-| B15 | Commission the wind station. | Install B10's coupling into the serviced actuator and verify stable output for five simulated seconds. The station latches operational. |
+| B15 | Commission the wind station. | Install B10's coupling into the serviced actuator and verify stable output for five simulated seconds. The station latches operational. **Working memory (`WM-WB15`, remap, load 3):** the weather board at the station base gives a pitch for each blade colour. The deck dial takes pitches by blade number, and each blade's colour tag is visible only on the deck, so the agent re-maps colour to number. The B14 ascent lies between the two. Output does not stabilise until the dial is set correctly; a wrong complete setting resets the dial. |
 | B16 | Commission the marsh pump. | Install B11's pump coupling and apply S3 to a larger local network. Its local survey identifies the requested destination, but no procedural checklist is given. Verify stable output for five simulated seconds and latch the station operational. |
 | B17 | Make the quarry access shaft safe. | Encounter a familiar-looking plume whose gauge is above B12's safe band. Apply S3 to its marked cooling bypass and verify safe temperature. This tests rejecting an immediately unsafe S2 launch and selecting a useful alternative. |
 | B18 | Commission the quarry engine. | Use S2 on the now-safe shaft, reach the service deck, and install B11's engine coupling. Verify stable output for five simulated seconds and latch the station operational. |
@@ -184,6 +184,25 @@ all three skills and facts acquired at different times, after a route changes.
 | B22 | Configure the final outlet network. | Combine B01's authorized basin with B12's symbol map. Apply S3's preparation stage: keep inflow isolated, open the authorized outlet path, and close the other branches. |
 | B23 | Bring the connected floodworks online. | Use S2 to reach the elevated feed controls, then finish S3's commissioning procedure. The repaired lock, correct routing, and all regional outputs must hold together for five simulated seconds; verify safe refuge levels and a drained road. |
 | B24 | Verify the evacuation route and signal the refuge. | Traverse the drained road to B01's designated refuge and signal completion while the floodworks remain safe. |
+
+### Working-memory probes
+
+A07, B11 and B15 also carry the working-memory probes `WM-WA07`, `WM-WB11` and
+`WM-WB15`, defined by the shared [working-memory probe contract](working-memory-probes.md).
+Each asks the agent to hold a few freshly drawn items for tens of seconds and use
+them where the source is no longer visible. The content comes from a dedicated
+per-probe generator, never the simulation RNG, and appears only in the local text
+while the agent is within reach of the source (at most five simulated seconds).
+Entries get neutral feedback; only a complete entry or an opened bay is judged, and
+every mistake is recoverable. The probe is an additional physical requirement of
+its milestone: milestone IDs, count and order are unchanged.
+
+Scores are evaluator-only (`info['working_memory']` and the reference manifests).
+`wm_control=True` also posts each cue at its use site as a diagnostic condition.
+`WM-WB11` falls in the interval between skill training and the delayed skill
+probes, so it adds memory load during retention. The compact course's fixture
+positions and measured reference delays are in the
+[reference demonstration notes](wildlands-reference-demos.md#working-memory-probes).
 
 ### Dependencies and what makes the longer task harder
 

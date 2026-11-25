@@ -150,7 +150,8 @@ class ReferencePolicy:
             a["buttons"][0]=1
             if env.char.pos[1]<=-2.9:
                 a["buttons"][2]=1
-                self.explanation="Recover the coupling from the submerged chest"
+                self.explanation=("Open the sunken chest with the boatman's mark" if s.get("wm")
+                                  else "Recover the coupling from the submerged chest")
             else:
                 self.explanation="Hold jump to dive to the chest"
             return a
@@ -186,6 +187,10 @@ class ReferencePolicy:
                 self.face(a,target.pos)
                 a["buttons"][3]=1
                 self.explanation="Attack the camp sentry while elemental skills recharge"
+        elif op.kind=="panel":
+            # Privileged: the course names the next lever/pawl of the expected entry.
+            a["buttons"][2]=1
+            self.explanation=f"Operate the {target.label.lower()} ({op.title.lower()})"
         else:
             a["buttons"][2]=1
             self.explanation="Interact: "+op.title

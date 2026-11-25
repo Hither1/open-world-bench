@@ -1,0 +1,211 @@
+{
+  "task": "b",
+  "seed": 4,
+  "controller": "privileged native-action reference policy",
+  "initial_digest": "820bc1f7bc021fecd20fefecc098fe0d03a8f61382467e3cf421f240cd61c9ab",
+  "final_digest": "3efa50eaa98975989f028a3603e0c1bc411871844bb26425f4c20dd44428d320",
+  "decisions": 2519,
+  "simulated_seconds": 503.80000000004605,
+  "milestones": [
+    {
+      "id": "B01",
+      "step": 1,
+      "seconds": 0.2
+    },
+    {
+      "id": "B02",
+      "step": 99,
+      "seconds": 19.8
+    },
+    {
+      "id": "B03",
+      "step": 207,
+      "seconds": 41.4
+    },
+    {
+      "id": "B04",
+      "step": 286,
+      "seconds": 57.2
+    },
+    {
+      "id": "B05",
+      "step": 378,
+      "seconds": 75.6
+    },
+    {
+      "id": "B06",
+      "step": 475,
+      "seconds": 95.0
+    },
+    {
+      "id": "B07",
+      "step": 550,
+      "seconds": 110.0
+    },
+    {
+      "id": "B08",
+      "step": 649,
+      "seconds": 129.8
+    },
+    {
+      "id": "B09",
+      "step": 789,
+      "seconds": 157.8
+    },
+    {
+      "id": "B10",
+      "step": 840,
+      "seconds": 168.0
+    },
+    {
+      "id": "B11",
+      "step": 883,
+      "seconds": 176.6
+    },
+    {
+      "id": "B12",
+      "step": 942,
+      "seconds": 188.4
+    },
+    {
+      "id": "B13",
+      "step": 1052,
+      "seconds": 210.4
+    },
+    {
+      "id": "B14",
+      "step": 1116,
+      "seconds": 223.2
+    },
+    {
+      "id": "B15",
+      "step": 1141,
+      "seconds": 228.2
+    },
+    {
+      "id": "B16",
+      "step": 1275,
+      "seconds": 255.0
+    },
+    {
+      "id": "B17",
+      "step": 1400,
+      "seconds": 280.0
+    },
+    {
+      "id": "B18",
+      "step": 1501,
+      "seconds": 300.2
+    },
+    {
+      "id": "B19",
+      "step": 1731,
+      "seconds": 346.2
+    },
+    {
+      "id": "B20",
+      "step": 1915,
+      "seconds": 383.0
+    },
+    {
+      "id": "B21",
+      "step": 2114,
+      "seconds": 422.8
+    },
+    {
+      "id": "B22",
+      "step": 2208,
+      "seconds": 441.6
+    },
+    {
+      "id": "B23",
+      "step": 2268,
+      "seconds": 453.6
+    },
+    {
+      "id": "B24",
+      "step": 2519,
+      "seconds": 503.8
+    }
+  ],
+  "required": 24,
+  "success": true,
+  "events": {
+    "clue_exposed": 10,
+    "npc_denned": 8,
+    "milestone_complete": 24,
+    "horse_calmed": 1,
+    "mounted": 4,
+    "dismounted": 4,
+    "brake_trip": 1,
+    "counterweight_control": 8,
+    "magnetic_grip": 7,
+    "magnetic_move": 135,
+    "magnetic_drop": 7,
+    "counterweight_open": 4,
+    "riding_improved": 1,
+    "land": 12,
+    "thermal_control": 10,
+    "jump": 5,
+    "updraft": 10,
+    "thermal_landed": 5,
+    "apple_fell": 12,
+    "flow_control": 10,
+    "gather": 2,
+    "cook": 2,
+    "light_campfire": 1,
+    "npc_attack": 1,
+    "swing": 3,
+    "hit": 3,
+    "npc_died": 1,
+    "item_exchange": 3,
+    "station_engaged": 1,
+    "parts_installed": 3,
+    "npc_emerged": 8,
+    "equip": 1,
+    "bridge_closed": 1,
+    "thunder": 6,
+    "lightning": 9,
+    "burning": 4,
+    "road_drained": 1,
+    "completion_signal": 1
+  },
+  "health": 19.400000000000006,
+  "limitations": [
+    "Compact authored course within procedural Wildlands terrain; shortened travel, not the full long-duration benchmark.",
+    "Privileged reference controller; no claim that an agent learned skills or retained memories.",
+    "Counterweights use native magnetic bodies and supported-mass sensors; fixed gate/lift actuators are authored mechanisms.",
+    "Thermal flights use native jump/glide physics with authored shaft updraft fields and measured service-deck landings.",
+    "Flow and cooling are discrete authored networks, not a general fluid solver.",
+    "Training procedures are readable local instructions plus observable practice, not a separately animated teacher.",
+    "Role mappings, material/shape transfer variants, regional temperature exposure, and learning-from-memory ablations remain incomplete.",
+    "Repair parts use a separate persistent satchel; ordinary food uses native inventory and cooking.",
+    "The road and bridge really change voxel collision; no controller teleportation or direct completion edits."
+  ],
+  "sources": {
+    "owb/env/wildlands_reference.py": "6ae57f0aa7391fd769971d7133bea44dd1c78be90c4205513d9a861a0733eb7d",
+    "owb/bench/baselines/wildlands_reference.py": "385a3c7fde8cee46295728931a5ce2ed99037c51c018feda4055b8ac1e7a0e9e",
+    "owb/scripts/wildlands_reference.py": "230205fb70217505c5a293dbbdb34f14f73e0f39d1ca08357fcd4fb366c3a596",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/physics/bodies.py": "a4be41f31c7ebbde580fc03729cad4527023b6a8faa66ac20a8b752e51ece214",
+    "owb/physics/elements.py": "7da9a13c25d896a161a542bdb57a34ca701187246e23ab9f0ee4dc37d198116f",
+    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
+    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/dressing.py": "0108db6882a9a68f7bb5f47a1ff5ecd0336c56e9f3eeecba1ef8726226f4d3cb",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/render/cycles_batch.py": "cbad2360348f5b7092cf25398a8cb7936a6827c1b36a29f37264eaf135f02791",
+    "owb/render/blender_batch.py": "b8e59f0aefc98c0f9a0b2567a482cb3a727a2f232fc3fc3d7fdf18e1731a2f95",
+    "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
+    "owb/world/fauna.py": "85c7cb5d59b50dda6d1a6a164299fa9f9e6758943bf94c30761919b63bf58f2e",
+    "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "4fba32ab206fe7f01f2818125d31697c666abcaef79b6059928b91e23f059931",
+    "owb/sim/orchard.py": "f096a850736120a58d9ca9954e53beaf9de10a9d5a108756b66d6231df3573a5",
+    "owb/render/creatures.py": "88ef22857bba85cb009ff22fbfdd50669e891802fc3b8a3433b115d75fef5c23",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454",
+    "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1"
+  },
+  "actions_sha256": "6f557e84de7da21042dd346aeeccd5d845850b27261dd3195229f3c753ca3bc1"
+}

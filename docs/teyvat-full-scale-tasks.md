@@ -13,6 +13,11 @@ It follows the path Skylands took from its compact testbed to its
 `SkylandsCampaignEnv` subclasses the compact environment, keeps its milestones and
 local mechanics, and replaces the world. The milestone IDs, count, and order stay the same.
 
+Working-memory probe `WM-TA06` (A06) is specified in the
+[working-memory probe contract](working-memory-probes.md) and implemented in the
+compact course only. It is not implemented at full scale, because full-scale Task A
+has no milestone mechanics yet.
+
 Task A, *The Relay Keeper's Apprenticeship*, is specified here in full. Task B,
 *The Expedition of Three Arts*, has its own design and seed-7 implementation in
 [teyvat-full-scale-task-b.md](teyvat-full-scale-task-b.md) (see

@@ -110,6 +110,10 @@ class LemonTart(Kitchen):
         knob_mode = kwargs.pop("oven_knob_order", None)
         self._knob_mode = knob_mode
         self.knob_order = None
+        # Diagnostic for the WM-LT1 working-memory probe (docs/working-memory-probes.md):
+        # keep the knob order in the instruction after the recipe is withdrawn.
+        self.wm_control = bool(kwargs.pop("wm_control", False))
+        self.wm_probe = None
         self.expose_object_state = kwargs.pop("expose_object_state", False)
         self.expose_bindings = kwargs.pop("expose_bindings", False)
         super().__init__(robots=robots, enable_fixtures=enabled, **kwargs)
@@ -259,6 +263,7 @@ class LemonTart(Kitchen):
         self._close_fixtures()
         self._zero_knobs()
         self.tracker.reset()
+        self._reset_working_memory()
 
     def _park_dishwasher_objects(self):
         """Lay the dishwasher objects side by side on the rack, not overlapping.
@@ -357,6 +362,10 @@ class LemonTart(Kitchen):
             if knobs is not None and knobs.mode == "recipe":
                 text += lemon_tart_lock.knob_hint(knobs.order)
             return text
+        knobs = getattr(self, "knob_order", None)
+        if getattr(self, "wm_control", False) and knobs is not None and knobs.mode == "recipe":
+            # matched control: the cue stays at the use site
+            return SHORT_INSTRUCTION + lemon_tart_lock.knob_hint(knobs.order)
         return SHORT_INSTRUCTION
 
     def get_ep_meta(self):
@@ -377,7 +386,25 @@ class LemonTart(Kitchen):
         return ep_meta
 
     def evaluator_state(self):
-        return self.tracker.evaluator_state()
+        state = self.tracker.evaluator_state()
+        if self.wm_probe is not None:
+            state["working_memory"] = {self.wm_probe.probe.probe: self.wm_probe.probe.summary()}
+        return state
+
+    # ---------- working-memory probe WM-LT1 (see lemon_tart_lock.ReverseKnobProbe) ----------
+    def _reset_working_memory(self):
+        knobs = self.knob_order
+        self.wm_probe = None
+        if knobs is not None and knobs.mode == "recipe":
+            self.wm_probe = lemon_tart_lock.ReverseKnobProbe(knobs.order, control=self.wm_control)
+
+    def _update_working_memory(self):
+        if self.wm_probe is None:
+            return []
+        return self.wm_probe.update(
+            self.tracker.latched, sum(self.knob_order.blocked_turns.values()),
+            int(self.timestep), float(self.sim.data.time),
+        )
 
     def reward(self, action=None):
         self.tracker.update(self._sense())
@@ -396,6 +423,7 @@ class LemonTart(Kitchen):
         if self.knob_order is not None:
             self.knob_order.update()
         reward, done, info = super()._post_action(action)
+        self._update_working_memory()
         info["instruction"] = self.instruction()
         info["lemon_tart"] = self.tracker.public_state()
         if self.tracker.succeeded and not self.ignore_done:

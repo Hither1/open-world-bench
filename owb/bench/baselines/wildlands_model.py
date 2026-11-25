@@ -68,6 +68,30 @@ previous decision's actions. It is accurate. It contains no action plan; you sti
 every primitive action. Navigate with your position, heading and these coordinates."""
 
 
+PERCEPTION_NOTE = """
+PERCEPTION-ORACLE CONDITION: observation.perceived lists what a perfect object detector reports for
+the current frame only: interaction IDs, visual categories (post, plaque, movable block, staked plate,
+creature), painted colour or size, world position, distance and bearing (+ = to your right). It says
+nothing about what a control does, which objective it belongs to, where the objective is, or why an
+interaction failed. Objects drop off the list when out of frame or occluded; remember them yourself."""
+
+
+# Memory-ladder rungs above the perception oracle (owb/bench/memory_ladder.py). Shared by both worlds.
+RECALL_NOTE = """
+PERFECT-RECALL CONDITION: observation.recalled is an exact memory kept for you. objects lists every
+fixture that any frame you were shown has contained (at a checkpoint start with recalled clues, also every
+fixture the earlier operator saw): its ID if it has one, visual category, colour or size, the position where
+it was LAST SEEN (movable things may have moved since), and the decisions when it was first and last seen.
+texts lists, verbatim and in order, every text you (or that operator) have read. It is a record of
+observations, not an interpretation: it does not say what anything does, which objective it serves, or where
+unseen things are. You need not spend memory notes on positions or clue wording."""
+
+GOAL_NOTE = """
+GOAL-LOCATION CONDITION: observation.objective_location gives the world position of the current objective's
+site (in Skylands also its layer: depths, surface or sky). It is a place only: it does not say which controls
+or objects there belong to the objective, what to do there, or what any clue means."""
+
+
 def describe(observation):
     """An explicit allowlist: no environment handle, info/events, or evaluator state."""
     out={'text':str(observation['text']),
@@ -81,6 +105,9 @@ def describe(observation):
     out['inventory']=inventory
     if 'holding_body' in observation: out['holding_body']=bool(observation['holding_body'])
     if 'privileged' in observation: out['privileged']=observation['privileged']
+    if 'perceived' in observation: out['perceived']=observation['perceived']
+    if 'recalled' in observation: out['recalled']=observation['recalled']
+    if 'objective_location' in observation: out['objective_location']=observation['objective_location']
     if 'recovery' in observation: out['recovery']=observation['recovery']
     if 'minimap' in observation:
         out['visited_map']={'shape':list(observation['minimap'].shape),
@@ -158,7 +185,7 @@ class WildlandsModelPolicy:
             reasoning=dict(effort=self.effort),text=dict(format=dict(type='json_schema',name=self.schema_name,strict=True,schema=self.schema())),
             max_output_tokens=4096,store=False)
         usage=response.usage.model_dump() if response.usage else {}
-        self.input_tokens+=int(usage.get('input_tokens',0));self.output_tokens+=int(usage.get('output_tokens',0))
+        self.input_tokens+=int(usage.get('total_input_tokens',usage.get('input_tokens',0)))  # Claude: incl. cache reads/writes;self.output_tokens+=int(usage.get('output_tokens',0))
         self.last_response=dict(response_id=response.id,model=response.model,status=response.status,
                                 latency_seconds=time.monotonic()-start,usage=usage,output_text=response.output_text)
         if response.status!='completed': raise RuntimeError('Model response incomplete')
@@ -171,3 +198,7 @@ class WildlandsModelPolicy:
 
 class WildlandsPrivilegedPolicy(WildlandsModelPolicy):
     guide=GUIDE+PRIVILEGED_NOTE
+
+
+class WildlandsPerceptionPolicy(WildlandsModelPolicy):
+    guide=GUIDE+PERCEPTION_NOTE

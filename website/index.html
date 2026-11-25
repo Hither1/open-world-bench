@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open-World Bench</title>
+  <meta name="description" content="Open-World Bench: a benchmark for the memory of long-horizon embodied agents, across open worlds, hours of interaction, and changes to the world.">
+  <meta property="og:title" content="Open-World Bench">
+  <meta property="og:description" content="Benchmarking memory in long-horizon embodied agents.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://hither1.github.io/open-world-bench/media/img/teyvat-diverse-cycles.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23b5562b'/%3E%3Cpath d='M6 19c4-5 7-5 10-2s6 3 10-2' stroke='%23f6f1e7' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">Open-World Bench</a>
+    <nav aria-label="Sections">
+      <a href="#idea">Idea</a>
+      <a href="#worlds">Worlds</a>
+      <a href="#tasks">Tasks</a>
+      <a href="#evaluation">Evaluation</a>
+      <a href="#start">Get started</a>
+      <a href="#cite">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <p class="eyebrow">Benchmark · 2026 · early release</p>
+        <h1>Open-World Bench</h1>
+        <p class="lede">Benchmarking memory in long-horizon embodied agents.</p>
+        <p class="authors">Chloe Su &nbsp;·&nbsp; Yilun Du</p>
+        <div class="actions">
+          <a class="btn primary" href="https://github.com/Hither1/open-world-bench">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            Code
+          </a>
+          <a class="btn" href="https://github.com/Hither1/open-world-bench/tree/main/docs">Docs</a>
+          <a class="btn" href="#cite">BibTeX</a>
+        </div>
+      </div>
+      <figure class="hero-media">
+        <div class="player" data-src="media/video/teyvat-fullscale-24-milestones.mp4">
+          <a href="media/video/teyvat-fullscale-24-milestones.mp4">
+            <img src="media/gif/teyvat.gif" alt="Teyvat full-scale Task B: the reference controller crossing a 1,760 m island" width="480" height="270">
+            <span class="play" aria-hidden="true"></span>
+          </a>
+        </div>
+        <figcaption>Teyvat full-scale Task B (draft), seed 7: 24 milestones on a 1,760 m island, 8,324 actions, 4× timelapse. Privileged reference controller, not a model. Blender Cycles, OptiX, 64 spp.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats" aria-label="Scale at a glance">
+    <div class="wrap stats-grid">
+      <div><b>5</b><span>open worlds, from voxel crafting to a robot kitchen</span></div>
+      <div><b>124.4<small> min</small></b><span>longest reference journey (Skylands Task B)</span></div>
+      <div><b>37,321</b><span>actions in that independently replayed solution</span></div>
+      <div><b>24</b><span>milestones in the longest task chains</span></div>
+    </div>
+  </section>
+
+  <!-- Idea -->
+  <section id="idea" class="section">
+    <div class="wrap narrow">
+      <h2>The information you need was seen hours ago</h2>
+      <p>Most embodied benchmarks fit inside a single episode and a single context window. Open-World Bench (OWB) deliberately does not. Its tasks are designed so that the information needed to act correctly was acquired long before it is needed. The agent has to recall it, re-ground it in the current scene, and act on it, across hours of interaction, across sessions, and after the world has changed.</p>
+    </div>
+    <div class="wrap">
+      <figure class="diagram">
+        <svg viewBox="0 0 860 220" role="img" aria-labelledby="dg-title dg-desc">
+          <title id="dg-title">Why context alone is not enough</title>
+          <desc id="dg-desc">A long episode timeline. A clue is observed near the start. Thousands of actions follow. At the end, the agent's context window covers only the most recent stretch, but the action it must take depends on the clue from the start.</desc>
+          <defs>
+            <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="8" class="dg-hatch"/>
+            </pattern>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0L10 5L0 10z" class="dg-accent-fill"/>
+            </marker>
+          </defs>
+          <text x="440" y="30" text-anchor="middle" class="dg-label dg-accent-text">must be remembered</text>
+          <path d="M120 120 C 260 40, 640 40, 760 116" class="dg-arc" marker-end="url(#arrow)"/>
+          <rect x="40" y="128" width="780" height="14" rx="7" class="dg-track"/>
+          <rect x="170" y="128" width="400" height="14" fill="url(#hatch)"/>
+          <rect x="600" y="114" width="200" height="42" rx="8" class="dg-window"/>
+          <circle cx="120" cy="135" r="9" class="dg-accent-fill"/>
+          <circle cx="770" cy="135" r="9" class="dg-ink-fill"/>
+          <text x="120" y="182" text-anchor="middle" class="dg-label"><tspan font-weight="600">observe</tspan></text>
+          <text x="120" y="202" text-anchor="middle" class="dg-sub">recipe, landmark, NPC hint</text>
+          <text x="370" y="182" text-anchor="middle" class="dg-sub">hours of intervening work</text>
+          <text x="370" y="202" text-anchor="middle" class="dg-sub">thousands of actions</text>
+          <text x="700" y="182" text-anchor="middle" class="dg-label"><tspan font-weight="600">act</tspan></text>
+          <text x="700" y="202" text-anchor="middle" class="dg-sub dg-teal-text">only this stretch fits in context</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="wrap">
+      <h3 class="kicker">Five memory axes, shared across every world</h3>
+      <ul class="axes">
+        <li><h4>Spatial</h4><p>Recall where a place, resource or object was, and get back to it.</p></li>
+        <li><h4>Episodic</h4><p>Recall what happened: who said what, which door was opened, what a failed attempt already ruled out.</p></li>
+        <li><h4>Procedural</h4><p>Reuse a recipe, build or route discovered many steps earlier.</p></li>
+        <li><h4>Interference &amp; staleness</h4><p>Notice when the world has changed and a memory is no longer true.</p></li>
+        <li><h4>Cross-session</h4><p>Resume a paused episode, or carry knowledge across several episodes in the same world seed.</p></li>
+      </ul>
+      <p class="note">Tasks are scored on success and on targeted memory probes, such as detours and queries that only the right recollection can solve, not on reward alone.</p>
+    </div>
+  </section>
+
+  <!-- Worlds -->
+  <section id="worlds" class="section alt">
+    <div class="wrap">
+      <h2>Worlds</h2>
+      <p class="section-lede">The worlds span voxel crafting, large 3D exploration, physics-driven traversal and construction, and robot manipulation. Teyvat, Wildlands and Skylands are clean-room simulators inspired by the games named below; no game assets or code are redistributed. Every clip below is a reference controller or a single model life, not a benchmark score. Click a preview to play the full video.</p>
+
+      <div class="worlds">
+        <article class="world">
+          <div class="player" data-src="media/video/teyvat-fullscale-24-milestones.mp4">
+            <a href="media/video/teyvat-fullscale-24-milestones.mp4"><img src="media/gif/teyvat.gif" loading="lazy" alt="Teyvat reference run" width="480" height="270"><span class="play" aria-hidden="true"></span></a>
+          </div>
+          <div class="world-body">
+            <header><h3>Teyvat</h3><span class="tag">inspired by Genshin Impact</span></header>
+            <p>Large, anime-styled 3D islands with multi-stage quests, NPC dialogue, party swaps and elemental reactions. Stresses long-range navigation, landmark memory and quest bookkeeping.</p>
+            <p class="meta">24 milestones, 1,760 m island, seed 7, 4 min 50 s at 4×. Privileged reference controller. Blender Cycles, OptiX, 64 spp.</p>
+            <a class="more" href="https://github.com/Hither1/open-world-bench/blob/main/docs/teyvat-long-horizon-tasks.md">Task design →</a>
+          </div>
+        </article>
+
+        <article class="world">
+          <div class="player" data-src="media/video/skylands-b-preview-clip.mp4">
+            <a href="media/video/skylands-b-preview-clip.mp4"><img src="media/gif/skylands.gif" loading="lazy" alt="Skylands Task B preview" width="480" height="270"><span class="play" aria-hidden="true"></span></a>
+          </div>
+          <div class="world-body">
+            <header><h3>Skylands</h3><span class="tag">inspired by Tears of the Kingdom</span></header>
+            <p>Vertical three-layer worlds (sky, surface and depths) plus construction. Agents combine parts into contraptions and reuse recipes they discovered much earlier.</p>
+            <p class="meta">Task B milestones B01–B03 and B19–B20 of 24, 2 min 3 s. Privileged reference policy. Blender Cycles, OptiX, 64 spp.</p>
+            <a class="more" href="https://github.com/Hither1/open-world-bench/blob/main/docs/skylands-long-horizon-tasks.md">Task design →</a>
+          </div>
+        </article>
+
+        <article class="world">
+          <div class="player" data-src="media/video/wildlands-a-preview-clip.mp4">
+            <a href="media/video/wildlands-a-preview-clip.mp4"><img src="media/gif/wildlands.gif" loading="lazy" alt="Wildlands Task A preview" width="480" height="270"><span class="play" aria-hidden="true"></span></a>
+          </div>
+          <div class="world-body">
+            <header><h3>Wildlands</h3><span class="tag">inspired by Breath of the Wild</span></header>
+            <p>Emergent physics and survival: shrine-style puzzles, weather and temperature, cooking, and tracking durable versus consumable resources while exploring under partial maps.</p>
+            <p class="meta">Task A milestones A01–A05 and A09–A10 of 12, 52 s. Privileged reference controller. Blender Cycles, OptiX, 48 spp.</p>
+            <a class="more" href="https://github.com/Hither1/open-world-bench/blob/main/docs/wildlands-long-horizon-tasks.md">Task design →</a>
+          </div>
+        </article>
+
+        <article class="world">
+          <div class="player" data-src="media/video/ender-dragon-end-clip.mp4">
+            <a href="media/video/ender-dragon-end-clip.mp4"><img src="media/gif/minecraft-ender-dragon.gif" loading="lazy" alt="Minecraft Ender Dragon fight" width="480" height="270"><span class="play" aria-hidden="true"></span></a>
+          </div>
+          <div class="world-body">
+            <header><h3>Minecraft</h3><span class="tag">real game via MineStudio</span></header>
+            <p>Deep tech trees, resource bookkeeping, and base and landmark recall over very long horizons. Unlike the other worlds, this runs the real game; OWB distributes only the task specification.</p>
+            <p class="meta">The End fight from one model life (Opus 5, diamond-kit diagnostic start). It destroys three end crystals using a procedure carried over from its previous life; the dragon is not killed. Real game frames, 640×360 upscaled.</p>
+            <a class="more" href="https://github.com/Hither1/open-world-bench/blob/main/docs/minecraft-long-horizon-tasks.md">Task design →</a>
+          </div>
+        </article>
+
+        <article class="world">
+          <div class="player" data-src="media/video/lemon-tart-full.mp4">
+            <a href="media/video/lemon-tart-full.mp4"><img src="media/gif/lemon-tart.gif" loading="lazy" alt="Robot baking a lemon tart in a simulated kitchen" width="480" height="270"><span class="play" aria-hidden="true"></span></a>
+          </div>
+          <div class="world-body">
+            <header><h3>Mobile manipulation</h3><span class="tag">RoboCasa · PandaOmron</span></header>
+            <p>A mobile robot bakes a lemon tart in a simulated kitchen. It has to find ingredients and tools, follow an oven-knob order drawn for each episode, and return everything to where it started.</p>
+            <p class="meta">One continuous run at 6×, 7 min 41 s, 20 of 21 milestones; it fails after 6:41. MuJoCo native renderer (no Cycles exporter).</p>
+            <a class="more" href="https://github.com/Hither1/open-world-bench/blob/main/docs/mobile-manipulation-tasks.md">Task design →</a>
+          </div>
+        </article>
+      </div>
+
+      <h3 class="kicker" id="renders">Rendered with Blender Cycles</h3>
+      <p class="section-lede">Presentation renders use the live simulator state and are kept separate from the agent's observations, which use their own configured sensor renderer.</p>
+      <div class="gallery">
+        <figure><img src="media/img/teyvat-diverse-cycles.png" loading="lazy" alt="Teyvat landscape with varied trees, rocks and relay structures"><figcaption>Teyvat, seed 7: varied botanical meshes, irregular rocks, relay structures. Blender Cycles, 960×540.</figcaption></figure>
+        <figure><img src="media/img/wildlands-blender.png" loading="lazy" alt="Wildlands terrain rendered in Blender"><figcaption>Wildlands, seed 7: indirect light, cast shadows, reflective water. Blender Cycles, 960×540.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tasks -->
+  <section id="tasks" class="section">
+    <div class="wrap">
+      <h2>Long-horizon task suites</h2>
+      <p class="section-lede">Each task is a chain of milestones. Later milestones depend on things learned, seen or built in earlier ones, so a task cannot be solved by looking only at the current screen.</p>
+      <div class="table-scroll">
+        <table class="tasks">
+          <thead><tr><th>World</th><th>Task</th><th class="num">Milestones</th><th>What it asks for</th></tr></thead>
+          <tbody>
+            <tr class="group"><td class="wcell" rowspan="3">Teyvat</td><td class="task">The Relay Keeper's Apprenticeship</td><td class="num">12</td><td class="desc">Learn a relay procedure once, do unrelated work, then transfer it to unseen relays.</td></tr>
+            <tr><td class="task">The Expedition of Three Arts</td><td class="num">24</td><td class="desc">Acquire three skills, then retrieve and compose them for unfamiliar goals. Also built at full scale on a 1,760 m island.</td></tr>
+            <tr><td class="task">Branching campaigns: summit, cleansing, desert</td><td class="num">varies</td><td class="desc">Persistent prerequisites and local clues, with no waypoint oracle.</td></tr>
+            <tr class="group"><td class="wcell" rowspan="2">Wildlands</td><td class="task">The Frostbound Pass</td><td class="num">12</td><td class="desc">Experience, then unassisted practice, then retrieval and transfer of a learned skill.</td></tr>
+            <tr><td class="task">The Valley Before the Storm</td><td class="num">24</td><td class="desc">Build a skill repertoire, leave it unused, then recognize its uses across three regions, where similar-looking mechanisms can differ.</td></tr>
+            <tr class="group"><td class="wcell" rowspan="4">Skylands</td><td class="task">The Fallen Observatory</td><td class="num">15</td><td class="desc">A 57.9-minute reference journey across sky, surface and depths.</td></tr>
+            <tr><td class="task">The Three-Layer Lifeline</td><td class="num">24</td><td class="desc">A 124.4-minute reference journey; recipes found early are reused much later.</td></tr>
+            <tr><td class="task">Silence the Tempest Engine</td><td class="num">open</td><td class="desc">Optional regional preparation and three shutdown methods.</td></tr>
+            <tr><td class="task">Tempest Restoration</td><td class="num">32</td><td class="desc">Diagnostic checkpoints over about 3.4 simulated hours, with a fabricated pressure manifold.</td></tr>
+            <tr class="group"><td class="wcell" rowspan="2">Minecraft</td><td class="task">Mine Diamond from Scratch</td><td class="num">10</td><td class="desc">The tech tree from nothing, all crafting done by hand. 12,000 steps per life.</td></tr>
+            <tr><td class="task">Ender Dragon</td><td class="num">24</td><td class="desc">The whole game, through the Nether and a stronghold to The End. 36,000 steps per life.</td></tr>
+            <tr class="group"><td class="wcell" rowspan="2">Mobile manip.</td><td class="task">Lemon tart</td><td class="num">21</td><td class="desc">One kitchen procedure, with spatial and procedural recall.</td></tr>
+            <tr><td class="task">The guest's dessert</td><td class="num">—</td><td class="desc">The same skill later, in another room, after a rule change.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Minecraft milestone counts follow MCU-AgentBeats so scores stay comparable with published results. Reference solutions are replayed independently from their recorded action traces.</p>
+    </div>
+  </section>
+
+  <!-- Evaluation -->
+  <section id="evaluation" class="section alt">
+    <div class="wrap">
+      <h2>Evaluation</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Checkpoint starts</h3>
+          <p>Episodes can begin after <i>K</i> milestones from a verified reference state. That lets you measure the later, memory-heavy segments even when a model cannot get through the early ones.</p>
+        </div>
+        <div class="card">
+          <h3>Information conditions</h3>
+          <p>Native observation-only, perception-oracle, and privileged. They separate "cannot see or locate things" from "cannot work out what to do or remember it".</p>
+        </div>
+        <div class="card">
+          <h3>Working-memory probes</h3>
+          <p>Short probes that ask the agent to hold a few fresh items for tens of seconds, sometimes reversed or transformed, and use them where the source is no longer visible.</p>
+        </div>
+      </div>
+
+      <h3 class="kicker">Results</h3>
+      <div class="table-scroll">
+        <table class="results">
+          <thead><tr><th>Model</th><th>Minecraft</th><th>Teyvat</th><th>Wildlands</th><th>Skylands</th><th>Mobile manip.</th></tr></thead>
+          <tbody>
+            <tr><td>Claude Opus 5.5</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>GPT-6-Astra</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><td>Gemini 4 Argon</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Results are pending; no scores have been published yet. Published results will state the task suite version, seeds, episode counts, and action and model-call budgets.</p>
+    </div>
+  </section>
+
+  <!-- Get started -->
+  <section id="start" class="section">
+    <div class="wrap narrow">
+      <h2>Get started</h2>
+      <p>Python 3.10+. Every world is available through one shared Gymnasium-style interface.</p>
+      <div class="code">
+        <button class="copy" type="button" data-copy="install">Copy</button>
+<pre id="install"><code>git clone https://github.com/Hither1/open-world-bench
+cd open-world-bench
+pip install -e ".[gl,video,dev]"</code></pre>
+      </div>
+      <div class="code">
+        <button class="copy" type="button" data-copy="usage">Copy</button>
+<pre id="usage"><code>import owb
+
+env = owb.make_env("teyvat", task="cleansing", variant="full", max_steps=40_000)
+obs, info = env.reset(seed=7)</code></pre>
+      </div>
+      <p>To run a model agent with video, action logs, memory notes and token usage:</p>
+      <div class="code">
+        <button class="copy" type="button" data-copy="agent">Copy</button>
+<pre id="agent"><code>pip install -e ".[agent,video]"
+python -B -m owb.scripts.benchmark --env skylands teyvat wildlands \
+  --seed 7 --steps 12 --size 320 240 \
+  --policy claude --claude-account-home ~/.claude --model claude-opus-5-5 \
+  --video gif --output runs/trial</code></pre>
+      </div>
+      <p class="note">APIs will change without notice until a tagged release. See the <a href="https://github.com/Hither1/open-world-bench/blob/main/docs/framework.md">shared framework guide</a> and the <a href="https://github.com/Hither1/open-world-bench/blob/main/docs/embodied-agent.md">embodied agent guide</a>.</p>
+    </div>
+  </section>
+
+  <!-- Cite -->
+  <section id="cite" class="section alt">
+    <div class="wrap narrow">
+      <h2>Citation</h2>
+      <div class="code">
+        <button class="copy" type="button" data-copy="bibtex">Copy</button>
+<pre id="bibtex"><code>@misc{openworldbench2026,
+  title        = {Open-World Bench: Benchmarking Memory in Long-Horizon Embodied Agents},
+  author       = {Su, Chloe and Du, Yilun},
+  year         = {2026},
+  howpublished = {\url{https://github.com/Hither1/open-world-bench}}
+}</code></pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p>MIT licensed. Teyvat, Wildlands and Skylands are original implementations. Genshin Impact, The Legend of Zelda and Minecraft are named only to describe the setting each environment evokes, and are trademarks of their respective owners.</p>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
