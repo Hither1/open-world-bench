@@ -12,6 +12,10 @@ Source for the GitHub Pages site at https://hither1.github.io/open-world-bench/.
   using Python 3's standard library. The build rejects missing, duplicate or
   unassigned milestone IDs. Edit the source documents for milestone text and
   this file for stage groupings, branches and memory connections.
+- `reference_videos.py`, `reference-player.js`: associate each task with its
+  available recordings, render settings, scope and chapter timestamps. The
+  build copies declared media and provenance files, rejects missing assets and
+  invalid chapter times, and records explicit availability for unrecorded tasks.
 - `leaderboard-data.js`, `leaderboard.js`: published result data and the
   interactive leaderboard, with condition/world filters and model details.
 - `build.sh`: assembles `_site/` by copying the page plus the GIFs, Cycles stills
@@ -23,16 +27,46 @@ Preview locally:
 
 ```bash
 bash website/build.sh
-python -m http.server -d _site 8000   # open http://localhost:8000
+python website/preview.py --port 8000   # open http://127.0.0.1:8000
 ```
 
 Example task link: `http://localhost:8000/#explore/skylands/three-layer-lifeline`.
+The preview server supports byte-range requests so browsers can seek in videos.
 The explorer is a presentation of task designs, not simulated progress. Its
 labels distinguish playable campaigns, legacy courses and unimplemented designs.
 Solid edges show the documented structure (or a reference itinerary); dashed
 edges show information and procedures carried between stages. The task-specific
 note explains branch order and optional routes. Existing demonstration videos,
 renderer metadata, the leaderboard and task catalogue remain available below.
+
+## Task recordings
+
+Each task has a **Reference video**, **Procedure video** or **Model attempt video**
+panel above its diagram. Opening it loads the selected recording; closing it or
+switching tasks stops playback. Where the original chapter timestamps are
+available, the chapter selector and **Watch this milestone** button seek to the
+matching part of the video. Video playback is separate from task completion.
+
+The catalogue includes compact Teyvat courses, the full-scale Teyvat B draft,
+both archived Wildlands checkpoint walkthroughs, both full Skylands campaigns,
+short excerpts, the incomplete lemon-tart procedure, and the Minecraft model
+attempt. Captions distinguish earlier task versions, checkpoint videos,
+incomplete attempts and missing recordings. Never substitute a different task's
+video for an unrecorded campaign.
+
+Skylands' full recordings exceed GitHub's single-file limit. The files in
+`videos/skylands/reference-legacy/` contain every original encoded frame, remuxed
+at keyframes into consecutive MP4 parts. The player continues to the next part
+and maps chapter times across part boundaries. No video re-encoding, resolution
+change or new rendering is involved. Their manifests record hashes, exact time
+intervals, render settings and the matching original chapters. The older worlds
+and traces are clearly labeled; these are not recordings of the current probes.
+
+`prepare_reference_videos.py` is an optional one-time preparation tool, not a
+build dependency. It needs the original local Skylands recordings, archived
+Wildlands recordings and FFmpeg, then verifies packet or file hashes before
+writing the published receipts. The regular Pages build needs only tracked
+files and Python's standard library.
 
 To feature a different clip, update the `data-src`, link and `<img>` in
 `index.html` and the matching `cp` line in `build.sh`. Keep the renderer and

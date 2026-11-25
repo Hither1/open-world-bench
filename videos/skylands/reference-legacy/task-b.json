@@ -1,0 +1,392 @@
+{
+  "source": "assets/demos/skylands-campaign/task-b-seed-7/walkthrough.mp4",
+  "source_sha256": "751e6fb0724d3c19bf3cc5d284299745c93267194341fbffa4b0796b400918ec",
+  "source_manifest": "assets/demos/skylands-campaign/task-b-seed-7/video-manifest.json",
+  "processing": "FFmpeg stream copy at keyframes; no video re-encoding or rescaling",
+  "encoded_packet_hashes_match": true,
+  "frames": 9145,
+  "duration": 914.5000000000024,
+  "renderer": {
+    "engine": "Blender Cycles",
+    "device": "OPTIX GPU",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "denoising": true,
+    "max_bounces": 6,
+    "upscaling": false,
+    "geometry": "exact full-world surfaces",
+    "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+    "blender_version": "4.5.4 LTS",
+    "accelerators": [
+      "NVIDIA RTX A6000"
+    ],
+    "render_sources": {
+      "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+      "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+      "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+    },
+    "ground_cover": {
+      "method": "fixed native meshes in one collection instance",
+      "source_instances": 6208588,
+      "triangles": 124171760,
+      "vertices": 248343520,
+      "stored_faces": 69326258,
+      "prototype_triangulation_verified": true,
+      "full_geometry": true,
+      "distance_culling": false
+    },
+    "chunks": [
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-2",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX A6000"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+            "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-5",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX A6000"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+            "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-3",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX A6000"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+            "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-b-4",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX A6000"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+            "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 6208588,
+            "triangles": 124171760,
+            "vertices": 248343520,
+            "stored_faces": 69326258,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      }
+    ]
+  },
+  "encoded_size": [
+    1600,
+    900
+  ],
+  "source_render_size": [
+    1280,
+    720
+  ],
+  "poster": "videos/skylands/reference-legacy/task-b-poster.png",
+  "parts": [
+    {
+      "path": "videos/skylands/reference-legacy/task-b-part-01.mp4",
+      "start": 0.0,
+      "end": 189.8,
+      "frames": 1898,
+      "bytes": 40255083,
+      "sha256": "b0563265887ec61d06bd432c78658bde010eaac5deee336e3f129ce9b2fd549a"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-b-part-02.mp4",
+      "start": 189.8,
+      "end": 370.0,
+      "frames": 1802,
+      "bytes": 47901408,
+      "sha256": "e5e84fc578768d8fb67446815694237b62a76ed892a654262865a463d89da80a"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-b-part-03.mp4",
+      "start": 370.0,
+      "end": 545.0,
+      "frames": 1750,
+      "bytes": 18128088,
+      "sha256": "0dbd9a8b6d9572f9758e25b45e2c320bf174579f81af4596e8447962c5cdaca9"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-b-part-04.mp4",
+      "start": 545.0,
+      "end": 739.3,
+      "frames": 1943,
+      "bytes": 55867867,
+      "sha256": "7a46e138efc93cbfbfea3035f032dcbdb386a0cfdb5eccc88a6b5c31fe35614a"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-b-part-05.mp4",
+      "start": 739.3,
+      "end": 902.0,
+      "frames": 1627,
+      "bytes": 42892512,
+      "sha256": "3c98882c2211922a554be96a800860e3161839b077e87e3228a5e6c61324a94f"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-b-part-06.mp4",
+      "start": 902.0,
+      "end": 914.5,
+      "frames": 125,
+      "bytes": 5284677,
+      "sha256": "5b931cdbdcc4d455092d8dff7e05dd75341c5134f3b8e1a63164be6c2dbfb3a7"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "B01",
+      "title": "Accept the lifeline commission",
+      "video_seconds": 0,
+      "source_seconds": 0.2,
+      "step": 1
+    },
+    {
+      "id": "B02",
+      "title": "Commission the training barge",
+      "video_seconds": 4.5,
+      "source_seconds": 8.199999999999987,
+      "step": 41
+    },
+    {
+      "id": "B03",
+      "title": "Deliver the independent practice load",
+      "video_seconds": 57.4,
+      "source_seconds": 249.5999999999901,
+      "step": 1248
+    },
+    {
+      "id": "B04",
+      "title": "Open the ascent workshop",
+      "video_seconds": 105.0,
+      "source_seconds": 413.60000000002555,
+      "step": 2068
+    },
+    {
+      "id": "B05",
+      "title": "Recover the upper depot service kit",
+      "video_seconds": 109.9,
+      "source_seconds": 454.60000000003487,
+      "step": 2273
+    },
+    {
+      "id": "B06",
+      "title": "Restore the moving-platform training route",
+      "video_seconds": 121.9,
+      "source_seconds": 540.6000000000544,
+      "step": 2703
+    },
+    {
+      "id": "B07",
+      "title": "Retrieve the shuttle survey pack",
+      "video_seconds": 149.5,
+      "source_seconds": 746.6000000001012,
+      "step": 3733
+    },
+    {
+      "id": "B08",
+      "title": "Survey the three freight regions",
+      "video_seconds": 181.3,
+      "source_seconds": 986.6000000001558,
+      "step": 4933
+    },
+    {
+      "id": "B09",
+      "title": "Distribute the expedition reserves",
+      "video_seconds": 217.2,
+      "source_seconds": 1414.599999999809,
+      "step": 7073
+    },
+    {
+      "id": "B10",
+      "title": "Recover the marsh coupling",
+      "video_seconds": 293.0,
+      "source_seconds": 1894.3999999993725,
+      "step": 9472
+    },
+    {
+      "id": "B11",
+      "title": "Charge the sky shuttle power cell",
+      "video_seconds": 322.0,
+      "source_seconds": 2283.3999999990187,
+      "step": 11417
+    },
+    {
+      "id": "B12",
+      "title": "Establish the depths freight outpost",
+      "video_seconds": 360.6,
+      "source_seconds": 2786.9999999985607,
+      "step": 13935
+    },
+    {
+      "id": "B13",
+      "title": "Transport the depths power module",
+      "video_seconds": 410.3,
+      "source_seconds": 3249.1999999981404,
+      "step": 16246
+    },
+    {
+      "id": "B14",
+      "title": "Reach the depths regulator gallery",
+      "video_seconds": 464.6,
+      "source_seconds": 3491.1999999979203,
+      "step": 17456
+    },
+    {
+      "id": "B15",
+      "title": "Restore the depths station",
+      "video_seconds": 472.2,
+      "source_seconds": 3542.7999999978733,
+      "step": 17714
+    },
+    {
+      "id": "B16",
+      "title": "Deliver the marsh coupling",
+      "video_seconds": 494.8,
+      "source_seconds": 3668.7999999977587,
+      "step": 18344
+    },
+    {
+      "id": "B17",
+      "title": "Restore the surface station",
+      "video_seconds": 618.1,
+      "source_seconds": 4945.800000000461,
+      "step": 24729
+    },
+    {
+      "id": "B18",
+      "title": "Recover the sky station spindle",
+      "video_seconds": 637.8,
+      "source_seconds": 5082.80000000096,
+      "step": 25414
+    },
+    {
+      "id": "B19",
+      "title": "Restore the sky station",
+      "video_seconds": 704.4,
+      "source_seconds": 5805.80000000359,
+      "step": 29029
+    },
+    {
+      "id": "B20",
+      "title": "Survey the replacement lock approach",
+      "video_seconds": 717.9,
+      "source_seconds": 5870.200000003824,
+      "step": 29351
+    },
+    {
+      "id": "B21",
+      "title": "Recover and fit the reserved coupling",
+      "video_seconds": 784.4,
+      "source_seconds": 6602.600000006489,
+      "step": 33013
+    },
+    {
+      "id": "B22",
+      "title": "Reach the lock service terrace",
+      "video_seconds": 832.0,
+      "source_seconds": 7205.200000008681,
+      "step": 36026
+    },
+    {
+      "id": "B23",
+      "title": "Commission the final cargo lock and barge",
+      "video_seconds": 853.7,
+      "source_seconds": 7262.8000000088905,
+      "step": 36314
+    },
+    {
+      "id": "B24",
+      "title": "Deliver the relief shipment",
+      "video_seconds": 903.2,
+      "source_seconds": 7390.400000009355,
+      "step": 36952
+    }
+  ],
+  "scope": "Earlier rectangular-world campaign, before organic-world and working-memory-probe updates."
+}

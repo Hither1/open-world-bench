@@ -6,7 +6,7 @@
 #
 #   bash website/build.sh            # -> _site/
 #   bash website/build.sh /tmp/owb   # -> /tmp/owb/
-#   python -m http.server -d _site 8000   # local preview
+#   python website/preview.py --port 8000   # local preview with video seeking
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -15,8 +15,8 @@ OUT="${1:-$ROOT/_site}"
 rm -rf "$OUT"
 mkdir -p "$OUT/media/gif" "$OUT/media/img" "$OUT/media/video"
 
-cp "$ROOT/website/"{index.html,style.css,main.js,leaderboard-data.js,leaderboard.js,task-explorer.css,task-explorer.js} "$OUT/"
-python3 "$ROOT/website/build_task_data.py" "$OUT/task-data.js"
+cp "$ROOT/website/"{index.html,style.css,main.js,leaderboard-data.js,leaderboard.js,task-explorer.css,task-explorer.js,reference-player.js} "$OUT/"
+python3 "$ROOT/website/build_task_data.py" "$OUT/task-data.js" --media-output "$OUT"
 touch "$OUT/.nojekyll"
 
 # Animated previews (8 s, 480 px) cut from the MP4s below.

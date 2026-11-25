@@ -1,0 +1,245 @@
+{
+  "source": "assets/demos/skylands-campaign/task-a-seed-7/walkthrough.mp4",
+  "source_sha256": "a8dbb762c012980899b5f7fd27a2bba91c6638f5e2e5089832dd8f14fd6442ca",
+  "source_manifest": "assets/demos/skylands-campaign/task-a-seed-7/video-manifest.json",
+  "processing": "FFmpeg stream copy at keyframes; no video re-encoding or rescaling",
+  "encoded_packet_hashes_match": true,
+  "frames": 4793,
+  "duration": 479.30000000000064,
+  "renderer": {
+    "engine": "Blender Cycles",
+    "device": "OPTIX GPU",
+    "width": 1280,
+    "height": 720,
+    "samples": 64,
+    "denoising": true,
+    "max_bounces": 6,
+    "upscaling": false,
+    "geometry": "exact full-world surfaces",
+    "foliage": "all trees at detail 2; complete high-tier ground-cover instances",
+    "blender_version": "4.5.4 LTS",
+    "accelerators": [
+      "NVIDIA RTX A6000"
+    ],
+    "render_sources": {
+      "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+      "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+      "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+    },
+    "ground_cover": {
+      "method": "fixed native meshes in one collection instance",
+      "source_instances": 3506380,
+      "triangles": 70127600,
+      "vertices": 140255200,
+      "stored_faces": 39153782,
+      "prototype_triangulation_verified": true,
+      "full_geometry": true,
+      "distance_culling": false
+    },
+    "chunks": [
+      {
+        "directory": ".cache/skylands-campaign/final-frames-a-0",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX A6000"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+            "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 3506380,
+            "triangles": 70127600,
+            "vertices": 140255200,
+            "stored_faces": 39153782,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      },
+      {
+        "directory": ".cache/skylands-campaign/final-frames-a-1",
+        "renderer": {
+          "blender_version": "4.5.4 LTS",
+          "accelerators": [
+            "NVIDIA RTX A6000"
+          ],
+          "device": "OPTIX GPU",
+          "samples": 64,
+          "width": 1280,
+          "height": 720,
+          "denoising": true,
+          "max_bounces": 6,
+          "render_sources": {
+            "blender_campaign.py": "6e760fd4dde59c27db6a76c60344405d5dd84ea0239a899c2b15a2009f5ad5da",
+            "blender_scene.py": "cc2d0d5fb6566510b406d6bc1bfec753925e173eca0a510ad4d7b7a063d5b27d",
+            "blender_campaign_baked.py": "aacdb64f7c4c7c41f9c922d422e46053bbfe7bae22f9fe354186428885e1232c"
+          },
+          "ground_cover": {
+            "method": "fixed native meshes in one collection instance",
+            "source_instances": 3506380,
+            "triangles": 70127600,
+            "vertices": 140255200,
+            "stored_faces": 39153782,
+            "prototype_triangulation_verified": true,
+            "full_geometry": true,
+            "distance_culling": false
+          }
+        }
+      }
+    ]
+  },
+  "encoded_size": [
+    1600,
+    900
+  ],
+  "source_render_size": [
+    1280,
+    720
+  ],
+  "poster": "videos/skylands/reference-legacy/task-a-poster.png",
+  "parts": [
+    {
+      "path": "videos/skylands/reference-legacy/task-a-part-01.mp4",
+      "start": 0.0,
+      "end": 184.1,
+      "frames": 1841,
+      "bytes": 45460244,
+      "sha256": "5f9f8dcb3615bb16bb965370ee3b59d04cc23d6a0c6f84ff369bd33299a63b4f"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-a-part-02.mp4",
+      "start": 184.1,
+      "end": 361.9,
+      "frames": 1778,
+      "bytes": 28675312,
+      "sha256": "42236ca3b3a87859d6190d539d40ac3e104537ef1cd992cc3110fa4e36a7e049"
+    },
+    {
+      "path": "videos/skylands/reference-legacy/task-a-part-03.mp4",
+      "start": 361.9,
+      "end": 479.3,
+      "frames": 1174,
+      "bytes": 33761092,
+      "sha256": "7b95e30f6e030ba41b9d8c4074b0b1431aa727789d2decfca74aec09303aaab5"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "A01",
+      "title": "Take the observatory commission",
+      "video_seconds": 0,
+      "source_seconds": 0.2,
+      "step": 1
+    },
+    {
+      "id": "A02",
+      "title": "Restore the workshop cargo raft",
+      "video_seconds": 3.0,
+      "source_seconds": 8.199999999999987,
+      "step": 41
+    },
+    {
+      "id": "A03",
+      "title": "Deliver the practice load",
+      "video_seconds": 45.4,
+      "source_seconds": 134.39999999999665,
+      "step": 672
+    },
+    {
+      "id": "A04",
+      "title": "Open the ascent workshop",
+      "video_seconds": 89.8,
+      "source_seconds": 288.3999999999971,
+      "step": 1442
+    },
+    {
+      "id": "A05",
+      "title": "Recover the survey instrument",
+      "video_seconds": 96.7,
+      "source_seconds": 316.80000000000354,
+      "step": 1584
+    },
+    {
+      "id": "A06",
+      "title": "Stage the surface return raft",
+      "video_seconds": 103.1,
+      "source_seconds": 382.2000000000184,
+      "step": 1911
+    },
+    {
+      "id": "A07",
+      "title": "Survey the buried works",
+      "video_seconds": 158.6,
+      "source_seconds": 789.0000000001108,
+      "step": 3945
+    },
+    {
+      "id": "A08",
+      "title": "Establish the depths staging dock",
+      "video_seconds": 188.5,
+      "source_seconds": 1199.4000000000046,
+      "step": 5997
+    },
+    {
+      "id": "A09",
+      "title": "Open the vault service entrance",
+      "video_seconds": 243.3,
+      "source_seconds": 1794.1999999994637,
+      "step": 8971
+    },
+    {
+      "id": "A10",
+      "title": "Extract and secure the navigation core",
+      "video_seconds": 259.1,
+      "source_seconds": 1943.9999999993274,
+      "step": 9720
+    },
+    {
+      "id": "A11",
+      "title": "Ferry the core through the flooded gallery",
+      "video_seconds": 263.4,
+      "source_seconds": 1970.799999999303,
+      "step": 9854
+    },
+    {
+      "id": "A12",
+      "title": "Raise the core to the surface",
+      "video_seconds": 329.4,
+      "source_seconds": 2178.3999999991142,
+      "step": 10892
+    },
+    {
+      "id": "A13",
+      "title": "Recover the staged raft and ferry the core",
+      "video_seconds": 347.4,
+      "source_seconds": 2217.199999999079,
+      "step": 11086
+    },
+    {
+      "id": "A14",
+      "title": "Raise the core to the observatory",
+      "video_seconds": 446.3,
+      "source_seconds": 3449.599999997958,
+      "step": 17248
+    },
+    {
+      "id": "A15",
+      "title": "Restore navigation service",
+      "video_seconds": 469.1,
+      "source_seconds": 3468.9999999979404,
+      "step": 17345
+    }
+  ],
+  "scope": "Earlier rectangular-world campaign, before organic-world and working-memory-probe updates."
+}

@@ -72,6 +72,10 @@
     $("task-metric").textContent = task.metric;
     $("task-source").href = `https://github.com/Hither1/open-world-bench/blob/main/docs/${task.source}`;
     $("task-route-note").textContent = task.route;
+    window.OWBRecordings.show(task, (id) => {
+      const index = task.phases.findIndex((phase) => phase.ids.includes(id));
+      if (index >= 0) selectStage(index, id, true);
+    });
     $("task-choices").replaceChildren(...tasks.filter((t) => t.world === task.world).map((t) => {
       const link = make("a", "task-choice", t.title);
       link.href = routeFor(t);
@@ -167,6 +171,7 @@
   function selectMilestone(id, updateURL) {
     const milestone = currentTask.milestones.find((m) => m.id === id);
     currentMilestone = id;
+    window.OWBRecordings.markMilestone(id);
     $("milestone-id").textContent = milestone.id;
     $("milestone-title").textContent = milestone.title;
     $("milestone-description").textContent = milestone.detail;
@@ -253,6 +258,7 @@
     $("environment-overview").hidden = showTask;
     $("task-explorer-panel").hidden = !showTask;
     if (!showTask) {
+      window.OWBRecordings.clear();
       currentTask = null;
       if (parts[0] === "explore") history.replaceState(null, "", "#worlds");
       if (!initial && (parts[0] === "worlds" || parts[0] === "explore")) {

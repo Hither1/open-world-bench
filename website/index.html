@@ -94,7 +94,22 @@
         </div>
         <div class="explorer-world-heading"><img id="explorer-cover" alt="" width="144" height="81"><div><p class="eyebrow">Long-horizon task explorer</p><h2 id="explorer-world-title" tabindex="-1"></h2></div><a class="explorer-demo" href="#demos">Environment demos</a></div>
         <div class="task-choices" id="task-choices" role="group" aria-label="Choose a task"></div>
-        <div class="task-summary"><div><p class="task-status" id="task-status"></p><h3 id="task-title" tabindex="-1"></h3><p id="task-goal"></p></div><div class="task-summary-meta"><strong id="task-metric"></strong><a id="task-source">Read full design</a></div></div>
+        <div class="task-summary"><div><p class="task-status" id="task-status"></p><h3 id="task-title" tabindex="-1"></h3><p id="task-goal"></p></div><div class="task-summary-meta"><strong id="task-metric"></strong><a id="task-source">Read full design</a><button id="show-task-recording" class="reference-link" type="button">Watch task recording</button></div></div>
+        <details id="task-recording" class="task-recording">
+          <summary><span id="recording-summary-title">Reference video</span><span id="recording-summary-meta"></span></summary>
+          <div id="reference-unavailable" class="reference-unavailable" hidden><p id="reference-unavailable-note"></p><a id="reference-unavailable-source">Read the task and validation notes</a></div>
+          <div id="reference-player-body" class="reference-player-body" hidden>
+            <div class="reference-controls">
+              <label id="reference-choice-label">Recording<select id="reference-choice"></select></label>
+              <label id="reference-part-label">Part<select id="reference-part"></select></label>
+            </div>
+            <div class="reference-layout">
+              <div><video id="reference-video" controls playsinline preload="metadata" tabindex="0" aria-describedby="reference-credit reference-scope reference-renderer"></video><p id="reference-progress" class="reference-progress"></p><p id="reference-message" class="reference-message" role="status"></p></div>
+              <div class="reference-caption"><p id="reference-credit"></p><p id="reference-scope"></p><p id="reference-renderer" class="meta"></p><p id="reference-part-note" class="meta" hidden>Parts continue automatically. Chapter jumps use the time in the complete recording.</p><div class="reference-links"><a id="reference-download" target="_blank" rel="noopener">Open MP4</a><a id="reference-provenance" target="_blank" rel="noopener">Recording provenance</a></div></div>
+            </div>
+            <label id="reference-chapter-label" class="reference-chapter-label">Milestone chapter<select id="reference-chapter"></select></label>
+          </div>
+        </details>
         <div class="task-map-card">
           <div class="task-map-toolbar"><p><strong>Explore the task</strong><span> Select a stage to inspect its milestones.</span></p><label class="memory-toggle"><input type="checkbox" id="memory-links" checked> Memory connections</label></div>
           <div class="map-legend"><span><i class="legend-line"></i>Task structure</span><span id="memory-legend"><i class="legend-line memory"></i>Remember &amp; reuse</span><span class="map-scroll-hint">Scroll sideways to explore the diagram.</span></div>
@@ -103,7 +118,7 @@
         </div>
         <section class="stage-inspector" aria-labelledby="stage-title">
           <div class="stage-heading"><div><p class="eyebrow" id="stage-position"></p><h3 id="stage-title"></h3><p id="stage-note"></p></div><div class="stage-pagination"><button type="button" id="stage-previous" aria-label="Previous stage">Previous</button><button type="button" id="stage-next" aria-label="Next stage">Next</button></div></div>
-          <div class="stage-detail-grid"><div id="stage-milestones" role="group" aria-label="Milestones in this stage"></div><div class="milestone-detail" aria-live="polite" aria-atomic="true"><span class="milestone-id" id="milestone-id"></span><h4 id="milestone-title"></h4><p id="milestone-description"></p></div></div>
+          <div class="stage-detail-grid"><div id="stage-milestones" role="group" aria-label="Milestones in this stage"></div><div class="milestone-detail" aria-live="polite" aria-atomic="true"><span class="milestone-id" id="milestone-id"></span><h4 id="milestone-title"></h4><p id="milestone-description"></p><button type="button" id="watch-milestone" class="reference-link" hidden>Watch this milestone</button></div></div>
           <div id="stage-memory" class="stage-memory"></div>
         </section>
         <p class="note explorer-context">These diagrams explain the task designs. They are not live agent progress or policy observations. Task completion, reference feasibility and evidence of memory benefit are evaluated separately.</p>
@@ -417,6 +432,7 @@ python -B -m owb.scripts.benchmark --env skylands teyvat wildlands \
 
 <script src="main.js"></script>
 <script src="task-data.js"></script>
+<script src="reference-player.js"></script>
 <script src="task-explorer.js"></script>
 <script src="leaderboard-data.js"></script>
 <script src="leaderboard.js"></script>
