@@ -33,7 +33,7 @@ python website/preview.py --port 8000   # open http://127.0.0.1:8000
 Example task link: `http://localhost:8000/#explore/skylands/three-layer-lifeline`.
 The preview server supports byte-range requests so browsers can seek in videos.
 The explorer is a presentation of task designs, not simulated progress. Its
-labels distinguish playable campaigns, legacy courses and unimplemented designs.
+labels distinguish playable campaigns, compact courses and unimplemented designs.
 Solid edges show the documented structure (or a reference itinerary); dashed
 edges show information and procedures carried between stages. The task-specific
 note explains branch order and optional routes. Existing demonstration videos,

@@ -49,22 +49,6 @@ def catalogue(tasks, output=None):
         "guest-dessert": ("This is a proposed task. Its second room and reference recording are not implemented yet.", "docs/mobile-manipulation-tasks.md"),
     }
     records = {}
-    for task_id, letter in (("relay-keeper", "a"), ("three-arts", "b")):
-        base = f"assets/demos/teyvat-reference-cycles/task-{letter}-seed-7"
-        summary = read(f"{base}/summary.json")
-        records[task_id] = [video("compact", "Compact reference walkthrough", f"{base}/walkthrough.mp4",
-            f"videos/teyvat/reference-posters/task-{letter}.png", summary["video_seconds"],
-            "Privileged reference controller · seed 7 · complete compact course",
-            "Blender 4.5.4 Cycles · CUDA GPU · 48 samples · native 864 × 486 scene in a 1280 × 720 annotated frame; no upscaling.",
-            "Earlier compact course, before the working-memory probes. This is a reference solution, not a learned-agent or memory-evaluation result.",
-            "videos/teyvat/playback-verification.json", chapters(f"{base}/chapters.json"))]
-    records["three-arts"].insert(0, video("fullscale", "Full-scale reference draft", "videos/teyvat/teyvat-fullscale-24-milestones.mp4",
-        "videos/teyvat/reference-posters/fullscale-b.png", 290.3,
-        "Privileged reference controller · seed 7 · 24 milestones · 1,760 m island",
-        "Blender 4.5.4 Cycles · OptiX GPU · 64 samples · existing 1280 × 720 delivery copy of the 1600 × 900 annotated recording.",
-        "Earlier full-scale draft with edited timelapse and event holds. It predates the working-memory probes and later presentation fixes.",
-        "assets/demos/teyvat-fullscale-b/seed-7/compressed-copy.json", chapters("assets/demos/teyvat-fullscale-b/seed-7/chapters.json")))
-
     for task_id, letter in (("frostbound-pass", "a"), ("valley-before-storm", "b")):
         receipt = f"videos/wildlands/reference-legacy/task-{letter}.json"
         data = read(receipt)

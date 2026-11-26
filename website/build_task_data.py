@@ -130,20 +130,6 @@ task("teyvat", "zenith-archive", "Zenith Archive", doc, "Recover the lost star a
      route="Solid lines are prerequisites. Temple branches can be reordered. All permissions are needed for rank two, and all charts for the camp cipher.")
 
 # Milestone-based courses. Each stage groups exact source-table IDs.
-task("teyvat", "relay-keeper", "The Relay Keeper's Apprenticeship", "teyvat-legacy-tasks.md", "Restore Windrest's signal route and bring the summit beacon online.", "Legacy course · 12-step design", [
-    phase("Learn & practice", span("A", 1, 3), "Acquire the relay procedure, including recovery."),
-    phase("Supply expedition", span("A", 4, 7), "Travel and deliveries separate learning from reuse."),
-    phase("Transfer the procedure", span("A", 8, 9), "New layouts and partially primed relays."),
-    phase("Restore the beacon", span("A", 10, 12), "Recover a service cap and commission the summit.")], prefix="A", count=12,
-    memory=[[0, 2, "Retrieve the conditional relay procedure after unrelated supply work."], [1, 2, "The supply expedition ends the interference interval; transfer begins without a recipe."]])
-task("teyvat", "three-arts", "The Expedition of Three Arts", "teyvat-legacy-tasks.md", "Acquire, retrieve and compose relay repair, sentinel combat and vent-assisted traversal.", "Legacy course · 24-step design", [
-    phase("Learn three arts", span("B", 1, 6), "Experience and independent practice for R, G and T."),
-    phase("Leave them unused", span("B", 7, 10), "Survey, supply and causeway work create a retention gap."),
-    phase("Retrieve & combine", span("B", 11, 18), "Apply skills to new objects and revisit the reserve depot."),
-    phase("Adapt the relay rule", span("B", 19, 22), "Double-ring relays need an extra initial drain."),
-    phase("Compose from memory", span("B", 23, 24), "Retrieve the beacon heart, then resume with fresh context.")], prefix="B", count=24,
-    memory=[[0, 2, "Recall three role-based procedures after the shared interference interval."], [3, 4, "Retain the double-ring update without applying it indiscriminately to single-ring relays."]])
-
 task("wildlands", "frostbound-pass", "The Frostbound Pass", "wildlands-long-horizon-tasks.md", "Repair the mountain intake, drain the flooded pass, and return to Reedbank with the road open.", "Task design · compact reference available", [
     phase("Commission & experience", span("A", 1, 3), "Learn a cache landmark, counterweights and safe updrafts."),
     phase("Independent practice", span("A", 4, 5), "Check both skills without procedural hints."),
