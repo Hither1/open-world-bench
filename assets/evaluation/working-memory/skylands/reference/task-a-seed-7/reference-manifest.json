@@ -1,8 +1,8 @@
 {
   "task": "a",
   "seed": 7,
-  "initial_digest": "79573d289803cf79526e938db7bcd064ff0ffb47635e71390116827bd9a6e9bc",
-  "final_digest": "75038e421410955be1aba3cdc6b9d36fdd74666e5d900ae89911a3ada83c366c",
+  "initial_digest": "fa1f82396675b2c3047d3c5b70f0e33714c78fc378919f9899b3965c313281f3",
+  "final_digest": "14735bd338ffc981cc44e69a0ee38f5b068bf52a27e8a419abb6537b1d3a8b8b",
   "decisions": 1770,
   "simulated_seconds": 354.000000000012,
   "milestones": [
@@ -163,18 +163,18 @@
   "wm_control": false,
   "controller": "privileged action-only reference policy",
   "sources": {
-    "owb/env/skylands_reference.py": "4f3a87419d62c1245bea6ad1fa37d6da0a5cc6e1019bc82981999271c49fd43c",
+    "owb/env/skylands_reference.py": "4042f409ec7485f07f1eb63923629967040019d886f50a110265b58b82aca5a7",
     "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
     "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
     "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
-    "owb/env/skylands.py": "4c13573c8b7a92ad046a674a4ea72099405df36df2d5751d657f77929a988073",
+    "owb/env/skylands.py": "a035bb55e3c282ae4f443e0fb071e40cf2cfcf3a5f845395755c7d91dd261992",
     "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
     "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
-    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
-    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/scene_export.py": "3f1abd3b783b735e39e6f6b8132b08170db20e19bbb97d74b7e3aad700bf1440",
+    "owb/render/blender_scene.py": "9c127145c4ff85b48aa86ef1ffcd61788d00266576ab131ba65948abad3fd945",
     "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
     "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
   },
-  "actions_sha256": "3a9bef43ad6d862b2d7af55435f9bbe17443d5f4466c1f6c1b20fde94397b5c5"
+  "actions_sha256": "7b4cb820a959706cc144f2105d79bbcfe36c99ff324902518eb1ab626af7c9bc"
 }

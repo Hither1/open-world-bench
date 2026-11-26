@@ -253,6 +253,11 @@ _reg(Item("beacon_ember", "beacon ember", KIND_KEY, stack=1,
 _reg(Item("guardian_core", "guardian core", KIND_KEY, stack=9,
           tags=frozenset({"objective", "metal"}), value=50))
 
+# Registered last so existing item ids (observation values) keep their numbers.
+_reg(Item("weather_hood", "weatherproof hood", KIND_ARMOR, stack=1, durability=0,
+          cold_resist=0.5, defense=0.5, tags=frozenset({"cloth"}),
+          desc="Oiled wool hood. Worn over the doublet against sky-island fronts."))
+
 ITEM_IDS = tuple(ITEMS.keys())
 ITEM_INDEX = {k: i for i, k in enumerate(ITEM_IDS)}
 NUM_ITEMS = len(ITEM_IDS)

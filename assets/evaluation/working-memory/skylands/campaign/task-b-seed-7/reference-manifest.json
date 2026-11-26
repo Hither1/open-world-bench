@@ -1,8 +1,8 @@
 {
   "task": "b",
   "seed": 7,
-  "initial_digest": "7c32d3bd50b636004a18c545db05641728384bdb12a7e87ba7375b66283b2985",
-  "final_digest": "7c823fdfdcc25bbaeb4d7d2eeeaa4ee6c4f0984f4a62cf2134f766141ab83535",
+  "initial_digest": "86195b3519dbc48e0fbbde9d76f7b248a5c450d98e0541d8f4d3bef49a77912f",
+  "final_digest": "1a9d38d1a0b35fd5fb3ccb752fa917ba13f14108a4a7db739d6c1ddd91b1356d",
   "decisions": 28757,
   "simulated_seconds": 5751.400000003392,
   "milestones": [
@@ -156,6 +156,7 @@
     "platform_reversed": 112,
     "reversal_cancelled": 4,
     "platform_landing_reached": 4,
+    "weather": 20,
     "new_day": 5,
     "layer_changed": 8,
     "reserves_cached": 2,
@@ -265,16 +266,16 @@
   "wm_control": false,
   "controller": "privileged action-only full-campaign reference policy",
   "sources": {
-    "owb/env/skylands_reference.py": "4f3a87419d62c1245bea6ad1fa37d6da0a5cc6e1019bc82981999271c49fd43c",
+    "owb/env/skylands_reference.py": "4042f409ec7485f07f1eb63923629967040019d886f50a110265b58b82aca5a7",
     "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
     "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
     "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
-    "owb/env/skylands.py": "4c13573c8b7a92ad046a674a4ea72099405df36df2d5751d657f77929a988073",
+    "owb/env/skylands.py": "a035bb55e3c282ae4f443e0fb071e40cf2cfcf3a5f845395755c7d91dd261992",
     "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
     "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
-    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
-    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/scene_export.py": "3f1abd3b783b735e39e6f6b8132b08170db20e19bbb97d74b7e3aad700bf1440",
+    "owb/render/blender_scene.py": "9c127145c4ff85b48aa86ef1ffcd61788d00266576ab131ba65948abad3fd945",
     "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
     "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
     "owb/env/skylands_campaign.py": "f3f3f2e691ee458aa2aa5d00312ff12026d2bb7ebb9b60f9f00a24d421db2493",
@@ -292,5 +293,5 @@
     "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1",
     "owb/world/landmarks.py": "a7305a813bfe8c4d983c02e0180e24534bf5c6fa1ce1b2744b6b3b8b92b15555"
   },
-  "actions_sha256": "39f51f05d196463d0a5316647fe8629bd4f671c803d03e8b0fefe269e94d5a7a"
+  "actions_sha256": "d6828e00cd5a58a79e53794627d405cd0d277483d164d6000bec858d1ebb8e8c"
 }

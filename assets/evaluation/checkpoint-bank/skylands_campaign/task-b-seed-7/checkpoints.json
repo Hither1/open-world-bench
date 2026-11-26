@@ -2,15 +2,15 @@
   "task": "b",
   "seed": 7,
   "required": 24,
-  "actions_sha256": "7f4e8bd8d43e96b4349598c29f2d01c69842baddac9d45f8e472223825e9e226",
-  "initial_digest": "3927ddbb0d28037963ce3a0e58e5ca7feeb6608ff6890876f10e2ac6a00a2468",
-  "reference_actions": 28514,
+  "actions_sha256": "d6828e00cd5a58a79e53794627d405cd0d277483d164d6000bec858d1ebb8e8c",
+  "initial_digest": "86195b3519dbc48e0fbbde9d76f7b248a5c450d98e0541d8f4d3bef49a77912f",
+  "reference_actions": 28757,
   "checkpoints": [
     {
       "completed": 0,
       "milestone": null,
       "rows": 0,
-      "digest": "3927ddbb0d28037963ce3a0e58e5ca7feeb6608ff6890876f10e2ac6a00a2468",
+      "digest": "86195b3519dbc48e0fbbde9d76f7b248a5c450d98e0541d8f4d3bef49a77912f",
       "seconds": 0.0,
       "completed_ids": [],
       "next_milestone": "B01",
@@ -21,7 +21,7 @@
       "completed": 1,
       "milestone": "B01",
       "rows": 1,
-      "digest": "6baa8df19060b5d3f84d4adc6e4051043e7f3a7b940c1cc7c1531ab5f0496e9a",
+      "digest": "5a32a4e54acb6cfc27f62e3fbbde5835c5ec261a9ef2e0eb485bfa0180ba0f7b",
       "seconds": 0.2,
       "completed_ids": [
         "B01"
@@ -34,7 +34,7 @@
       "completed": 2,
       "milestone": "B02",
       "rows": 761,
-      "digest": "98cb56ee2eabfe5fa06c1bdbbb91b8ab94c743147a9b0cf6d1ef7ec8530861e8",
+      "digest": "fc1ead82aaf0d5f91be682a0d3efceae43065e9a4aa164b23c1c3bf54e790eb8",
       "seconds": 152.19999999999564,
       "completed_ids": [
         "B01",
@@ -48,7 +48,7 @@
       "completed": 3,
       "milestone": "B03",
       "rows": 1615,
-      "digest": "0ee4023aaa5dba59467a6bac7e8f22f3e6749765c52cc961d30211e5cd304dd2",
+      "digest": "f3027837d5ee2f99dfaa9abae01fd100f2c8123d97254d6492a7185716be984f",
       "seconds": 323.00000000000495,
       "completed_ids": [
         "B01",
@@ -63,7 +63,7 @@
       "completed": 4,
       "milestone": "B04",
       "rows": 1892,
-      "digest": "57df9705b389af35cc3ac4530f6f52d7b2f37ae3a4a305f0feba391b4b74479d",
+      "digest": "598ba0e7865cc768022199720687300edb00ae0ba1870dd8a14b9be88a2eef44",
       "seconds": 378.40000000001754,
       "completed_ids": [
         "B01",
@@ -79,7 +79,7 @@
       "completed": 5,
       "milestone": "B05",
       "rows": 2287,
-      "digest": "601fb142f9135aae05ad55729232cea2eb0a2170926df41d72eef369e676c4d0",
+      "digest": "61ec774dfd4ebda6920ef4ea009364977d8b6bfbf4321836ef23063f37d49dee",
       "seconds": 457.4000000000355,
       "completed_ids": [
         "B01",
@@ -96,7 +96,7 @@
       "completed": 6,
       "milestone": "B06",
       "rows": 3044,
-      "digest": "ca942cbe79195c455df8ef09b4ddee9b0d93660fd8a3a12f49fc32c2e1cf19f2",
+      "digest": "6c9d5e47f5d62c9b0f87762fc539d9a1a51f1c60b27fd3f0740d575dd9cc64c4",
       "seconds": 608.8000000000699,
       "completed_ids": [
         "B01",
@@ -114,7 +114,7 @@
       "completed": 7,
       "milestone": "B07",
       "rows": 3646,
-      "digest": "3d4ab7a22297fc272fca389521f6cd886d6991c9f4ba5d98701faf4cdcbc9eb2",
+      "digest": "5052608c289b226facbf1fd567115aaecc1eab3743f70fece9bbccac3320d534",
       "seconds": 729.2000000000972,
       "completed_ids": [
         "B01",
@@ -133,7 +133,7 @@
       "completed": 8,
       "milestone": "B08",
       "rows": 5717,
-      "digest": "aa0461f023724637d23df1cf1e4b75401b0de4d423066602a5914bfef49ea34a",
+      "digest": "070eda2d1e3b8aad840ab7ee1eb859d842f4566ade7a591f9195e4c102ed65c7",
       "seconds": 1143.4000000000556,
       "completed_ids": [
         "B01",
@@ -153,7 +153,7 @@
       "completed": 9,
       "milestone": "B09",
       "rows": 7884,
-      "digest": "b080b3db10dea9003861398a84b5b2887d407ef9ff9ac213a025e71f4998eb97",
+      "digest": "d6eecd941bf505f05216d67f5ed7881353357efba508a0f5c6ed093eb079a53e",
       "seconds": 1576.7999999996614,
       "completed_ids": [
         "B01",
@@ -167,15 +167,15 @@
         "B09"
       ],
       "next_milestone": "B10",
-      "segment_actions": 904,
-      "segment_seconds": 180.8
+      "segment_actions": 1001,
+      "segment_seconds": 200.2
     },
     {
       "completed": 10,
       "milestone": "B10",
-      "rows": 8788,
-      "digest": "4c9450fe0afbf75844e70a5ff1a1f2df57174ee0128844592d3924b0d47a3a2f",
-      "seconds": 1757.599999999497,
+      "rows": 8885,
+      "digest": "59a368dd6497d1e7189b8880049093459b83994aba32dc9b02c49e0818977e76",
+      "seconds": 1776.9999999994793,
       "completed_ids": [
         "B01",
         "B02",
@@ -189,15 +189,15 @@
         "B10"
       ],
       "next_milestone": "B11",
-      "segment_actions": 664,
-      "segment_seconds": 132.8
+      "segment_actions": 660,
+      "segment_seconds": 132.0
     },
     {
       "completed": 11,
       "milestone": "B11",
-      "rows": 9452,
-      "digest": "7bfa193bdcc8f56b77a5c287e8066848993b218c69cda632a0a22c6d1980fcf1",
-      "seconds": 1890.3999999993762,
+      "rows": 9545,
+      "digest": "539d0b7b6f8927569dc255ccff9768120180c1070e35a453bbbcd1a1c9ff570b",
+      "seconds": 1908.9999999993593,
       "completed_ids": [
         "B01",
         "B02",
@@ -212,15 +212,15 @@
         "B11"
       ],
       "next_milestone": "B12",
-      "segment_actions": 1796,
-      "segment_seconds": 359.2
+      "segment_actions": 1791,
+      "segment_seconds": 358.2
     },
     {
       "completed": 12,
       "milestone": "B12",
-      "rows": 11248,
-      "digest": "f5dbb0019517e6180b3e0d8e9ecb717e599769ba4b5814f213446e58489ced76",
-      "seconds": 2249.5999999990495,
+      "rows": 11336,
+      "digest": "0702bdf3bf1ccfc731cc56bdf52a3316975149e12430950f186923f8502b52a9",
+      "seconds": 2267.1999999990335,
       "completed_ids": [
         "B01",
         "B02",
@@ -242,9 +242,9 @@
     {
       "completed": 13,
       "milestone": "B13",
-      "rows": 12458,
-      "digest": "a60951570d2d95710b9d642ca090b1acba54a43e1b2ea6446652fa7b07b95ab9",
-      "seconds": 2491.5999999988294,
+      "rows": 12546,
+      "digest": "d768b90c4cd537db9789f6eab1497b5e011ba5ed8c424c1dbe5c4d33a586304e",
+      "seconds": 2509.1999999988134,
       "completed_ids": [
         "B01",
         "B02",
@@ -267,9 +267,9 @@
     {
       "completed": 14,
       "milestone": "B14",
-      "rows": 12715,
-      "digest": "1c3b3958a552c0b4f8017bd3bd0ff7cc57cdea06151d300f161a3d5f48a13341",
-      "seconds": 2542.9999999987826,
+      "rows": 12803,
+      "digest": "4219902273cf3776d7e966925677c2cb5ae7632f556f58cd02eca2e83efabcf1",
+      "seconds": 2560.5999999987666,
       "completed_ids": [
         "B01",
         "B02",
@@ -293,9 +293,9 @@
     {
       "completed": 15,
       "milestone": "B15",
-      "rows": 13344,
-      "digest": "7785025c77b534c203ca9949705b4bc9f6a0eae8aa4a10a7805b1f467ecc745a",
-      "seconds": 2668.799999998668,
+      "rows": 13432,
+      "digest": "ce8c0e9baabd46ae851bd2242654ede5ca5c6051233c5a2ac63c6cec4d887f04",
+      "seconds": 2686.399999998652,
       "completed_ids": [
         "B01",
         "B02",
@@ -314,15 +314,15 @@
         "B15"
       ],
       "next_milestone": "B16",
-      "segment_actions": 4998,
-      "segment_seconds": 999.6
+      "segment_actions": 4976,
+      "segment_seconds": 995.2
     },
     {
       "completed": 16,
       "milestone": "B16",
-      "rows": 18342,
-      "digest": "409033324c53250b388d9ee8e188f9e02c36d8f96350e5287bb55119cbd39668",
-      "seconds": 3668.399999997759,
+      "rows": 18408,
+      "digest": "96b56da307ee85c82419d22941a8be729d7ab3b9483b7f7498e89dd2f2d277b2",
+      "seconds": 3681.599999997747,
       "completed_ids": [
         "B01",
         "B02",
@@ -342,15 +342,15 @@
         "B16"
       ],
       "next_milestone": "B17",
-      "segment_actions": 113,
-      "segment_seconds": 22.6
+      "segment_actions": 284,
+      "segment_seconds": 56.8
     },
     {
       "completed": 17,
       "milestone": "B17",
-      "rows": 18455,
-      "digest": "6a18dbb5cacfcda0411f963f45bdf8fb145b00e601fa8252d54f946b4188c851",
-      "seconds": 3690.9999999977385,
+      "rows": 18692,
+      "digest": "a96a44584eadac45c4ac6751a134e8ca426ad26caa92f34ced3dd07a31cdf40a",
+      "seconds": 3738.3999999976954,
       "completed_ids": [
         "B01",
         "B02",
@@ -371,15 +371,15 @@
         "B17"
       ],
       "next_milestone": "B18",
-      "segment_actions": 3898,
-      "segment_seconds": 779.6
+      "segment_actions": 3904,
+      "segment_seconds": 780.8
     },
     {
       "completed": 18,
       "milestone": "B18",
-      "rows": 22353,
-      "digest": "9c7be4a7495b759fafbcb34a9f2153976ea16e276bc9068ee9862d38646745c8",
-      "seconds": 4470.5999999987325,
+      "rows": 22596,
+      "digest": "741ea4cbf276d9c8c45aa6da96ea3d5a20e320e0e02eaf4f27d46b5f14288663",
+      "seconds": 4519.199999998909,
       "completed_ids": [
         "B01",
         "B02",
@@ -407,9 +407,9 @@
     {
       "completed": 19,
       "milestone": "B19",
-      "rows": 22671,
-      "digest": "c7fb3f646346a7bdb987c9bc8e65ce79afb7181cb13eb71bbf9e99f46f01e84a",
-      "seconds": 4534.199999998964,
+      "rows": 22914,
+      "digest": "5857d470037716ef3d08ee3ba282bf3f66a85f1a33a8c368203bf999a7a6b7e1",
+      "seconds": 4582.799999999141,
       "completed_ids": [
         "B01",
         "B02",
@@ -438,9 +438,9 @@
     {
       "completed": 20,
       "milestone": "B20",
-      "rows": 23485,
-      "digest": "073ccef6a05f6350a0c73e4625397df361c95f7583b405e19f9db02a21ec58af",
-      "seconds": 4696.999999999556,
+      "rows": 23728,
+      "digest": "0fb34e7ffbb4841ccfbb16863a4700332e03e372d900b2d7973a0b2cb6bc5f67",
+      "seconds": 4745.599999999733,
       "completed_ids": [
         "B01",
         "B02",
@@ -470,9 +470,9 @@
     {
       "completed": 21,
       "milestone": "B21",
-      "rows": 27179,
-      "digest": "791c1fefbae55c6bfd2bfad8710a02861103ae410fd196dc51848f65226186ec",
-      "seconds": 5435.800000002244,
+      "rows": 27422,
+      "digest": "a43dee96add1ba9f722dddc7eda72d327875c1bf53557c01cf2e3232321853a4",
+      "seconds": 5484.400000002421,
       "completed_ids": [
         "B01",
         "B02",
@@ -503,9 +503,9 @@
     {
       "completed": 22,
       "milestone": "B22",
-      "rows": 27354,
-      "digest": "c69c0a183a3863644ea356b5c7682be85d3061d369e73299f1543940cbec3e94",
-      "seconds": 5470.800000002371,
+      "rows": 27597,
+      "digest": "658337049c7423ceff785f1e1c7e5b29f057ea4618736546e66028a686c9db65",
+      "seconds": 5519.400000002548,
       "completed_ids": [
         "B01",
         "B02",
@@ -537,9 +537,9 @@
     {
       "completed": 23,
       "milestone": "B23",
-      "rows": 28017,
-      "digest": "cc785bc49506efc9956845f86a4c04491db1331509ef1124e0c8aafe72609571",
-      "seconds": 5603.400000002854,
+      "rows": 28260,
+      "digest": "b838ad89fb41f9db7f75a33c9917896753bc37fd2339d8b4a6ed0c7db26f1340",
+      "seconds": 5652.00000000303,
       "completed_ids": [
         "B01",
         "B02",
@@ -572,9 +572,9 @@
     {
       "completed": 24,
       "milestone": "B24",
-      "rows": 28514,
-      "digest": "63d7b4c34828631c9e4f88536303e316fd29c3c24de8f6fb6a9e8a9cc1342793",
-      "seconds": 5702.800000003215,
+      "rows": 28757,
+      "digest": "1a9d38d1a0b35fd5fb3ccb752fa917ba13f14108a4a7db739d6c1ddd91b1356d",
+      "seconds": 5751.400000003392,
       "completed_ids": [
         "B01",
         "B02",

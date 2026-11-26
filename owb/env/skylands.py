@@ -16,6 +16,7 @@ from .wildlands import WildlandsEnv, COMMANDS as SURVIVAL_COMMANDS
 
 COMMANDS = SURVIVAL_COMMANDS + BUILD_COMMANDS
 LAYERS = ("depths", "surface", "sky")
+CLIMATE_STREAM = 0x57455448  # seeds the weather timeline apart from the simulation RNG
 
 
 def default_config(small=False):
@@ -23,7 +24,7 @@ def default_config(small=False):
         starter_camp=False, obs_text=True,
         world_cfg=WorldConfig(size_x=48 if small else 96, size_z=48 if small else 96,
                               size_y=64 if small else 96),
-        sim_cfg=SimConfig(weather_enabled=False, wind_enabled=False, fire_enabled=False),
+        sim_cfg=SimConfig(wind_enabled=False, fire_enabled=False),
         render_cfg=RenderConfig(width=96 if small else 128, height=72 if small else 128,
                                 max_dist=96 if small else 144),
     )
@@ -50,6 +51,8 @@ class SkylandsEnv(WildlandsEnv):
         return generate(replace(self.cfg.world_cfg, seed=self._seed))
 
     def _reset_mechanics(self):
+        # Random weather follows the seed alone: no policy changes when it rains.
+        self.elements.climate_rng = np.random.default_rng((self._seed, CLIMATE_STREAM))
         self.construction = Construction(self.world, self.agent, self.cfg.sim_cfg, self.world.meta["parts"])
         self.layer_maps = np.zeros((3, *self.map_memory.shape), np.uint8)
         self.layer = self._layer()

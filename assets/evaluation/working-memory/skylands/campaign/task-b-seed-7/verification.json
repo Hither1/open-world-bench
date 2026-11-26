@@ -1,0 +1,106 @@
+{
+  "success": true,
+  "checked_actions": 28757,
+  "checked_positions": true,
+  "checked_events": true,
+  "checked_rewards": true,
+  "checked_milestones": 24,
+  "final_live_predicate": true,
+  "final_digest": "1a9d38d1a0b35fd5fb3ccb752fa917ba13f14108a4a7db739d6c1ddd91b1356d",
+  "working_memory": {
+    "WM-SB10": {
+      "milestone": "B10",
+      "kind": "hold",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 56,
+        "seconds": 11.2
+      },
+      "solve_delay": {
+        "decisions": 56,
+        "seconds": 11.2
+      },
+      "source_target": 79,
+      "use_target": 80,
+      "source_pos": [
+        891.5,
+        49.2,
+        910.5
+      ],
+      "use_pos": [
+        963.0,
+        49.0,
+        880.0
+      ],
+      "path_metres": 99,
+      "line_of_sight": false
+    },
+    "WM-SB17": {
+      "milestone": "B17",
+      "kind": "reverse",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "solve_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "source_target": 81,
+      "use_target": 82,
+      "source_pos": [
+        951.5,
+        49.2,
+        776.5
+      ],
+      "use_pos": [
+        955.0,
+        49.0,
+        719.0
+      ],
+      "path_metres": 60,
+      "line_of_sight": false
+    }
+  },
+  "checked_working_memory": true,
+  "actions_sha256": "d6828e00cd5a58a79e53794627d405cd0d277483d164d6000bec858d1ebb8e8c",
+  "sources": {
+    "owb/env/skylands_reference.py": "4042f409ec7485f07f1eb63923629967040019d886f50a110265b58b82aca5a7",
+    "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
+    "owb/env/skylands.py": "a035bb55e3c282ae4f443e0fb071e40cf2cfcf3a5f845395755c7d91dd261992",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
+    "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
+    "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
+    "owb/render/scene_export.py": "3f1abd3b783b735e39e6f6b8132b08170db20e19bbb97d74b7e3aad700bf1440",
+    "owb/render/blender_scene.py": "9c127145c4ff85b48aa86ef1ffcd61788d00266576ab131ba65948abad3fd945",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
+    "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
+    "owb/env/skylands_campaign.py": "f3f3f2e691ee458aa2aa5d00312ff12026d2bb7ebb9b60f9f00a24d421db2493",
+    "owb/bench/baselines/skylands_campaign.py": "62d20bf8a7942e16ebbb7aaf04add42fe44cb4ed002b1481fdd3d4415a784174",
+    "owb/scripts/skylands_campaign.py": "712c8791dfafd53dfca145ef34e348fbcb2a52d9bc8c3126d3426dc9cb82df74",
+    "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
+    "owb/world/fauna.py": "85c7cb5d59b50dda6d1a6a164299fa9f9e6758943bf94c30761919b63bf58f2e",
+    "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
+    "owb/entities/agent.py": "cad52f48625e80ebe7791c27fd49a09691e219f97bb0a071bad27435c645b49a",
+    "owb/sim/riding.py": "4fba32ab206fe7f01f2818125d31697c666abcaef79b6059928b91e23f059931",
+    "owb/sim/orchard.py": "f096a850736120a58d9ca9954e53beaf9de10a9d5a108756b66d6231df3573a5",
+    "owb/sim/survival.py": "a7540f25dc3203ed1b9b5ef69339d2bc8b3f356df8b7b95469e8036e6070d454",
+    "owb/world/settlements.py": "bc37f260c3c4647be713082b7394cb1201d047ffb04a660e8cf98c8278487171",
+    "owb/world/tempest.py": "f663a95de9f19a3f269c67928298a8ccf0410b410d25e60f57372b9e38cbb4ae",
+    "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1",
+    "owb/world/landmarks.py": "a7305a813bfe8c4d983c02e0180e24534bf5c6fa1ce1b2744b6b3b8b92b15555"
+  }
+}

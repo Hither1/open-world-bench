@@ -110,6 +110,7 @@ def update_scene(scene,metadata):
         if obj is None:
             light=bpy.data.lights.new(name,'POINT');obj=bpy.data.objects.new(name,light);bpy.context.collection.objects.link(obj)
         obj.location=z_up(spec['pos']);obj.data.energy=spec['power'];obj.data.color=spec['color'];obj.data.shadow_soft_size=spec['radius']
+    blender_scene.apply_weather(scene,metadata)
 
 
 def main():

@@ -172,7 +172,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
         cfg=EnvConfig(seed=seed,starter_camp=False,max_steps=30000,obs_rgb=render_enabled,
             obs_text=True,reward_mode='sparse',
             world_cfg=WorldConfig(size_x=96,size_y=112,size_z=112),
-            sim_cfg=SimConfig(weather_enabled=False,wind_enabled=False,fire_enabled=False,start_time=.38),
+            sim_cfg=SimConfig(wind_enabled=False,fire_enabled=False,start_time=.38),
             render_cfg=RenderConfig(width=320,height=180,third_person=True,cam_distance=8,max_dist=160))
         super().__init__(cfg)
         self.action_space['target']=spaces.Discrete(512)
@@ -232,6 +232,10 @@ class SkylandsReferenceEnv(SkylandsEnv):
         super()._reset_mechanics()
         self.agent.inventory.add('warm_doublet',1)
         self.agent.inventory.equip(self.agent.inventory.find('warm_doublet'))
+        # Rated for precipitation at night on the sky layer (ambient -1.6, soaked);
+        # without it a snow front there freezes the traveler in about a minute.
+        self.agent.inventory.add('weather_hood',1)
+        self.agent.inventory.equip(self.agent.inventory.find('weather_hood'),'head')
         self.milestones=[Site(f'{self.task.upper()}{i:02}',*row,elevation=self.levels[row[2]]) for i,row in enumerate(self.site_specs(),1)]
         self.by_id={m.id:m for m in self.milestones}; self.completed=[]; self.targets={}
         self.satchel=Counter(); self.exposed={}; self.held_part=None; self.hauling=None
@@ -933,7 +937,7 @@ class SkylandsReferenceEnv(SkylandsEnv):
             cargo=self.cargo,parts=self.parts,satchel=self.satchel,exposed=self.exposed,held=self.held_part,hauling=self.hauling,
             caches=self.cache_contents,online=self.online,closed=self.closed,calibration=self.selected_calibration,
             terrain=hashlib.sha256(self.world.vox.tobytes()).hexdigest(),rng=self.np_random.bit_generator.state,
-            climate=vars(self.elements.climate),maps=self.layer_maps)
+            climate=vars(self.elements.climate),climate_rng=self.elements.climate_rng.bit_generator.state,maps=self.layer_maps)
         data['agent']['inventory']=self.agent.inventory.to_dict(); data['agent']['effects']=[vars(e) for e in self.agent.effects]
         recovery=self.recovery_state()
         if recovery is not None: data['recovery']=recovery   # absent unless used: old digests unchanged

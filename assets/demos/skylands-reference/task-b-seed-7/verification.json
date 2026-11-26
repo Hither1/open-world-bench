@@ -1,24 +1,92 @@
 {
   "success": true,
-  "checked_actions": 3127,
+  "checked_actions": 3250,
   "checked_positions": true,
   "checked_events": true,
   "checked_rewards": true,
   "checked_milestones": 24,
   "final_live_predicate": true,
-  "final_digest": "700f7a59e5a8b555938eb4f3f5dc05b3b1c150a9ddaff03d7307da83daa6b547",
-  "actions_sha256": "0e7ff1afc1df20d19a7980695c3bdfab87b0e0e0379ae56d4dd30bf4f3c3e9b6",
+  "final_digest": "942fb1e5f3e09d01e34a5825d822e9fcb031f9e71660deddef81fde52054b270",
+  "working_memory": {
+    "WM-SB10": {
+      "milestone": "B10",
+      "kind": "hold",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "solve_delay": {
+        "decisions": 85,
+        "seconds": 17.0
+      },
+      "source_target": 71,
+      "use_target": 72,
+      "source_pos": [
+        62.5,
+        39.2,
+        82.5
+      ],
+      "use_pos": [
+        21.0,
+        39.0,
+        100.0
+      ],
+      "path_metres": 55,
+      "line_of_sight": false
+    },
+    "WM-SB17": {
+      "milestone": "B17",
+      "kind": "reverse",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 69,
+        "seconds": 13.8
+      },
+      "solve_delay": {
+        "decisions": 69,
+        "seconds": 13.8
+      },
+      "source_target": 73,
+      "use_target": 74,
+      "source_pos": [
+        26.5,
+        39.2,
+        60.5
+      ],
+      "use_pos": [
+        13.0,
+        39.0,
+        99.0
+      ],
+      "path_metres": 48,
+      "line_of_sight": false
+    }
+  },
+  "checked_working_memory": true,
+  "actions_sha256": "08256f476f6a0cb936e945a272be248e8f1a63d4b391d148c380ef05e67fbff5",
   "sources": {
-    "owb/env/skylands_reference.py": "3aad43f49e3bbb9481142870e32a53f6d3bc884497f70b318f783337eee2174c",
-    "owb/bench/baselines/skylands_reference.py": "7a15ef5fc5a80e07d164379524d019566a513fd10d1ab9c354f064bd8846bacd",
-    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
-    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
-    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/env/skylands_reference.py": "4042f409ec7485f07f1eb63923629967040019d886f50a110265b58b82aca5a7",
+    "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
+    "owb/env/skylands.py": "a035bb55e3c282ae4f443e0fb071e40cf2cfcf3a5f845395755c7d91dd261992",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
     "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
-    "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
-    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
-    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/scene_export.py": "3f1abd3b783b735e39e6f6b8132b08170db20e19bbb97d74b7e3aad700bf1440",
+    "owb/render/blender_scene.py": "9c127145c4ff85b48aa86ef1ffcd61788d00266576ab131ba65948abad3fd945",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
     "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
   }
 }

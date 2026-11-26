@@ -6,7 +6,7 @@ only characters, mechanism state, gates, camera and lighting vary during replay.
 """
 from __future__ import annotations
 import numpy as np
-from .scene_export import SceneSnapshot,_add_batch,_presentation_batch
+from .scene_export import SceneSnapshot,_add_batch,_presentation_batch,weather_metadata
 from . import models,palette as P
 from .landscape import _NATURAL,_MODELED
 from ..core import blocks as B,noise as N
@@ -158,7 +158,8 @@ def metadata(env,width=1280,height=720,camera=None):
         time_of_day=float(env.elements.climate.time),coordinates='Y-up, metres',size=[width,height],
         camera=camera,
         lighting=dict(direction=keys['sun']['dir'].tolist(),color=keys['sun']['color'].tolist(),
-            strength=keys['sun']['intensity'],sky=keys['zenith'].tolist(),horizon=keys['horizon'].tolist()),point_lights=lights)
+            strength=keys['sun']['intensity'],sky=keys['zenith'].tolist(),horizon=keys['horizon'].tolist()),point_lights=lights,
+        weather=weather_metadata(env))
 
 
 def static_scene(env):

@@ -432,6 +432,13 @@ def _add_ridges(scene, identity, layers):
     scene.metadata.setdefault("presentation_landscape", {})["horizon_layers"] = len(layers)
 
 
+def weather_metadata(native):
+    """The simulated weather a Cycles snapshot presents; see ``blender_scene.apply_weather``."""
+    cl = native.elements.climate
+    return dict(kind=cl.weather, flash=float(cl.flash), seconds=float(native.elapsed),
+                seed=int(native._seed), wind=[float(v) for v in cl.wind])
+
+
 def _wildlands(native, size):
     from .landscape import LandscapeRenderer, _NATURAL
     from .camera import Camera, resolve_third_person
@@ -460,7 +467,8 @@ def _wildlands(native, size):
         time_of_day=float(native.elements.climate.time), coordinates="Y-up, metres", size=list(size),
         camera=dict(eye=cam.pos.tolist(), target=(cam.pos + forward).tolist(), fov_y=float(fov_y)),
         lighting=dict(direction=keys["sun"]["dir"].tolist(), color=keys["sun"]["color"].tolist(),
-                      strength=keys["sun"]["intensity"], sky=keys["zenith"].tolist(), horizon=keys["horizon"].tolist())))
+                      strength=keys["sun"]["intensity"], sky=keys["zenith"].tolist(), horizon=keys["horizon"].tolist()),
+        weather=weather_metadata(native)))
     triangles = _isosurface(renderer._density)
     color = natural_terrain_colors(world.blocks_at, triangles)
     scene.add("Terrain with caves", triangles, color, smooth=True, material="terrain", blend=True)

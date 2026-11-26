@@ -7,11 +7,11 @@ through Gymnasium and the shared agent/recording interface.
 
 The [long-horizon task designs](skylands-long-horizon-tasks.md) propose a
 15-milestone core-recovery expedition and a 24-milestone freight-restoration
-campaign. They specify construction, cross-layer memory, and delayed skill reuse;
-[full-scale reference implementations](skylands-campaign-demos.md) now complete
+task. They specify construction, cross-layer memory, and delayed skill reuse;
+[full-scale reference implementations](skylands-full-scale-demos.md) now complete
 both journeys in 57.9 and 124.4 simulated minutes, with independent action replay
 and completed [GPU Cycles walkthroughs with milestone chapters](../assets/demos/skylands-campaign/index.html).
-The videos cover the full campaigns with labeled travel timelapse.
+The videos cover the full tasks with labeled travel timelapse.
 The guide describes their cargo-craft,
 reversal, rendering, and research limitations. A separate
 [compact testbed](skylands-reference-demos.md) remains available for mechanics checks.
@@ -94,7 +94,29 @@ them. The preview is turquoise when placeable and orange otherwise.
 Ascend requires a clear exit for the entire agent body and rejects liquid/fire
 exits, excessive thickness, insufficient stamina, or a held part. A shaft connects
 the surface and depths. The full world has an intermediate ascent platform;
-gliding controls descent. Weather, wind and fire spread default off for this course.
+gliding controls descent. Wind and fire spread default off for this course.
+
+Weather is random, as in Wildlands: fronts move between clear, cloud, rain,
+thunderstorm and fog, with snow instead of rain where it is cold (high sky
+islands). Unlike Wildlands, the fronts draw from a climate stream seeded by the
+environment seed alone, so a seed has the same weather timeline whatever the
+policy does; only where the traveler stands decides rain or snow. Rain raises
+the stamina cost of climbing 1.9× and adds slip risk on any wall but vines,
+soaks the traveler (lowering body temperature), and thunderstorms strike
+conductive targets. With seed 7, fronts bring rain or storm about 10% of
+simulated time, starting 21.9 minutes in; short compact courses can stay dry.
+Altitude decides the form: rain falls on the surface and in the depths by day,
+while the sky layer (ambient −0.96 on clear full-scale days) and the surface at
+night get snow.
+
+The course issues a warm doublet (cold resistance 1.0) and a weatherproof hood
+(0.5). The doublet alone covers the sky at night in clear weather, but a snow
+front there pushes body temperature past it and freezes the traveler in about a
+minute, with no fire to recover by. The hood covers the coldest case
+(precipitation at night on the sky layer while soaked), so weather is felt in
+body temperature, climbing and slips without being an unavoidable death. The
+original bridge trial (`SkylandsEnv`) issues no clothing and keeps its existing
+cold exposure in the sky.
 
 ## Observations and task semantics
 

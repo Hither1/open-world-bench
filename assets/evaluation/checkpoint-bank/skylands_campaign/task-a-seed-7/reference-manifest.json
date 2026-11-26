@@ -1,10 +1,10 @@
 {
   "task": "a",
   "seed": 7,
-  "initial_digest": "aa0a3cbae78a14754bd951a736925e4e464b53dfce3fe806daf4eca7667da474",
-  "final_digest": "78d52db79765d8965007f810f1a5e8523fe6d6e08337ef9837a6d7e3af8554d2",
-  "decisions": 17094,
-  "simulated_seconds": 3418.799999997986,
+  "initial_digest": "5198bca2ac8d363771f0efbf6e8e4025bec5728b8757a3deb3e26dcc33171a71",
+  "final_digest": "385f18e68db9e3b12c0499e7c529064e117cc28b78378b73c7d68658041903e4",
+  "decisions": 17118,
+  "simulated_seconds": 3423.5999999979817,
   "milestones": [
     {
       "id": "A01",
@@ -63,32 +63,32 @@
     },
     {
       "id": "A12",
-      "step": 10663,
-      "seconds": 2132.6
+      "step": 10694,
+      "seconds": 2138.8
     },
     {
       "id": "A13",
-      "step": 16962,
-      "seconds": 3392.4
+      "step": 16986,
+      "seconds": 3397.2
     },
     {
       "id": "A14",
-      "step": 17066,
-      "seconds": 3413.2
+      "step": 17090,
+      "seconds": 3418.0
     },
     {
       "id": "A15",
-      "step": 17094,
-      "seconds": 3418.8
+      "step": 17118,
+      "seconds": 3423.6
     }
   ],
   "required": 15,
   "success": true,
   "health": 24.0,
   "events": {
-    "clue_exposed": 2,
+    "clue_exposed": 3,
     "milestone_complete": 15,
-    "npc_denned": 70,
+    "npc_denned": 89,
     "horse_calmed": 1,
     "swing": 70,
     "tree_struck": 66,
@@ -108,6 +108,7 @@
     "npc_emerged": 70,
     "whistled": 4,
     "horse_arrived": 4,
+    "weather": 12,
     "new_day": 3,
     "raft_staged": 1,
     "hit": 1,
@@ -117,8 +118,14 @@
     "vault_door_opened": 1,
     "core_extracted": 1,
     "cargo_towed": 4,
+    "wm_cue_read": 1,
     "freight_loaded": 2,
     "lift_arrived": 2,
+    "freight_held": 1,
+    "wm_entry": 4,
+    "wm_attempt": 1,
+    "freight_release_keyed": 1,
+    "freight_discharged": 1,
     "hoist_started": 1,
     "core_installed": 1
   },
@@ -135,25 +142,61 @@
     144,
     1056
   ],
-  "walked_metres": 13533.617520153815,
+  "walked_metres": 13557.665517959404,
   "return_dock": "A06_dock1",
   "cache_bindings": {},
+  "working_memory": {
+    "WM-SA12": {
+      "milestone": "A12",
+      "kind": "hold",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 70,
+        "seconds": 14.0
+      },
+      "solve_delay": {
+        "decisions": 70,
+        "seconds": 14.0
+      },
+      "source_target": 68,
+      "use_target": 69,
+      "source_pos": [
+        637.5,
+        9.2,
+        603.5
+      ],
+      "use_pos": [
+        656.5,
+        49.0,
+        597.5
+      ],
+      "path_metres": 12,
+      "line_of_sight": false
+    }
+  },
+  "wm_control": false,
   "controller": "privileged action-only full-campaign reference policy",
   "sources": {
-    "owb/env/skylands_reference.py": "4cb93454b59462772ed3a904b875660e7645fe4cb299ee0565936fd0259ca104",
+    "owb/env/skylands_reference.py": "4042f409ec7485f07f1eb63923629967040019d886f50a110265b58b82aca5a7",
     "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
-    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
-    "owb/env/skylands.py": "4c13573c8b7a92ad046a674a4ea72099405df36df2d5751d657f77929a988073",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
+    "owb/env/skylands.py": "a035bb55e3c282ae4f443e0fb071e40cf2cfcf3a5f845395755c7d91dd261992",
     "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
     "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
-    "owb/render/scene_export.py": "cdfa39b46aafba3a22878c924d38ea164690f6e919dafda24c26523a10932749",
-    "owb/render/blender_scene.py": "ae3b16fa80e1dbc0148badcad620ddfb6b964745ad922d8f30df8333dea43990",
+    "owb/render/scene_export.py": "3f1abd3b783b735e39e6f6b8132b08170db20e19bbb97d74b7e3aad700bf1440",
+    "owb/render/blender_scene.py": "9c127145c4ff85b48aa86ef1ffcd61788d00266576ab131ba65948abad3fd945",
     "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
     "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0",
-    "owb/env/skylands_campaign.py": "9429b37f74c7a6efd107afe5c06aee99ad7f29487765bbf0ebbac08d9c6dbc32",
+    "owb/env/skylands_campaign.py": "f3f3f2e691ee458aa2aa5d00312ff12026d2bb7ebb9b60f9f00a24d421db2493",
     "owb/bench/baselines/skylands_campaign.py": "62d20bf8a7942e16ebbb7aaf04add42fe44cb4ed002b1481fdd3d4415a784174",
-    "owb/scripts/skylands_campaign.py": "a91f03b7e9b2a09d36c07ea0bb882eee60df05e7fa9f16fa071ae0acbfeea9b0",
+    "owb/scripts/skylands_campaign.py": "712c8791dfafd53dfca145ef34e348fbcb2a52d9bc8c3126d3426dc9cb82df74",
     "owb/world/organic.py": "e8c44ff79f00cf7a46fbc0d826bee4daadb208b8c54663fbf4f47d8b6e2e043b",
     "owb/world/fauna.py": "85c7cb5d59b50dda6d1a6a164299fa9f9e6758943bf94c30761919b63bf58f2e",
     "owb/entities/npc.py": "7ec376a4d10e1bc6fa9d3208f440ef54d00802e79addd69f4f1a751ac42667e0",
@@ -166,5 +209,5 @@
     "owb/world/relief.py": "c42af37728dc72d8ce951e7501cb7f7524749a957e0996fd3308005421040dc1",
     "owb/world/landmarks.py": "a7305a813bfe8c4d983c02e0180e24534bf5c6fa1ce1b2744b6b3b8b92b15555"
   },
-  "actions_sha256": "c88233a6cc7a9bae9bc9884f0af0941e8cdf1eb0f4dfc387b81ac8d344b35e80"
+  "actions_sha256": "66d2612b825c4c26102ff6896c1beb78e41014150cc13340b50c94c9cb5acd78"
 }

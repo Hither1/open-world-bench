@@ -53,9 +53,13 @@ class ElementSystem:
 
     MAX_FIRES = 420
 
-    def __init__(self, cfg: SimConfig, rng):
+    def __init__(self, cfg: SimConfig, rng, climate_rng=None):
         self.cfg = cfg
         self.rng = rng
+        #: Draws for wind gusts and weather fronts. Defaults to the shared
+        #: simulation stream; a separate stream makes the weather timeline a
+        #: function of the seed alone, independent of what the agent does.
+        self.climate_rng = rng if climate_rng is None else climate_rng
         self.climate = Climate(time=cfg.start_time)
         #: (x, y, z) -> remaining burn time
         self.fires: dict[tuple[int, int, int], float] = {}
@@ -73,7 +77,7 @@ class ElementSystem:
     # weather & time
     # ------------------------------------------------------------------
     def step_climate(self, dt: float, biome_climate: float = 0.0) -> list[dict]:
-        cl = self.climate
+        cl, rng = self.climate, self.climate_rng
         ev: list[dict] = []
         prev = cl.time
         cl.time = (cl.time + dt / max(self.cfg.day_length, 1e-3)) % 1.0
@@ -83,9 +87,9 @@ class ElementSystem:
         cl.flash = max(0.0, cl.flash - dt * 4.0)
 
         if self.cfg.wind_enabled:
-            if self.rng.random() < dt * 0.05:
-                ang = self.rng.uniform(0, 2 * np.pi)
-                mag = float(self.rng.uniform(0.2, 2.4))
+            if rng.random() < dt * 0.05:
+                ang = rng.uniform(0, 2 * np.pi)
+                mag = float(rng.uniform(0.2, 2.4))
                 if cl.weather == "storm":
                     mag *= 2.0
                 cl.wind_target = np.array([np.cos(ang) * mag, 0.0,
@@ -98,15 +102,16 @@ class ElementSystem:
         if cl.weather_ttl <= 0:
             cold = biome_climate < -0.4
             if cl.weather in ("rain", "storm", "snow"):
-                nxt = "cloud" if self.rng.random() < 0.7 else "clear"
+                nxt = "cloud" if rng.random() < 0.7 else "clear"
             elif cl.weather == "clear":
-                nxt = "cloud" if self.rng.random() < 0.55 else "clear"
+                nxt = "cloud" if rng.random() < 0.55 else "clear"
             else:
-                r = self.rng.random()
+                r = rng.random()
                 if r < 0.38:
-                    nxt = "snow" if cold else (
-                        "storm" if self.rng.random() < self.cfg.thunder_prob
-                        else "rain")
+                    # Draw the thunder roll even where it falls as snow, so
+                    # the agent's position never shifts later fronts.
+                    thunder = rng.random() < self.cfg.thunder_prob
+                    nxt = "snow" if cold else ("storm" if thunder else "rain")
                 elif r < 0.5:
                     nxt = "fog"
                 else:
@@ -114,7 +119,7 @@ class ElementSystem:
             if nxt != cl.weather:
                 ev.append(dict(type="weather", weather=nxt, was=cl.weather))
             cl.weather = nxt
-            cl.weather_ttl = float(self.rng.uniform(90.0, 320.0))
+            cl.weather_ttl = float(rng.uniform(90.0, 320.0))
         return ev
 
     # ------------------------------------------------------------------

@@ -93,6 +93,205 @@ def add_haze(mat):
     return mat
 
 
+WET_GROUP = "Rain wetness"
+
+
+def wetness_group():
+    """Darker albedo and glossier surfaces in rain, with sheen pooling on
+    upward-facing ground. The amount is one shared value set per frame; at
+    zero the group passes colour and roughness through unchanged."""
+    group = bpy.data.node_groups.get(WET_GROUP)
+    if group is not None:
+        return group
+    group = bpy.data.node_groups.new(WET_GROUP, "ShaderNodeTree")
+    for name, kind in (("Color", "NodeSocketColor"), ("Roughness", "NodeSocketFloat")):
+        group.interface.new_socket(name=name, in_out="INPUT", socket_type=kind)
+        group.interface.new_socket(name=name, in_out="OUTPUT", socket_type=kind)
+    nodes, links = group.nodes, group.links
+    source, result = nodes.new("NodeGroupInput"), nodes.new("NodeGroupOutput")
+    amount = nodes.new("ShaderNodeValue"); amount.name = amount.label = "Wetness"
+    amount.outputs[0].default_value = 0.0
+    def math(op, a, b):
+        node = nodes.new("ShaderNodeMath"); node.operation = op
+        for i, v in enumerate((a, b)):
+            if isinstance(v, (int, float)): node.inputs[i].default_value = v
+            else: links.new(v, node.inputs[i])
+        return node.outputs[0]
+    geometry = nodes.new("ShaderNodeNewGeometry")
+    separate = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(geometry.outputs["Normal"], separate.inputs["Vector"])
+    upward = _range(nodes, links, separate.outputs["Z"], .55, .95)
+    puddles = _range(nodes, links, _noise(nodes, links, geometry.outputs["Position"], .35, 3.0), .5, .62)
+    pooling = math("MULTIPLY", upward, puddles)
+    darken = nodes.new("ShaderNodeMixRGB"); darken.blend_type = "MULTIPLY"
+    links.new(math("MULTIPLY", amount.outputs[0], .8), darken.inputs[0])
+    links.new(source.outputs["Color"], darken.inputs[1])
+    darken.inputs[2].default_value = (.58, .58, .6, 1)
+    links.new(darken.outputs["Color"], result.inputs["Color"])
+    gloss = math("MULTIPLY", amount.outputs[0], math("ADD", .5, math("MULTIPLY", pooling, .45)))
+    links.new(math("MULTIPLY", source.outputs["Roughness"], math("SUBTRACT", 1.0, gloss)), result.inputs["Roughness"])
+    return group
+
+
+def add_wetness(mat):
+    """Route the Principled base colour and roughness through the wetness group."""
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    shader = nodes.get("Principled BSDF")
+    node = nodes.new("ShaderNodeGroup"); node.node_tree = wetness_group()
+    color = shader.inputs["Base Color"]
+    if color.links:
+        links.new(color.links[0].from_socket, node.inputs["Color"])
+    else:
+        node.inputs["Color"].default_value = color.default_value
+    roughness = shader.inputs["Roughness"]
+    if roughness.links:
+        links.new(roughness.links[0].from_socket, node.inputs["Roughness"])
+    else:
+        node.inputs["Roughness"].default_value = roughness.default_value
+    links.new(node.outputs["Color"], color)
+    links.new(node.outputs["Roughness"], roughness)
+    return mat
+
+
+# Presentation of the simulated weather. Streak positions are hashed from world
+# cells, the scene seed and simulated time, never drawn from the simulation RNG,
+# so a drop keeps its identity as the camera moves and between video frames.
+PRECIPITATION = dict(
+    rain=dict(cell=1.5, spacing=2.6, speed=9.0, length=.6, width=.010, alpha=.30, slant=.10, near=3.0),
+    storm=dict(cell=1.1, spacing=2.2, speed=11.5, length=.7, width=.010, alpha=.30, slant=.28, near=3.5),
+    snow=dict(cell=1.3, spacing=2.0, speed=1.1, length=.0, width=.026, alpha=.7, slant=.0, sway=.45, near=2.0))
+WEATHER_LOOK = dict(  # sun, sky, wetness, haze start and distance factors, haze amount floor
+    clear=(1., 1., 0., 1., 1., 0.), cloud=(.72, .92, 0., .9, .8, 0.),
+    rain=(.4, .88, 1., .45, .3, .88), storm=(.24, .7, 1., .32, .22, .92),
+    snow=(.4, .95, .25, .4, .26, .9), fog=(.45, .88, .15, .12, .08, .95))
+PRECIPITATION_RADIUS, PRECIPITATION_BELOW, PRECIPITATION_ABOVE = 26.0, 8.0, 16.0
+
+
+def _hash_unit(*keys):
+    """splitmix64 of integer keys -> floats in [0, 1)."""
+    h = np.uint64(0x9E3779B97F4A7C15)
+    with np.errstate(over="ignore"):
+        for key in keys:
+            h = (h ^ np.asarray(key).astype(np.int64).astype(np.uint64)) * np.uint64(0xBF58476D1CE4E5B9)
+            h = (h ^ (h >> np.uint64(31))) * np.uint64(0x94D049BB133111EB)
+            h = h ^ (h >> np.uint64(29))
+    return (h >> np.uint64(11)).astype(np.float64) / float(1 << 53)
+
+
+def precipitation_triangles(weather, eye):
+    """Camera-facing streaks (rain) or flakes (snow) around ``eye``, Y-up metres."""
+    spec = PRECIPITATION.get(weather.get("kind"))
+    if spec is None:
+        return np.empty((0, 3, 3), np.float32)
+    eye = np.asarray(eye, float)
+    c, s, t, seed = spec["cell"], spec["spacing"], float(weather["seconds"]), int(weather["seed"])
+    span = np.arange(-int(PRECIPITATION_RADIUS / c) - 1, int(PRECIPITATION_RADIUS / c) + 2)
+    i, j, k = np.meshgrid(np.floor(eye[0] / c) + span,
+                          np.arange(np.floor((eye[1] - PRECIPITATION_BELOW) / s), np.ceil((eye[1] + PRECIPITATION_ABOVE) / s)),
+                          np.floor(eye[2] / c) + span, indexing="ij")
+    i, j, k = i.ravel(), j.ravel(), k.ravel()
+    wind = np.asarray(weather.get("wind", (0, 0, 0)), float)
+    lean = wind[[0, 2]] * .12
+    if spec["slant"] and not np.any(lean):
+        angle = 2 * np.pi * _hash_unit(seed, 17)
+        lean = spec["slant"] * np.array((np.cos(angle), np.sin(angle)))
+    fall = np.array((lean[0], -1.0, lean[1])); fall /= np.linalg.norm(fall)
+    x = (i + _hash_unit(seed, i, j, k, 1)) * c
+    z = (k + _hash_unit(seed, i, j, k, 2)) * c
+    drift = spec["speed"] * t / s
+    y = (j + np.mod(_hash_unit(seed, i, j, k, 3) - drift * (.8 + .4 * _hash_unit(seed, i, j, k, 4)), 1.0)) * s
+    centers = np.stack((x, y, z), axis=1)
+    centers[:, [0, 2]] += lean[None] * (y - eye[1])[:, None]
+    if spec.get("sway"):
+        phase = 2 * np.pi * _hash_unit(seed, i, j, k, 5)
+        centers[:, 0] += spec["sway"] * np.sin(t * 1.3 + phase)
+        centers[:, 2] += spec["sway"] * np.cos(t * 1.1 + phase)
+    offset = centers - eye
+    distance = np.linalg.norm(offset, axis=1)
+    keep = (distance > spec["near"]) & (np.linalg.norm(offset[:, [0, 2]], axis=1) < PRECIPITATION_RADIUS)
+    centers, offset = centers[keep], offset[keep]
+    side = np.cross(fall[None], offset)
+    side /= np.maximum(np.linalg.norm(side, axis=1, keepdims=True), 1e-8)
+    size = (.7 + .6 * _hash_unit(seed, i[keep], j[keep], k[keep], 6))[:, None]
+    if not spec["length"]:
+        # Flakes: small hexagons facing the camera.
+        facing = np.cross(side, offset)
+        facing /= np.maximum(np.linalg.norm(facing, axis=1, keepdims=True), 1e-8)
+        angles = np.linspace(0, 2 * np.pi, 7)
+        rim = [centers + size * spec["width"] / 2 * (np.cos(a) * side + np.sin(a) * facing) for a in angles]
+        return np.concatenate([np.stack((centers, rim[n], rim[n + 1]), 1) for n in range(6)]).astype(np.float32)
+    length = spec["length"] * size
+    up, across = -fall[None] * length / 2, side * spec["width"] / 2
+    a, b, c_, d = centers + up - across, centers + up + across, centers - up + across, centers - up - across
+    return np.concatenate((np.stack((a, b, c_), 1), np.stack((a, c_, d), 1))).astype(np.float32)
+
+
+def apply_weather(scene, metadata):
+    """Dim the sun and sky, tighten haze, wet surfaces and place precipitation
+    for the snapshot's simulated weather. Call after lighting and haze are set
+    for the frame; clear weather leaves the scene exactly as configured."""
+    weather = metadata.get("weather") or {}
+    kind = weather.get("kind", "clear")
+    sun_k, sky_k, wet, start_k, distance_k, amount = WEATHER_LOOK.get(kind, WEATHER_LOOK["clear"])
+    flash = float(weather.get("flash", 0.0))
+    sun = bpy.data.objects.get("Sun")
+    if sun is not None:
+        sun.data.energy *= sun_k
+    background = next(n for n in scene.world.node_tree.nodes if n.type == "BACKGROUND")
+    background.inputs["Strength"].default_value *= sky_k * (1 + 6 * flash)
+    group = bpy.data.node_groups.get(HAZE_GROUP)
+    if group is not None:
+        group.nodes["Haze start"].inputs[1].default_value *= start_k
+        group.nodes["Haze distance"].inputs[1].default_value *= distance_k
+        haze = group.nodes["Haze amount"].inputs[1]
+        haze.default_value = max(haze.default_value, amount)
+    wetness = bpy.data.node_groups.get(WET_GROUP)
+    if wetness is not None:
+        wetness.nodes["Wetness"].outputs[0].default_value = wet
+    triangles = z_up(precipitation_triangles(weather, metadata["camera"]["eye"]))
+    obj = bpy.data.objects.get("Precipitation")
+    if obj is None:
+        if not len(triangles):
+            return
+        obj = bpy.data.objects.new("Precipitation", bpy.data.meshes.new("Precipitation"))
+        bpy.context.collection.objects.link(obj)
+        obj.data.materials.append(precipitation_material())
+        for ray in ("diffuse", "glossy", "transmission", "volume_scatter", "shadow"):
+            setattr(obj, "visible_" + ray, False)
+    mesh = obj.data
+    mesh.clear_geometry()
+    count = len(triangles)
+    mesh.vertices.add(count * 3); mesh.vertices.foreach_set("co", triangles.reshape(-1).astype(np.float32))
+    mesh.loops.add(count * 3); mesh.loops.foreach_set("vertex_index", np.arange(count * 3, dtype=np.int32))
+    mesh.polygons.add(count)
+    mesh.polygons.foreach_set("loop_start", np.arange(0, count * 3, 3, dtype=np.int32))
+    mesh.polygons.foreach_set("loop_total", np.full(count, 3, dtype=np.int32))
+    mesh.update(calc_edges=True)
+    spec = PRECIPITATION.get(kind, PRECIPITATION["rain"])
+    nodes = obj.data.materials[0].node_tree.nodes
+    lighting, grade = metadata["lighting"], metadata.get("night_grade") or {}
+    tone = np.asarray(lighting["horizon"]) if kind != "snow" else .35 * np.asarray(lighting["horizon"]) + .65
+    nodes["Precipitation glow"].inputs["Color"].default_value = (*linear(tone), 1)
+    nodes["Precipitation glow"].inputs["Strength"].default_value = (
+        1.5 * SKY_STRENGTH * sky_k * grade.get("sky", 1.0) * (1 + 6 * flash))
+    nodes["Precipitation opacity"].inputs[0].default_value = spec["alpha"]
+
+
+def precipitation_material():
+    """Streaks lit like the sky they refract, seen only by camera rays."""
+    mat = bpy.data.materials.new("Precipitation")
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.remove(nodes.get("Principled BSDF"))
+    glow = nodes.new("ShaderNodeEmission"); glow.name = "Precipitation glow"
+    clear = nodes.new("ShaderNodeBsdfTransparent")
+    mix = nodes.new("ShaderNodeMixShader"); mix.name = "Precipitation opacity"
+    links.new(clear.outputs[0], mix.inputs[1]); links.new(glow.outputs[0], mix.inputs[2])
+    links.new(mix.outputs[0], next(n for n in nodes if n.type == "OUTPUT_MATERIAL").inputs["Surface"])
+    mat.cycles.emission_sampling = "NONE"
+    return mat
+
+
 def occluder_variant(mat):
     """Camera rays see an occluding object faded; shadows and bounce are unchanged."""
     faded = mat.copy()
@@ -533,6 +732,8 @@ def material(name, *, emission=False, water=False, kind="surface", ground=None, 
     if STYLE is not None:
         terrain = _anime_terrain(nodes, links, shader, STYLE) if kind == "terrain" and ground is None else (None, None)
         _stylize(mat, kind, STYLE, water=water, emission=emission, terrain_color=terrain[0], normal=terrain[1])
+    if not water and not emission:
+        add_wetness(mat)
     mat = add_haze(mat)
     if not emission:
         # Haze is distance fog seen by rays, not a light. With AUTO emission
@@ -953,6 +1154,7 @@ def main():
             objects[spec["name"]] = add_mesh(data, i, spec, materials)
         if metadata.get("ground_cover"):
             ground_cover(metadata["ground_cover"], objects, bpy.data.images.get("Ground detail"))
+        apply_weather(scene, metadata)
     scene.render.filepath = str(args.output.resolve())
     if args.blend:
         bpy.ops.wm.save_as_mainfile(filepath=str(args.blend.resolve()))

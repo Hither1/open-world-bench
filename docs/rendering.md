@@ -36,7 +36,7 @@ geometry collides or appears in policy RGB observations.
 | --- | --- | --- |
 | Horizon ridges | Two rings of ridged terrain beyond the walkable world. The near ring has gaps and a beach line; the far ring is taller with snow. | Teyvat (course and island), Wildlands, Skylands |
 | Distance haze | Camera-distance blend toward the horizon colour, so far ridges read as layered silhouettes. Subjects within about 45–90 m are unaffected. | All Cycles scenes |
-| Set pieces | Locations rather than a scatter. Each task site gets a role-specific vignette (ruined walls framing a relay court, a standing-stone cairn at a survey point, a stair-and-terrace ruin by a lift, a broken colonnade by a sentinel). Ambient clusters group trees, bushes, and grass around rock outcrops, with regional tree species. | Teyvat course, Wildlands course, Skylands campaign surface |
+| Set pieces | Locations rather than a scatter. Each task site gets a role-specific vignette (ruined walls framing a relay court, a standing-stone cairn at a survey point, a stair-and-terrace ruin by a lift, a broken colonnade by a sentinel). Ambient clusters group trees, bushes, and grass around rock outcrops, with regional tree species. | Teyvat course, Wildlands course, Skylands full-scale surface |
 | Ground detail | A world-space texture (path wear, soil, paving, exposed rock) applied to upward-facing terrain, with noise-broken edges. Relay courts get irregular flagstones; the route between sites is a worn path. | Same as set pieces |
 | Meadow carpet | Short grass instanced by geometry nodes within 40 m of the camera, clumped by a world-space noise shared with the ground tone, and kept off paths, paving, and rock. | Teyvat course |
 | Gate trim | Bases, banded shafts, capitals, and a cornice wrapped around the Wildlands courtyard gate voxels; the voxels remain the collision geometry. | Wildlands course |
@@ -61,7 +61,7 @@ mapping.
 
 The haze is an emission shader mixed into every material, so materials whose
 only emission is haze use `emission_sampling = "NONE"`. Otherwise Cycles treats
-every hazed triangle as a light: in the Skylands campaign that made the
+every hazed triangle as a light: in the Skylands full-scale tasks that made the
 ~70 million baked grass triangles light-tree emitters, and some frames exceeded
 128 GB of host memory. Rays still gather the haze, so the image is unchanged
 (re-rendered frames differ by at most one 8-bit level); genuinely glowing
@@ -75,6 +75,19 @@ of the strong green bounce in cast shadows. Blender also accepts
 `--device METAL` (Apple GPUs) alongside `CPU`, `CUDA`, and `OPTIX`; an
 unavailable device is still an error, never a silent fallback.
 
+Weather comes from the simulated climate, recorded per snapshot as
+`metadata["weather"]` (kind, lightning flash, simulated seconds, seed, wind).
+Rain and thunderstorms dim the sun to 0.4× / 0.24× and the sky to 0.88× / 0.7×,
+pull the distance haze in, and darken and gloss every surface material, with
+sheen pooling on upward-facing ground. Snow and fog thin the light and thicken
+the haze. Camera-facing streaks (rain) or small hexagonal flakes (snow) fill a
+26 m radius around the camera, skipping the nearest 2–3.5 m. They are seen only by
+camera rays and cast no shadows. Positions are hashed from world cells, the seed
+and simulated time, never drawn from the simulation RNG, so a drop keeps its
+identity as the camera moves and falls coherently between video frames. Clear
+weather leaves every frame exactly as before. Both the per-frame renderer and
+the persistent full-scale renderer apply it through `blender_scene.apply_weather`.
+
 Matched before/after Cycles renders of the committed traces, with their
 settings, are in [`assets/design/landscape-refresh`](../assets/design/landscape-refresh/):
 [Teyvat A03 before](../assets/design/landscape-refresh/teyvat-a03-before.png) /
@@ -82,7 +95,7 @@ settings, are in [`assets/design/landscape-refresh`](../assets/design/landscape-
 [Teyvat A10](../assets/design/landscape-refresh/teyvat-a10-compare.png),
 [Wildlands A04](../assets/design/landscape-refresh/wildlands-a04-compare.png), and
 [Skylands](../assets/design/landscape-refresh/skylands-a-step1500-compare.png).
-The Skylands campaign camera looks steeply down at the traveler, so most of its
+The Skylands full-scale camera looks steeply down at the traveler, so most of its
 change (ridges and set pieces) is visible only in wider views.
 
 Not changed: the compact courses remain compact prototypes on the same

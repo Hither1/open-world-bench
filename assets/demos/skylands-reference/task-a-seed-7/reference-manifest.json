@@ -1,10 +1,10 @@
 {
   "task": "a",
   "seed": 7,
-  "initial_digest": "4e7a921d6a9a4eaba77baf2d69fb5ef7e283ef42b0fe06d0fa36dd730e27ef29",
-  "final_digest": "90608d70b3714fae253ccead1f9cab0faebe9e2d42dd4a9c6f1a5ee0e429ac7a",
-  "decisions": 2001,
-  "simulated_seconds": 400.2000000000225,
+  "initial_digest": "fa1f82396675b2c3047d3c5b70f0e33714c78fc378919f9899b3965c313281f3",
+  "final_digest": "14735bd338ffc981cc44e69a0ee38f5b068bf52a27e8a419abb6537b1d3a8b8b",
+  "decisions": 1770,
+  "simulated_seconds": 354.000000000012,
   "milestones": [
     {
       "id": "A01",
@@ -63,30 +63,30 @@
     },
     {
       "id": "A12",
-      "step": 1052,
-      "seconds": 210.4
+      "step": 1088,
+      "seconds": 217.6
     },
     {
       "id": "A13",
-      "step": 1429,
-      "seconds": 285.8
+      "step": 1161,
+      "seconds": 232.2
     },
     {
       "id": "A14",
-      "step": 1562,
-      "seconds": 312.4
+      "step": 1295,
+      "seconds": 259.0
     },
     {
       "id": "A15",
-      "step": 2001,
-      "seconds": 400.2
+      "step": 1770,
+      "seconds": 354.0
     }
   ],
   "required": 15,
   "success": true,
   "health": 24.0,
   "events": {
-    "clue_exposed": 2,
+    "clue_exposed": 3,
     "milestone_complete": 15,
     "part_picked": 16,
     "part_mounted": 16,
@@ -102,8 +102,15 @@
     "dock_lit": 1,
     "core_extracted": 1,
     "cargo_towed": 4,
+    "wm_cue_read": 1,
     "freight_loaded": 2,
+    "freight_held": 1,
+    "wm_entry": 4,
+    "wm_attempt": 1,
+    "freight_release_keyed": 1,
+    "freight_discharged": 1,
     "hoist_started": 1,
+    "maintenance_lift_called": 1,
     "core_installed": 1
   },
   "limitations": [
@@ -119,19 +126,55 @@
     "A maintenance lift shortens inter-layer travel; cross-layer clue assignments and navigation alternatives are limited.",
     "Video samples verified simulator states and omits long walking intervals. Full action logs retain all intermediate steps."
   ],
+  "working_memory": {
+    "WM-SA12": {
+      "milestone": "A12",
+      "kind": "hold",
+      "load": 4,
+      "control": false,
+      "solved": true,
+      "attempts": 1,
+      "first_attempt_correct": true,
+      "cue_reads": 1,
+      "first_attempt_delay": {
+        "decisions": 68,
+        "seconds": 13.6
+      },
+      "solve_delay": {
+        "decisions": 68,
+        "seconds": 13.6
+      },
+      "source_target": 53,
+      "use_target": 54,
+      "source_pos": [
+        65.5,
+        5.2,
+        52.5
+      ],
+      "use_pos": [
+        82.0,
+        39.0,
+        42.0
+      ],
+      "path_metres": 12,
+      "line_of_sight": false
+    }
+  },
+  "wm_control": false,
   "controller": "privileged action-only reference policy",
   "sources": {
-    "owb/env/skylands_reference.py": "3aad43f49e3bbb9481142870e32a53f6d3bc884497f70b318f783337eee2174c",
-    "owb/bench/baselines/skylands_reference.py": "7a15ef5fc5a80e07d164379524d019566a513fd10d1ab9c354f064bd8846bacd",
-    "owb/scripts/skylands_reference.py": "c903ddf5655efdd6d4fa53f97ff899fb5efa9d3d4a5182109df39713ee57c1c6",
-    "owb/env/skylands.py": "e131e404e120fecc0b2e95d8278d41833f6bab3bbfaee262aa6f6296b9e74e73",
-    "owb/env/wildlands.py": "0cb824ae48ebbe96bf3d944a5f01af4516743bfe797c902884229c4930cc7cd4",
+    "owb/env/skylands_reference.py": "4042f409ec7485f07f1eb63923629967040019d886f50a110265b58b82aca5a7",
+    "owb/bench/baselines/skylands_reference.py": "f9e528b0417a0de2af38ee5062363c277b419b6d4e0a27b331a5866b3f30a688",
+    "owb/core/working_memory.py": "714f2138021effed0a8c8e38b77de3fc1d81f6e1dc65f5093760d92766b5ff96",
+    "owb/scripts/skylands_reference.py": "744563c97a2292bbba97c12faccc39ea2d92c1181cb8c17164cef9e438aeb4e5",
+    "owb/env/skylands.py": "a035bb55e3c282ae4f443e0fb071e40cf2cfcf3a5f845395755c7d91dd261992",
+    "owb/env/wildlands.py": "6dc38f0300d77cc7f732d0552cde84db2c15262736dc58d27a588c4063517997",
     "owb/world/skylands.py": "9cb36dc5aa8b7c82075e199fe03710c253a291285bd2f9d4dcf537a2d5a849ce",
     "owb/physics/character.py": "d50248592907b56e762033542196ea223d66477275edc6cc4115eb3f48ed1446",
-    "owb/render/scene_export.py": "3d9f0df9856c9720fb96e8275a0a7e0922e0ea5bfd3a63b4cd1706e5f6b9c053",
-    "owb/render/blender_scene.py": "9f035d927db677c164ffb027add962bb6c7ab5cea02bdc1e769b8fa69542b49d",
-    "owb/render/presentation.py": "591980d08af808a656275b7e1ab60882d85038e1e20c07b53c851c582f6125cf",
+    "owb/render/scene_export.py": "3f1abd3b783b735e39e6f6b8132b08170db20e19bbb97d74b7e3aad700bf1440",
+    "owb/render/blender_scene.py": "9c127145c4ff85b48aa86ef1ffcd61788d00266576ab131ba65948abad3fd945",
+    "owb/render/presentation.py": "98b8c200be5953d9ef884c32de507b71b9639165c769d25e80ee056b6e1433d7",
     "owb/render/video.py": "f908ca8ff1f34acf473cbc16e64d28a013521fd659386687190d7505e10939c0"
   },
-  "actions_sha256": "690f484b216fcbabb76a69f0329f037004cf8a6119e5de5e61b9546b6bdea2cf"
+  "actions_sha256": "7b4cb820a959706cc144f2105d79bbcfe36c99ff324902518eb1ab626af7c9bc"
 }
